@@ -1,4 +1,5 @@
-import 'package:axion/pages/splashScreen/splashScreen.dart';
+import 'package:axion/pages/loginScreen.dart';
+import 'package:axion/pages/splashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,6 +13,10 @@ final GoRouter _router = GoRouter(
       GoRoute(
         path: '/',
         builder: (context,state)=>SplashScreen()
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => LoginScreen(),
       )
     ]
 );
