@@ -22,3 +22,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/img/Logo.svg
+    - assets/img/biometricAuth.svg

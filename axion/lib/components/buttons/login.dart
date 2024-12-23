@@ -34,7 +34,7 @@ class LoginButton extends StatelessWidget {
             width: 350,
             height: 60,
             child: TextButton(
-                onPressed: ()=>context.go('/login'),
+                onPressed: ()=>context.push('/login'),
                 child: Text(
                   "Login",
                   style: GoogleFonts.montserrat(

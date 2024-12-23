@@ -1,16 +1,17 @@
 import 'package:axion/components/buttons/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SplashScreen extends StatelessWidget{
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return(
       Scaffold(
-        backgroundColor: Color.fromARGB(255, 21, 23, 28),
+       
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -25,11 +26,14 @@ class SplashScreen extends StatelessWidget{
                       right: 0,
                       bottom: 30.0
                       ),
-                    child: SvgPicture.asset(
-                      "assets/img/Logo.svg",
-                      width: 100,
-                      height: 100,
-                      semanticsLabel: 'Red dash paths',
+                    child: Hero(
+                      tag: 'logo',
+                      child: SvgPicture.asset(
+                        "assets/img/Logo.svg",
+                        width: 100,
+                        height: 100,
+                        semanticsLabel: 'Red dash paths',
+                      ),
                     ),
                   ),
                   Text("AXION",
@@ -66,7 +70,7 @@ class SplashScreen extends StatelessWidget{
                           borderRadius: BorderRadius.circular(12.0),
                         )
                       ),
-                      onPressed: (){}, 
+                      onPressed: ()=>context.push('/signup'),
                       child: Text(
                         "Signup",
                         style: GoogleFonts.montserrat(
