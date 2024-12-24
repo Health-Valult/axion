@@ -1,6 +1,6 @@
-import 'package:axion/pages/signup/pageOne.dart';
-import 'package:axion/pages/signup/pageThree.dart';
-import 'package:axion/pages/signup/pageTwo.dart';
+import 'package:axion/pages/signup/pages/pageOne.dart';
+import 'package:axion/pages/signup/pages/pageThree.dart';
+import 'package:axion/pages/signup/pages/pageTwo.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatelessWidget {

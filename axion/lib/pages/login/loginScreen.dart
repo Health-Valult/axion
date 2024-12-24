@@ -10,7 +10,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       
       body: Center(
         child: Column(
@@ -25,6 +25,7 @@ class LoginScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
+
                   Padding(
                     padding: const EdgeInsets.only(
                       left: 0,
@@ -42,6 +43,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   Text(
                     "Welcome Back",
                     style: GoogleFonts.montserrat(
@@ -67,6 +69,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   child: LoginTextFieald(label: "NIC",),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(
                     left: 0,
@@ -76,6 +79,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   child: LoginTextFieald(label: "Password",),
                 ),
+
                 Padding(
                   padding: const EdgeInsets.only(
                     left: 0,
@@ -83,8 +87,11 @@ class LoginScreen extends StatelessWidget {
                     right: 0,
                     bottom: 40.0
                   ),
-                  child: LoginButton(),
+                  child: LoginButton(
+                    onPressed: (context)=>{print("clicked")},
+                  ),
                 ),
+
                 SizedBox(
                   width: 100,
                   height: 100,
@@ -98,12 +105,10 @@ class LoginScreen extends StatelessWidget {
                       "assets/img/biometricAuth.svg"
                     )),
                 )
+                
               ],
             )
-          
-
           ],
-
         ),
       ),
     );

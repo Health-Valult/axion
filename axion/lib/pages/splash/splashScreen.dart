@@ -58,7 +58,9 @@ class SplashScreen extends StatelessWidget{
                       right: 0,
                       bottom: 30.0
                       ),
-                    child: LoginButton(),
+                    child: LoginButton(
+                      onPressed: (context)=>{context.push("/login")},
+                    ),
                   ),
                   
                   SizedBox(

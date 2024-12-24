@@ -14,8 +14,10 @@ class LoginTextFieald extends StatelessWidget {
       width: 350,
       height: 60,
       child: TextField(
-        onChanged: (e)=>{print(e)},
         cursorColor: Color.fromRGBO(255, 255, 255, 1),
+        style: TextStyle(
+          color: Color.fromRGBO(255, 255, 255, 1)
+        ),
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),

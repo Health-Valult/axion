@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginButton extends StatelessWidget {
+
+  final void Function(BuildContext) onPressed;
+
   const LoginButton({
     super.key,
+    required this.onPressed
   });
 
   @override
@@ -34,7 +38,7 @@ class LoginButton extends StatelessWidget {
             width: 350,
             height: 60,
             child: TextButton(
-                onPressed: ()=>context.push('/login'),
+                onPressed: ()=>onPressed(context),
                 child: Text(
                   "Login",
                   style: GoogleFonts.montserrat(
