@@ -5,9 +5,9 @@ import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Dropdown, 
 import LanguageDropdown from "../elements/LanguageDropdown";
 
 
-export const Logo = () => {
+export const Logo = ({width, height}: {width: number, height: number}) => {
     return (
-        <svg width="20" height="20" viewBox="0 0 340 341" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg width={width} height={height} viewBox="0 0 340 341" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_653_1478)">
         <path d="M206.607 203.756C219.139 191.225 239.457 191.225 251.988 203.756L314.087 265.855C326.618 278.386 326.618 298.704 314.087 311.236C301.555 323.767 281.237 323.767 268.706 311.236L206.607 249.137C194.076 236.606 194.076 216.288 206.607 203.756Z" fill="url(#paint0_linear_653_1478)"/>
         <rect x="110.521" y="153.051" width="151.999" height="64.1782" rx="32.0891" transform="rotate(-135 110.521 153.051)" fill="url(#paint1_linear_653_1478)"/>
@@ -50,7 +50,7 @@ export default function TopBar() {
   return (
     <Navbar shouldHideOnScroll>
       <NavbarBrand>
-         <Logo />
+         <Logo width={20} height={20} />
       </NavbarBrand>
       <NavbarContent className="hidden sm:flex gap-4" justify="end">
         <NavbarItem>
