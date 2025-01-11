@@ -1,4 +1,4 @@
-import 'package:axion/components/inputFields/login.dart';
+import 'package:axion/components/text_fieald.dart';
 import 'package:flutter/material.dart';
 
 class SignupPageTwo extends StatelessWidget {
@@ -13,8 +13,7 @@ class SignupPageTwo extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              LoginTextFieald(label: "Telephone"),
-              LoginTextFieald(label: "NIC"),
+
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

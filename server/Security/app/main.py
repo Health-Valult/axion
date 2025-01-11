@@ -1,15 +1,20 @@
 from typing import Union
-
+import uvicorn
 from fastapi import FastAPI
+from .models.user import User
 
 app = FastAPI()
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.post("/axion/auth/login")
+def login(user:User):
+    print(user)
+    return
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+def main():
+    print("running security services")
+    uvicorn.run("app.main:app",port=8000,reload=True)
+
+if __name__ == '__main__':
+    main()

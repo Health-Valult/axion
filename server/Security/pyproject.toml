@@ -8,9 +8,10 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.13"
 fastapi = {extras = ["standard"], version = "^0.115.6"}
+python-jose = "^3.3.0"
 
 [tool.poetry.scripts]
-dev = 'uvicorn app.main:app --reload'
+dev = 'app.main:main'
 
 
 [build-system]

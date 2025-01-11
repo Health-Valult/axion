@@ -1,4 +1,4 @@
-import 'package:axion/components/buttons/login.dart';
+import 'package:axion/components/button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
@@ -59,7 +59,7 @@ class SplashScreen extends StatelessWidget{
                       bottom: 30.0
                       ),
                     child: LoginButton(
-                      onPressed: (context)=>{context.push("/login")},
+                      onPressed: (context)=>context.push("/login"),
                     ),
                   ),
                   
