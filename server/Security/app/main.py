@@ -2,15 +2,13 @@ from typing import Union
 import uvicorn
 from fastapi import FastAPI
 from .models.user import User
-
+from jose import jwt
 app = FastAPI()
 
 
-@app.post("/axion/auth/login")
-def login(user:User):
-    print(user)
-    return
-
+@app.post("/axion/auth/signup")
+def signup(user:User):
+    print(user.Telephone)
 
 def main():
     print("running security services")
