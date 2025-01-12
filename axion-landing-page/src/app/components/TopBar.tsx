@@ -1,7 +1,7 @@
 'use client'
 
-import React from "react";
-import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
+import React, { useState } from "react";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem, Link} from "@nextui-org/react";
 import LanguageDropdown from "../elements/LanguageDropdown";
 
 
@@ -46,7 +46,8 @@ export const Logo = ({width, height}: {width: number, height: number}) => {
     );
   };
 
-export default function TopBar() {
+export default function TopBar({ onLanguageSelect }: { onLanguageSelect: (language: string) => void }) {
+  
   return (
     <Navbar shouldHideOnScroll>
       <NavbarBrand>
@@ -59,7 +60,7 @@ export default function TopBar() {
           </Link>
         </NavbarItem>
         <NavbarItem isActive>
-        <LanguageDropdown />
+        <LanguageDropdown onLanguageSelect={onLanguageSelect} />
         </NavbarItem>
         <NavbarItem className="hidden lg:flex">
           <Link href="#">Get Started</Link>

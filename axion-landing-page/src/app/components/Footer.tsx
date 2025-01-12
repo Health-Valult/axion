@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="mx-auto w-full p-4 py-6 lg:py-8">
             <div className="md:flex md:justify-between">
               <div className="mb-6 md:mb-0">
-                  <Link href="https://flowbite.com/" className="flex items-center">
+                  <Link href="" className="flex items-center">
                       <Logo width={35} height={35} />
                       <span className="ml-2 text-2xl font-semibold text-black">Axion</span>
                   </Link>
@@ -22,10 +22,10 @@ export default function Footer() {
                       {/* <h2 className="mb-6 text-sm font-semibold uppercase">Resources</h2> */}
                       <ul className="text-gray-500 font-medium">
                           <li className="mb-4">
-                              <Link href="https://flowbite.com/">Register</Link>
+                              <Link href="">Register</Link>
                           </li>
                           <li>
-                              <Link href="https://tailwindcss.com/">Hospitals</Link>
+                              <Link href="">Hospitals</Link>
                           </li>
                       </ul>
                   </div>
@@ -33,10 +33,10 @@ export default function Footer() {
                       {/* <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase ">Follow us</h2> */}
                       <ul className="text-gray-500 dark:text-gray-400 font-medium">
                           <li className="mb-4">
-                              <Link href="https://github.com/themesberg/flowbite">Github</Link>
+                              <Link href="https://github.com/Health-Valult/axion">Github</Link>
                           </li>
                           <li>
-                              <Link href="https://discord.gg/4eeurUVvTy">LinkedIn</Link>
+                              <Link href="https://www.linkedin.com/company/health-axion/">LinkedIn</Link>
                           </li>
                       </ul>
                   </div>
@@ -55,7 +55,7 @@ export default function Footer() {
           </div>
           <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8" />
           <div className="sm:flex sm:items-center sm:justify-between">
-              <span className="text-sm text-gray-500 sm:text-center ">© 2025 <Link href="https://flowbite.com/">Axion™</Link>. All Rights Reserved.
+              <span className="text-sm text-gray-500 sm:text-center ">© 2025 <Link href="">Axion™</Link>. All Rights Reserved.
               </span>
               <div className="flex mt-4 sm:justify-center sm:mt-0">
                   <Link href="#" className="text-gray-500 hover:text-gray-900 ">
