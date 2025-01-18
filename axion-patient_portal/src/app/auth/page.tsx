@@ -2,34 +2,13 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import ValidatedInput from "@/app/components/validatedInput";
+import {FormProvider} from "@/app/components/FormContext";
 
 const Auth: React.FC = () => {
     const [isActive, setIsActive] = useState(false);
 
     const [signUpStep, setSignUpStep] = useState(1);
-
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        mobileNumber: "",
-        nic: "",
-        dateOfBirth: "",
-        houseNumber: "",
-        street: "",
-        city: "",
-        district: "",
-        password: "",
-        confirmPassword: ""
-    });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
-    };
 
     const handleRegister = () => {
         setIsActive(true);
@@ -45,279 +24,77 @@ const Auth: React.FC = () => {
         switch (signUpStep) {
             case 1:
                 return (
-                    <>
+                    <FormProvider>
                         <h1 className="text-2xl font-bold text-gray-500 mb-8">Create Account</h1>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="firstName"
-                                id="firstName"
-                                placeholder="First Name"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="firstName"
-                            >
-                                First Name
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="lastName"
-                                id="lastName"
-                                placeholder="Last Name"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="lastName"
-                            >
-                                Last Name
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                placeholder="Email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="email"
-                            >
-                                Email
-                            </label>
-                        </div>
+                        <ValidatedInput name="firstName" type="text" placeholder="First Name" label="First Name" />
+                        <ValidatedInput name="lastName" type="text" placeholder="Last Name" label="Last Name" />
+                        <ValidatedInput name="email" type="email" placeholder="Email" label="Email" />
                         <button
                             className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4"
                             onClick={nextStep}
                         >
                             Next
                         </button>
-                    </>
+                    </FormProvider>
                 );
             case 2:
                 return (
-                    <>
+                    <FormProvider>
                         <h1 className="text-2xl font-bold text-gray-500 mb-8">Additional Information</h1>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="mobileNumber"
-                                id="mobileNumber"
-                                placeholder="Mobile Number"
-                                value={formData.mobileNumber}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="mobileNumber"
-                            >
-                                Mobile Number
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="nic"
-                                id="nic"
-                                placeholder="NIC"
-                                value={formData.nic}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="nic"
-                            >
-                                NIC
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="date"
-                                name="dateOfBirth"
-                                id="dateOfBirth"
-                                value={formData.dateOfBirth}
-                                onChange={handleChange}
-                                className="peer max-w-full mb-4 px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-25px] peer-focus:text-purple-600"
-                                htmlFor="dateOfBirth"
-                            >
-                                Date of Birth
-                            </label>
-                        </div>
+                        <ValidatedInput name="mobileNumber" type="text" placeholder="Mobile Number" label="Mobile Number" />
+                        <ValidatedInput name="nic" type="text" placeholder="NIC" label="NIC" />
+                        <ValidatedInput name="dateOfBirth" type="date" placeholder="Date of Birth" label="Date of Birth" />
                         <div className="flex space-x-4 mt-4">
-                            <button
-                                className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={prevStep}
-                            >
+                            <button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
                             </button>
-                            <button
-                                className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={nextStep}
-                            >
+                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={nextStep}>
                                 Next
                             </button>
                         </div>
-                    </>
+                    </FormProvider>
                 );
             case 3:
                 return (
-                    <>
-                        <h1 className="text-2xl font-bold text-gray-500 mb-5">Address Details</h1>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="houseNumber"
-                                id="houseNumber"
-                                placeholder="House Number"
-                                value={formData.houseNumber}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="houseNumber"
-                            >
-                                House Number
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="street"
-                                id="street"
-                                placeholder="Street"
-                                value={formData.street}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="street"
-                            >
-                                Street
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="city"
-                                id="city"
-                                placeholder="City"
-                                value={formData.city}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="city"
-                            >
-                                City
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="text"
-                                name="district"
-                                id="district"
-                                placeholder="District"
-                                value={formData.district}
-                                onChange={handleChange}
-                                className="peer w-full mb-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="district"
-                            >
-                                District
-                            </label>
-                        </div>
+                    <FormProvider>
+                        <h1 className="text-2xl font-bold text-gray-500 mb-8">Address Details</h1>
+                        <ValidatedInput name="houseNumber" type="text" placeholder="House Number" label="House Number" />
+                        <ValidatedInput name="street" type="text" placeholder="Street" label="Street" />
+                        <ValidatedInput name="city" type="text" placeholder="City" label="City" />
+                        <ValidatedInput name="district" type="text" placeholder="District" label="District" />
                         <div className="flex space-x-4 mt-4">
-                            <button
-                                className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={prevStep}
-                            >
+                            <button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
                             </button>
-                            <button
-                                className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={nextStep}
-                            >
+                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={nextStep}>
                                 Next
                             </button>
                         </div>
-                    </>
+                    </FormProvider>
                 );
             case 4:
                 return (
-                    <>
+                    <FormProvider>
                         <h1 className="text-2xl font-bold text-gray-500 mb-8">Set Password</h1>
-                        <div className="relative mb-3">
-                            <input
-                                type="password"
-                                name="password"
-                                id="password"
-                                placeholder="Password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="password"
-                            >
-                                Password
-                            </label>
-                        </div>
-                        <div className="relative mb-3">
-                            <input
-                                type="password"
-                                name="confirmPassword"
-                                id="confirmPassword"
-                                placeholder="Confirm Password"
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
-                                className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                            />
-                            <label
-                                className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                                htmlFor="confirmPassword"
-                            >
-                                Confirm Password
-                            </label>
-                        </div>
+                        <ValidatedInput name="password" type="password" placeholder="Password" label="Password" />
+                        <ValidatedInput name="confirmPassword" type="password" placeholder="Confirm Password" label="Confirm Password" />
                         <div className="flex space-x-4 mt-4">
-                            <button
-                                className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={prevStep}
-                            >
+                            <button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
                             </button>
-                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase">
+                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={handleSubmit}>
                                 Submit
                             </button>
                         </div>
-                    </>
+                    </FormProvider>
                 );
             default:
                 return null;
         }
+    };
+
+    const handleSubmit = async () => {
+        window.location.href = "/success";
     };
 
     const getProgressWidth = (step: number) => {
@@ -358,48 +135,15 @@ const Auth: React.FC = () => {
                 <div
                     className={`absolute top-0 left-0 w-1/2 h-full flex flex-col justify-center items-center transition-transform duration-700 ${isActive ? "opacity-0 z-0" : "translate-x-0 opacity-100 z-10"}`}
                 >
-                    <h1 className="text-2xl font-bold text-gray-500 mb-8">Sign In</h1>
-                    <div className="relative mb-3">
-                        <input
-                            type="text"
-                            name="nicNumber"
-                            id="nicNumber"
-                            placeholder="NIC Number"
-                            value={formData.nic}
-                            onChange={handleChange}
-                            className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                        />
-                        <label
-                            className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                            htmlFor="nicNumber"
-                        >
-                            NIC Number
-                        </label>
-                    </div>
-
-                    <div className="relative mb-3">
-                        <input
-                            type="password"
-                            name="password"
-                            id="password"
-                            placeholder="Password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="peer w-full mb-4 px-4 py-2 bg-gray-100 rounded-lg border border-gray-300 text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all duration-200 placeholder-transparent"
-                        />
-                        <label
-                            className="absolute py-2 left-4 text-gray-500 transform transition-all duration-200 peer-placeholder-shown:translate-y-0 peer-focus:translate-y-[-30px] peer-focus:text-purple-600"
-                            htmlFor="password"
-                        >
-                            Password
-                        </label>
-                    </div>
-                    <a href="#" className="text-sm text-blue-500 mb-4">
-                        Forget Your Password?
-                    </a>
-                    <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4">
-                        Sign In
-                    </button>
+                    <FormProvider>
+                        <h1 className="text-2xl font-bold text-gray-500 mb-8">Sign In</h1>
+                        <ValidatedInput name="nic" type="text" placeholder="NIC" label="NIC" />
+                        <ValidatedInput name="password" type="password" placeholder="Password" label="Password" />
+                        <a href="#" className="text-sm text-blue-500 mb-4">Forget Your Password?</a>
+                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4">
+                            Sign In
+                        </button>
+                    </FormProvider>
                 </div>
 
                 <div
