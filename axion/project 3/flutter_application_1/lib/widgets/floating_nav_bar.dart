@@ -26,24 +26,24 @@ class FloatingNavBar extends StatelessWidget {
           _navBarItem(icon: Icons.receipt_long, label: 'Reports', index: 1),
           _navBarItem(icon: Icons.bar_chart, label: 'Stats', index: 2),
           _navBarItem(icon: Icons.person, label: 'Profile', index: 3),
+
+          // NEW: The QR Link icon
+          _navBarItem(icon: Icons.qr_code, label: 'QR Link', index: 4),
         ],
       ),
     );
   }
 
   Widget _navBarItem({
-  required IconData icon,
-  required String label,
-  required int index,
-}) {
-  final bool isSelected = (currentIndex == index);
-  return GestureDetector(
-    onTap: () => onItemSelected(index),
-    behavior: HitTestBehavior.translucent, // Ensures taps are registered in the extended area
-    child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0), // Added padding for better clickability
+    required IconData icon,
+    required String label,
+    required int index,
+  }) {
+    final bool isSelected = (currentIndex == index);
+
+    return GestureDetector(
+      onTap: () => onItemSelected(index),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, color: isSelected ? Colors.blue : Colors.grey),
@@ -57,7 +57,6 @@ class FloatingNavBar extends StatelessWidget {
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 }
