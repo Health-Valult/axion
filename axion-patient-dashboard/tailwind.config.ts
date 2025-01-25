@@ -17,6 +17,7 @@ export default {
     },
   },
   plugins: [
-    nextui()
+    nextui(),
+    require('flowbite-typography'),
   ],
 } satisfies Config;
