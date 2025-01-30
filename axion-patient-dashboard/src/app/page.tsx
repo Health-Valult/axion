@@ -1,11 +1,16 @@
+"use client"
+
 import React from 'react'
-import Welcome from './elements/Welcome';
+import { Appointments } from './components/Appointments';
+
+
 
 const page: React.FC = () => {
   return (
-    <>
-      <Welcome />
-    </>
+    <div className='p-4 sm:ml-64 mt-14'>
+      <Appointments />
+    </div>
+
   )
 }
 

@@ -2,10 +2,6 @@
 
 import React from 'react'
 import {
-    Navbar,
-    NavbarBrand,
-    NavbarContent,
-    NavbarItem,
     Link,
     DropdownItem,
     DropdownTrigger,
@@ -101,13 +97,13 @@ import {
                                     isBordered
                                     as="button"
                                     className="transition-transform"
-                                    src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                                    src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
                                 />
                                 </DropdownTrigger>
                                 <DropdownMenu aria-label="Profile Actions" variant="flat">
                                 <DropdownItem key="profile" className="h-14 gap-2">
                                     <p className="font-semibold">Signed in as</p>
-                                    <p className="font-semibold">Dr. LeBron James</p>
+                                    <p className="font-semibold">Dr. Steven James</p>
                                 </DropdownItem>
                                 <DropdownItem key="settings">My Settings</DropdownItem>
                                 <DropdownItem key="team_settings">Team Settings</DropdownItem>

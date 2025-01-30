@@ -1,8 +1,7 @@
 "use client"
 
 import React from 'react'
-import {Calendar} from "@heroui/react";
-import {today, getLocalTimeZone} from "@internationalized/date";
+
 import WeightChart from '../elements/WeightChart';
 import BloodPressureChart from '../elements/BloodPressureChart';
 import { CholesterolChart } from '../elements/LipidProfileChart';
@@ -82,9 +81,6 @@ const dashboard: React.FC = () => {
 
     
                     <div className="col-span-1 flex flex-col gap-4">
-                        <div className="rounded bg-white p-4">
-                            <Calendar isReadOnly aria-label="Date (Read Only)" value={today(getLocalTimeZone())} />
-                        </div>
                         <div className="rounded bg-white p-4">
                             <Summary />
                         </div>
