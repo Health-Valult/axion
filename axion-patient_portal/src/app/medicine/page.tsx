@@ -1,6 +1,6 @@
 import React from "react";
 
-import MedicineCard from "./_MedicineCard";
+import MedicineCard from "../components/MedicineCard";
 
 const PatientMedicineList: React.FC = () => {
     const medicines = [

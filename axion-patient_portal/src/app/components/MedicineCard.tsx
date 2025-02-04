@@ -43,7 +43,7 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
     return (
         <div>
             <div
-                className="p-4 bg-white shadow-md rounded-lg flex items-center space-x-4 border border-gray-200 cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 mb-5"
+                className="p-4 bg-white shadow-md rounded-lg flex items-center space-x-4 border border-black cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 mb-5"
                 onClick={() => setModalOpen(true)}
             >
                 <Image
