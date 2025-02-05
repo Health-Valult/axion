@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import React from "react";
 import { ApexOptions } from "apexcharts";
 
-// Dynamically import ReactApexChart to avoid SSR issues
+
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const BloodPressureChart: React.FC = () => {
@@ -51,18 +51,17 @@ const BloodPressureChart: React.FC = () => {
       axisTicks: { show: false },
     },
     yaxis: { show: false },
+    colors: ["#1A56DB", "#FDBA8C"]
   };
 
   const series = [
     {
       name: "Systolic Pressure",
       data: [6500, 6418, 6456, 6526, 6356, 6456],
-      color: "#1A56DB",
     },
     {
       name: "Diastolic Pressure",
       data: [6800, 6318, 6426, 6126, 6396, 5946],
-      color: "#FDBA8C",
     },
   ];
 

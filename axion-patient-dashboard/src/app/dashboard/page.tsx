@@ -1,14 +1,15 @@
 "use client"
 
 import React from 'react'
+import dynamic from 'next/dynamic';
 
-import WeightChart from '../elements/WeightChart';
-import BloodPressureChart from '../elements/BloodPressureChart';
-import { CholesterolChart } from '../elements/LipidProfileChart';
-import { BloodSugarChart } from '../elements/BloodSugarChart';
-import Summary from '../elements/Summary';
+const WeightChart = dynamic(() => import("../elements/WeightChart"), { ssr: false });
+const BloodPressureChart = dynamic(() => import("../elements/BloodPressureChart"), { ssr: false });
+const CholesterolChart = dynamic(() => import("../elements/LipidProfileChart"), { ssr: false });
+const BloodSugarChart = dynamic(() => import("../elements/BloodSugarChart"), { ssr: false });
+const Summary = dynamic(() => import("../elements/Summary"), { ssr: false });
 
-const dashboard: React.FC = () => {
+const Dashboard: React.FC = () => {
     const sampleProps = {
         data: {
           normal: [1420, 1620, 1820, 1420, 1650, 2120], 
@@ -93,4 +94,4 @@ const dashboard: React.FC = () => {
   )
 }
 
-export default dashboard;
+export default Dashboard;

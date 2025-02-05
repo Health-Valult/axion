@@ -8,7 +8,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
   });
 
-export const BloodSugarChart = ({ data, bloodGlucose, risk, categories }: { data: any, bloodGlucose: any, risk: any, categories: any }) => {
+const BloodSugarChart = ({ data, bloodGlucose, risk, categories }: { data: any, bloodGlucose: any, risk: any, categories: any }) => {
   React.useEffect(() => {
     const options = {
       series: [
@@ -159,3 +159,4 @@ export const BloodSugarChart = ({ data, bloodGlucose, risk, categories }: { data
   );
 };
 
+export default BloodSugarChart;

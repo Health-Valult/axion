@@ -57,7 +57,7 @@ const History:React.FC = () => {
             <AccordionItem 
               key={note.id} 
               aria-label={`Accordion ${note.id}`} 
-              title={`Note ${note.id}`}
+              title={`${note.indication} by ${note.name}`}
             >
               <DoctorsNote
                   name={note.name}

@@ -7,7 +7,7 @@ import { ApexOptions } from "apexcharts";
 // Dynamically load ApexCharts to avoid SSR issues
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-export const CholesterolChart = ({ data }: {data: any}) => {
+const LipidProfileChart = ({ data }: {data: any}) => {
   const chartType: 'line' | 'bar' | 'area' = 'line';
   const options: ApexOptions = {
     chart: {
@@ -100,3 +100,5 @@ export const CholesterolChart = ({ data }: {data: any}) => {
     </div>
   );
 };
+
+export default LipidProfileChart;
