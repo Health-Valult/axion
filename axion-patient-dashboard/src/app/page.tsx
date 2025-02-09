@@ -1,17 +1,15 @@
-"use client"
+'use client';
 
-import React from 'react'
-import { Appointments } from './components/Appointments';
-
-
+import AppointmentScheduler from './components/AppointmentScheduler';
+import SearchBar from './elements/SearchBar';
 
 const page: React.FC = () => {
-  return (
-    <div className='p-4 sm:ml-64 mt-14'>
-      <Appointments />
-    </div>
-
-  )
-}
+	return (
+		<div className="p-4 flex flex-1 bg-white rounded-l-sm h-full overflow-y-auto gap-x-8">
+			<SearchBar />
+			<AppointmentScheduler />
+		</div>
+	);
+};
 
 export default page;
