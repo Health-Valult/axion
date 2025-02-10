@@ -2,6 +2,9 @@ import React from 'react';
 import { Patient } from '../models/types/Patient';
 import { AsyncSelect } from '@/components/ui/async-select';
 import { Avatar } from '@heroui/react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store/store';
+import { selectPatient } from '../store/patientSlice';
 
 const patients: Patient[] = [
 	{
@@ -35,7 +38,7 @@ const patients: Patient[] = [
 			{
 				id: 1,
 				name: 'Pain Management',
-				dateTime: '2024-02-01',
+				dateTime: '2024-02-01T00:45[America/Los_Angeles]',
 				indication: 'Symptoms',
 				content: 'Prescribed Ibuprofen for headache relief',
 				treatment: ['Ibuprofen 200mg twice daily'],
@@ -55,12 +58,13 @@ const patients: Patient[] = [
 		diagnosedAilments: [
 			{
 				disease: 'Migraine',
+				currentMedication: 'Paracetamol 400mg',
 				progression: [
 					{
 						date: '2024-01-10',
 						doctor: {
 							name: 'Dr. Smith',
-							desgination: 'Neurologist',
+							designation: 'Neurologist',
 							email: 'dr.smith@hospital.com',
 						},
 						update: 'Mild migraines diagnosed, advised lifestyle modifications.',
@@ -100,14 +104,39 @@ const patients: Patient[] = [
 			{
 				id: 2,
 				name: 'Flu Treatment',
-				dateTime: '2024-02-05',
+				dateTime: '2024-02-05T00:45[America/Los_Angeles]',
 				indication: 'Diagnosis',
 				content: 'Prescribed rest and hydration',
 				treatment: ['Paracetamol 500mg every 6 hours'],
 			},
 		],
 		medicalRecords: [],
-		diagnosedAilments: [],
+		diagnosedAilments: [
+			{
+				disease: 'Hyperlipidemia',
+				currentMedication: 'Atorvastatin 20mg',
+				progression: [
+					{
+						date: '2021-02-15',
+						update: 'Diagnosed with Hyperlipidemia',
+						doctor: {
+							name: 'Dr. Garcia',
+							designation: 'Cardiologist',
+							email: 'garcia@example.com',
+						},
+					},
+					{
+						date: '2021-02-16',
+						update: 'Started Atorvastatin 20mg',
+						doctor: {
+							name: 'Dr. Garcia',
+							designation: 'Cardiologist',
+							email: 'garcia@example.com',
+						},
+					},
+				],
+			},
+		],
 	},
 	{
 		id: '4561499877',
@@ -140,14 +169,48 @@ const patients: Patient[] = [
 			{
 				id: 3,
 				name: 'Pain Management',
-				dateTime: '2024-01-20',
+				dateTime: '2024-01-20T00:45[America/Los_Angeles]',
 				indication: 'Symptoms',
 				content: 'Prescribed physiotherapy and painkillers',
 				treatment: ['Physiotherapy, Ibuprofen'],
 			},
 		],
 		medicalRecords: [],
-		diagnosedAilments: [],
+		diagnosedAilments: [
+			{
+				disease: 'Chronic Kidney Disease',
+				currentMedication: 'Losartan 50mg',
+				progression: [
+					{
+						date: '2018-07-10',
+						update: 'Diagnosed with CKD Stage 2',
+						doctor: {
+							name: 'Dr. Martinez',
+							designation: 'Nephrologist',
+							email: 'martinez@example.com',
+						},
+					},
+					{
+						date: '2019-03-05',
+						update: 'Started Losartan 50mg',
+						doctor: {
+							name: 'Dr. Martinez',
+							designation: 'Nephrologist',
+							email: 'martinez@example.com',
+						},
+					},
+					{
+						date: '2022-12-18',
+						update: 'CKD progressed to Stage 3',
+						doctor: {
+							name: 'Dr. Hernandez',
+							designation: 'Nephrologist',
+							email: 'hernandez@example.com',
+						},
+					},
+				],
+			},
+		],
 	},
 	{
 		id: '6664826871',
@@ -180,7 +243,7 @@ const patients: Patient[] = [
 			{
 				id: 1,
 				name: 'Pain Management',
-				dateTime: '2024-02-01',
+				dateTime: '2024-02-01T00:45[America/Los_Angeles]',
 				indication: 'Symptoms',
 				content: 'Prescribed Ibuprofen for headache relief',
 				treatment: ['Ibuprofen 200mg twice daily'],
@@ -188,7 +251,7 @@ const patients: Patient[] = [
 			{
 				id: 2,
 				name: 'Hypertension Control',
-				dateTime: '2023-09-15',
+				dateTime: '2023-09-15T00:45[America/Los_Angeles]',
 				indication: 'Diagnosis',
 				content: 'Started on Lisinopril 10mg daily',
 				treatment: ['Lisinopril 10mg daily', 'Low-sodium diet'],
@@ -217,12 +280,13 @@ const patients: Patient[] = [
 		diagnosedAilments: [
 			{
 				disease: 'Migraine',
+				currentMedication: 'Ibuprofen 200mg PRN',
 				progression: [
 					{
 						date: '2024-01-10',
 						doctor: {
 							name: 'Dr. Smith',
-							desgination: 'Neurologist',
+							designation: 'Neurologist',
 							email: 'dr.smith@hospital.com',
 						},
 						update: 'Mild migraines diagnosed, advised lifestyle modifications.',
@@ -231,12 +295,13 @@ const patients: Patient[] = [
 			},
 			{
 				disease: 'Hypertension',
+				currentMedication: 'Amlodipine 5mg daily',
 				progression: [
 					{
 						date: '2023-09-15',
 						doctor: {
 							name: 'Dr. James',
-							desgination: 'Cardiologist',
+							designation: 'Cardiologist',
 							email: 'dr.james@hospital.com',
 						},
 						update: 'Diagnosed with stage 1 hypertension, started on medication.',
@@ -276,7 +341,7 @@ const patients: Patient[] = [
 			{
 				id: 3,
 				name: 'Flu Treatment',
-				dateTime: '2024-02-05',
+				dateTime: '2024-02-05T00:45[America/Los_Angeles]',
 				indication: 'Diagnosis',
 				content: 'Prescribed rest and hydration',
 				treatment: ['Paracetamol 500mg every 6 hours'],
@@ -295,16 +360,44 @@ const patients: Patient[] = [
 		],
 		diagnosedAilments: [
 			{
-				disease: 'Influenza',
+				disease: 'Type 2 Diabetes',
+				currentMedication: 'Metformin 500mg',
 				progression: [
 					{
-						date: '2024-02-05',
+						date: '2020-05-12',
+						update: 'Diagnosed with Type 2 Diabetes',
 						doctor: {
-							name: 'Dr. Green',
-							desgination: 'General Physician',
-							email: 'dr.green@clinic.com',
+							name: 'Dr. Smith',
+							designation: 'Neurologist',
+							email: 'smith@example.com',
 						},
-						update: 'Mild flu symptoms, self-limiting illness expected.',
+					},
+					{
+						date: '2020-05-13',
+						update: 'Started Metformin 500mg BID',
+						doctor: {
+							name: 'Dr. Smith',
+							designation: 'Neurologist',
+							email: 'smith@example.com',
+						},
+					},
+					{
+						date: '2021-06-20',
+						update: 'Increased Metformin to 1000mg BID',
+						doctor: {
+							name: 'Dr. Johnson',
+							designation: 'Endocrinologist',
+							email: 'johnson@example.com',
+						},
+					},
+					{
+						date: '2023-01-10',
+						update: 'Started Insulin (Long-Acting) at 10 units/day',
+						doctor: {
+							name: 'Dr. Williams',
+							designation: 'Endocrinologist',
+							email: 'williams@example.com',
+						},
 					},
 				],
 			},
@@ -341,7 +434,7 @@ const patients: Patient[] = [
 			{
 				id: 4,
 				name: 'Diabetes Management',
-				dateTime: '2022-07-15',
+				dateTime: '2022-07-15T00:45[America/Los_Angeles]',
 				indication: 'Diagnosis',
 				content: 'Started on Metformin for blood sugar control.',
 				treatment: ['Metformin 500mg twice daily'],
@@ -371,16 +464,35 @@ const patients: Patient[] = [
 		],
 		diagnosedAilments: [
 			{
-				disease: 'Type 2 Diabetes',
+				disease: 'Coronary Artery Disease',
+				currentMedication: 'Clopidogrel 75mg',
 				progression: [
 					{
-						date: '2022-07-15',
+						date: '2017-09-28',
+						update: 'Diagnosed with CAD',
 						doctor: {
-							name: 'Dr. Patel',
-							desgination: 'Endocrinologist',
-							email: 'dr.patel@diabetesclinic.com',
+							name: 'Dr. Wilson',
+							designation: 'Cardiologist',
+							email: 'wilson@example.com',
 						},
-						update: 'Started on Metformin, advised dietary changes.',
+					},
+					{
+						date: '2017-10-01',
+						update: 'Started Clopidogrel 75mg',
+						doctor: {
+							name: 'Dr. Wilson',
+							designation: 'Cardiologist',
+							email: 'wilson@example.com',
+						},
+					},
+					{
+						date: '2020-06-15',
+						update: 'Underwent Coronary Angioplasty',
+						doctor: {
+							name: 'Dr. Lee',
+							designation: 'Cardiologist',
+							email: 'lee@example.com',
+						},
 					},
 				],
 			},
@@ -404,7 +516,21 @@ const searchPatients = async (query?: string): Promise<Patient[]> => {
 
 // Basic Demo
 const SearchBar: React.FC = () => {
-	const [selectedPatient, setSelectedPatient] = React.useState('');
+	// const [selectedPatient, setSelectedPatient] = React.useState('');
+
+	const dispatch = useDispatch();
+	const selectedPatient = useSelector(
+		(state: RootState) => state.patient.state
+	);
+
+	const handleSelectPatient = (patient: Patient | null) => {
+		if (patient) {
+			dispatch(selectPatient({ state: patient }));
+			console.log(patient);
+		} else {
+			dispatch(selectPatient({ state: null }));
+		}
+	};
 
 	return (
 		<div className="flex flex-col gap-2">
@@ -433,7 +559,7 @@ const SearchBar: React.FC = () => {
 						<Avatar
 							isBordered
 							name={patient.firstName}
-							className="transition-transform h-24 w-24 flex-shrink-0 rounded-full"
+							className="transition-transform h-7 w-7 flex-shrink-0 rounded-md"
 							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
 						/>
 						<div className="flex flex-col leading-tight">
@@ -451,12 +577,15 @@ const SearchBar: React.FC = () => {
 				}
 				label="Patient"
 				placeholder="Search patients..."
-				value={selectedPatient}
-				onChange={setSelectedPatient}
+				value={selectedPatient?.id || ''}
+				onChange={(patientId) => {
+					const patient = patients.find((p) => p.id === patientId);
+					handleSelectPatient(patient || null);
+				}}
 				width="375px"
 			/>
 			<p className="text-sm text-muted-foreground">
-				Selected Patient ID: {selectedPatient || 'none'}
+				Selected Patient ID: {selectedPatient?.id || 'none'}
 			</p>
 		</div>
 	);

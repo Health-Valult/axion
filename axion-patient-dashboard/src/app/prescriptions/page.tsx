@@ -4,6 +4,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Form, Input, Button } from '@heroui/react';
 import { DatePicker } from '@heroui/react';
 import { DateRangePicker } from '@heroui/react';
+import {
+	Dropdown,
+	DropdownTrigger,
+	DropdownMenu,
+	DropdownItem,
+} from '@heroui/react';
 import { Chip, Avatar } from '@heroui/react';
 import { Textarea } from '@heroui/react';
 import { RadioGroup, Radio, cn } from '@heroui/react';
@@ -18,6 +24,33 @@ const Prescriptions: React.FC = () => {
 	);
 
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+	const dosageInstructions = [
+		{ key: 'OD', label: 'Once daily', sig: 'Take once per day' },
+		{
+			key: 'BID',
+			label: 'Twice daily',
+			sig: 'Take every 12 hours (twice a day)',
+		},
+		{
+			key: 'TID',
+			label: 'Thrice daily',
+			sig: 'Take every 8 hours (three times a day)',
+		},
+		{
+			key: 'QID',
+			label: 'Four times daily',
+			sig: 'Take every 6 hours (four times a day)',
+		},
+		{ key: 'qXh', label: 'Every X hours', sig: 'Take every X hours' },
+		{ key: 'OW', label: 'Once a week', sig: 'Take once per week' },
+		{ key: 'PRN', label: 'As needed', sig: 'Take only when necessary' },
+		{ key: 'AC', label: 'Before meals', sig: 'Take before eating' },
+		{ key: 'PC', label: 'After meals', sig: 'Take after eating' },
+		{ key: 'HS', label: 'At bedtime', sig: 'Take before sleeping' },
+		{ key: 'CC', label: 'With food', sig: 'Take with meals' },
+		{ key: 'SF', label: 'Without food', sig: 'Take on an empty stomach' },
+	];
 
 	// const [medicine, setMedicine] = useState([]);
 	// const [selectedDescription, setSelectedDescription] = useState("");
@@ -57,6 +90,10 @@ const Prescriptions: React.FC = () => {
 	};
 
 	const [selectedIndication, setSelectedIndication] = useState('');
+
+	const [dosageInstruction, setDosageInstruction] = useState(
+		'Set Dosage Instructions'
+	);
 
 	useEffect(() => {
 		setDefaultDate(now(getLocalTimeZone())); // Ensures it only runs on the client
@@ -454,7 +491,7 @@ const Prescriptions: React.FC = () => {
 					</div>
 
 					<Autocomplete
-						className="max-w-xs"
+						className="max-w-md"
 						defaultItems={medicine}
 						label="Treatment"
 						labelPlacement="outside"
@@ -502,17 +539,37 @@ const Prescriptions: React.FC = () => {
 						)}
 					</Autocomplete>
 
-					<Textarea
-						isRequired
-						isMultiline
-						variant="bordered"
-						minRows={3}
-						errorMessage="Please enter valid directions"
-						label="Sig"
-						labelPlacement="outside"
-						name="directions"
-						placeholder="Enter clear dosage directions"
-					/>
+					<Dropdown backdrop="blur">
+						<DropdownTrigger>
+							<Button variant="bordered">
+								{dosageInstruction}
+							</Button>
+						</DropdownTrigger>
+						<DropdownMenu
+							aria-label="Dosage Instructions"
+							variant="faded"
+							selectionMode="single"
+							selectedKeys={new Set([dosageInstruction])} // Wrap in Set
+							onSelectionChange={(keys) => {
+								const selectedKey = Array.from(keys)[0]; // Extract selected value
+								const selectedLabel = dosageInstructions.find(
+									(instruction) =>
+										instruction.key === selectedKey
+								)?.label;
+								if (selectedLabel)
+									setDosageInstruction(selectedLabel); // Update state
+							}}
+						>
+							{dosageInstructions.map((instruction) => (
+								<DropdownItem
+									key={instruction.key}
+									description={instruction.sig}
+								>
+									{instruction.label}
+								</DropdownItem>
+							))}
+						</DropdownMenu>
+					</Dropdown>
 
 					<div className="flex w-full flex-wrap md:flex-nowrap gap-4">
 						<DateRangePicker

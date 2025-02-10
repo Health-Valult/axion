@@ -22,12 +22,13 @@ interface Record {
 
 interface Physician {
     name: string,
-    desgination: string,
+    designation: string,
     email: string
 };
 
-interface DiagnosedAilment {
+export interface DiagnosedAilment {
     disease: string,
+    currentMedication: string,
     progression: { date: string, doctor: Physician, update: string }[] 
 };
 

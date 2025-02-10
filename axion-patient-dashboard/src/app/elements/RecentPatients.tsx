@@ -1,181 +1,88 @@
-import { Accordion, AccordionItem } from '@heroui/react';
+'use client';
+
+import { Card, CardBody } from '@heroui/react';
+import { motion } from 'framer-motion';
 
 const RecentPatients = () => {
-	const itemClasses = {
-		base: 'py-0 w-full',
-		title: 'font-normal text-medium',
-		trigger:
-			'px-2 py-0 data-[hover=true]:bg-default-100 rounded-lg h-14 flex items-center',
-		indicator: 'text-medium',
-		content: 'text-small px-2',
-	};
+	const recentPatients = [
+		{
+			name: 'John Doe',
+			conditionSummary:
+				'Diagnosed with Type 2 Diabetes, managing with Metformin.',
+			checkupSummary:
+				'Routine checkup, stable blood sugar levels, advised dietary adjustments.',
+		},
+		{
+			name: 'Jane Smith',
+			conditionSummary:
+				'Hypertension and mild hyperlipidemia, controlled with medication.',
+			checkupSummary:
+				'Blood pressure slightly elevated, increased Lisinopril dosage.',
+		},
+		{
+			name: 'Robert Johnson',
+			conditionSummary:
+				'Recovering from coronary angioplasty, on Clopidogrel.',
+			checkupSummary:
+				'No complications observed, advised regular exercise and healthy diet.',
+		},
+		{
+			name: 'Emily Davis',
+			conditionSummary:
+				'Migraine episodes, currently managed with lifestyle modifications.',
+			checkupSummary:
+				'Reduced migraine frequency, prescribed preventive medication.',
+		},
+		{
+			name: 'Michael Lee',
+			conditionSummary:
+				'Chronic kidney disease, stage 3, on Losartan therapy.',
+			checkupSummary:
+				'Renal function stable, continued monitoring recommended.',
+		},
+		{
+			name: 'John Park',
+			conditionSummary:
+				'Chronic kidney disease, stage 3, on Losartan therapy.',
+			checkupSummary:
+				'Renal function stable, continued monitoring recommended.',
+		},
+	];
 
-	const defaultContent = 'Brief summary about patient';
 	return (
-		<div className="flex justify-center items-center mt-14">
-			{/* <section className=" ">
-            <ul className="max-w-md divide-y divide-gray-200 ">
-                <li className="pb-3 sm:pb-4">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                        <div className="shrink-0">
-                            <img src='https://i.pravatar.cc/300?u=a042581f4e29026709d' className="w-8 h-8 rounded-full"  alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate ">
-                            Neil Sims
-                            </p>
-                            <p className="text-sm text-gray-500 truncate ">
-                            Cardiac Patient
-                            </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                            3201354
-                        </div>
-                    </div>
-                </li>
-                <li className="py-3 sm:py-4">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                        <div className="shrink-0">
-                            <img src='https://i.pravatar.cc/300?u=a042581f4e29026709d' className="w-8 h-8 rounded-full"  alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                            Bonnie Green
-                            </p>
-                            <p className="text-sm text-gray-500 truncate ">
-                            Cardiac Patient
-                            </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                            3467165
-                        </div>
-                    </div>
-                </li>
-                <li className="py-3 sm:py-4">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                        <div className="shrink-0">
-                            <img src='https://i.pravatar.cc/300?u=a042581f4e29026709d' className="w-8 h-8 rounded-full"  alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                            Michael Gough
-                            </p>
-                            <p className="text-sm text-gray-500 truncate ">
-                            Cholestrol Patient
-                            </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                            6564798
-                        </div>
-                    </div>
-                </li>
-                <li className="py-3 sm:py-4">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                        <div className="shrink-0">
-                            <img src='https://i.pravatar.cc/300?u=a042581f4e29026709d' className="w-8 h-8 rounded-full"  alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                            Thomas Lean
-                            </p>
-                            <p className="text-sm text-gray-500 truncate ">
-                            Cardiac Patient
-                            </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                            2367235
-                        </div>
-                    </div>
-                </li>
-                <li className="pt-3 pb-0 sm:pt-4">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                        <div className="shrink-0">
-                            <img src='https://i.pravatar.cc/300?u=a042581f4e29026709d' className="w-8 h-8 rounded-full"  alt="Neil image" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                            Lana Byrd
-                            </p>
-                            <p className="text-sm text-gray-500 truncate ">
-                            Diabetes Patient
-                            </p>
-                        </div>
-                        <div className="inline-flex items-center text-base font-semibold text-gray-900">
-                            3675641
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </section> */}
-			<Accordion
-				className="p-2 flex flex-col gap-1 w-full max-w-[300px]"
-				itemClasses={itemClasses}
-				showDivider={false}
-				variant="shadow"
-			>
-				<AccordionItem
-					key="1"
-					aria-label="Neil Sims"
-					startContent={
-						<img
-							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-							className="w-8 h-8 rounded-full"
-							alt="Neil image"
-						/>
-					}
-					subtitle={<p className="flex">Cardiac Patient</p>}
-					title="Neil Sims"
-				>
-					{defaultContent}
-				</AccordionItem>
-				<AccordionItem
-					key="2"
-					aria-label="Bonnie Green"
-					startContent={
-						<img
-							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-							className="w-8 h-8 rounded-full"
-							alt="Neil image"
-						/>
-					}
-					subtitle="Cardiac Patient"
-					title="Bonnie Green"
-				>
-					{defaultContent}
-				</AccordionItem>
-				<AccordionItem
-					key="3"
-					aria-label="Michael Gough"
-					classNames={{ subtitle: 'text-warning' }}
-					startContent={
-						<img
-							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-							className="w-8 h-8 rounded-full"
-							alt="Neil image"
-						/>
-					}
-					subtitle="Cholesterol Patient"
-					title="Michael Gough"
-				>
-					{defaultContent}
-				</AccordionItem>
-				<AccordionItem
-					key="4"
-					aria-label="Lana Byrd"
-					classNames={{ subtitle: 'text-danger' }}
-					startContent={
-						<img
-							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-							className="w-8 h-8 rounded-full"
-							alt="Neil image"
-						/>
-					}
-					subtitle="Diabetes Patient"
-					title={<p className="flex gap-1 items-center">Lana Byrd</p>}
-				>
-					{defaultContent}
-				</AccordionItem>
-			</Accordion>
+		<div className="bg-white text-center">
+			<span className="font-bold items-center justify-center mx-auto">
+				Recent Patient Checkups
+			</span>
+			<div className="grid grid-cols-3 gap-4 p-4">
+				{recentPatients.map((patient, index) => (
+					<motion.div
+						key={index}
+						whileHover={{
+							scale: 1.05,
+							boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.1)',
+						}}
+						transition={{ duration: 0.3 }}
+						className="rounded-lg shadow-md overflow-hidden bg-white"
+					>
+						<motion.div
+							whileHover={{ scale: 1.02 }}
+							transition={{ duration: 0.3 }}
+							className="rounded-lg overflow-hidden"
+						>
+							<Card className="rounded-lg shadow-md bg-white">
+								<CardBody>
+									<h5 className="font-semibold">
+										{patient.name}
+									</h5>
+									<p>{patient.checkupSummary}</p>
+									<p>{patient.conditionSummary}</p>
+								</CardBody>
+							</Card>
+						</motion.div>
+					</motion.div>
+				))}
+			</div>
 		</div>
 	);
 };
