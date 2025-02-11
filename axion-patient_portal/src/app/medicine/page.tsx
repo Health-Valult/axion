@@ -1,6 +1,16 @@
-import React from "react";
+"use client"
 
-import MedicineCard from "../components/MedicineCard";
+import React from "react";
+import MedicineCard from "@/app/components/MedicineCard";
+import SidebarLayout from "@/app/components/Layout";
+
+export default function MedicineLayout() {
+    return (
+        <SidebarLayout>
+            <PatientMedicineList />
+        </SidebarLayout>
+    );
+}
 
 const PatientMedicineList: React.FC = () => {
     const medicines = [
@@ -27,7 +37,7 @@ const PatientMedicineList: React.FC = () => {
     ];
 
     return (
-        <div className="p-4 bg-gray-50 min-h-screen">
+        <div className="p-4 min-h-screen">
             <h1 className="text-2xl text-purple-900 font-bold mb-4">Prescribed Medicines</h1>
             {medicines.map((medicine, index) => (
                 <MedicineCard key={index} medicine={medicine} />
@@ -35,5 +45,3 @@ const PatientMedicineList: React.FC = () => {
         </div>
     );
 };
-
-export default PatientMedicineList;

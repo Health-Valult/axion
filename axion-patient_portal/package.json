@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-pdf-viewer/core": "^3.12.0",
     "@react-pdf-viewer/default-layout": "^3.12.0",
+    "lucide-react": "^0.474.0",
     "next": "15.1.4",
     "pdfjs": "^2.5.3",
     "pdfjs-dist": "^3.11.174",

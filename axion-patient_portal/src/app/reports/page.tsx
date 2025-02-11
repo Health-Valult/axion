@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import ReportCard from "../components/ReportCard";
-import ReportModal from "../components/ReportModal";
+import React, { useState } from "react";
+import ReportCard from "@/app/components/ReportCard";
+import ReportModal from "@/app/components/ReportModal";
+import SidebarLayout from "@/app/components/Layout";
+
+export default function ReportsLayout() {
+    return (
+        <SidebarLayout>
+            <ReportsPage />
+        </SidebarLayout>
+    );
+}
 
 interface Report {
     id: number;
@@ -29,7 +38,7 @@ const reports: Report[] = [
     },
 ];
 
-export default function ReportsPage() {
+function ReportsPage() {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
     return (

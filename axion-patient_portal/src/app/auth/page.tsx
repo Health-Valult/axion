@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+
 import Image from "next/image";
+
 import ValidatedInput from "@/app/components/validatedInput";
 import {FormProvider} from "@/app/components/FormContext";
 
@@ -94,7 +96,7 @@ const Auth: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        window.location.href = "/success";
+        window.location.href = "/";
     };
 
     const getProgressWidth = (step: number) => {
