@@ -21,9 +21,11 @@ class User(BaseModel):
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     
 
+class Userlg(BaseModel):
+    Email:EmailStr
+    Password:Annotated[str,AfterValidator(PasswordValidator)]
+
+class validation(BaseModel):
+    Token:str
 
 
-
-
-
-   #
