@@ -3,6 +3,7 @@
 import React from "react";
 import MedicineCard from "@/app/components/MedicineCard";
 import SidebarLayout from "@/app/components/Layout";
+import Image from "next/image";
 
 export default function MedicineLayout() {
     return (
@@ -38,6 +39,15 @@ const PatientMedicineList: React.FC = () => {
 
     return (
         <div className="p-4 min-h-screen">
+            <div className="flex-1 text-center">
+                <Image
+                    src="/logo-with-text-black.png"
+                    alt="Logo"
+                    width={160}
+                    height={160}
+                    className="mx-auto mb-4"
+                />
+            </div>
             <h1 className="text-2xl text-purple-900 font-bold mb-4">Prescribed Medicines</h1>
             {medicines.map((medicine, index) => (
                 <MedicineCard key={index} medicine={medicine} />

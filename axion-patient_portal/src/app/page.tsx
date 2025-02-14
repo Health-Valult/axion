@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Bell, User } from "lucide-react";
 
 import Image from "next/image";
+import Link from "next/link";
 import SidebarLayout from "@/app/components/Layout";
 
 export default function DashboardLayout() {
@@ -67,7 +68,9 @@ const Dashboard = () => {
                 </div>
                 <div className="flex items-center space-x-4 text-black">
                     <Bell size={24} />
-                    <User size={24} />
+                    <Link href="/profile">
+                        <User size={24} />
+                    </Link>
                 </div>
             </div>
 
