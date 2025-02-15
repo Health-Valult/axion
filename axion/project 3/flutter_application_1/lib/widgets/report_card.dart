@@ -69,7 +69,7 @@ class ReportCard extends StatelessWidget {
                         const SizedBox(width: 16),
                         Text(
                           timeString,
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.blueGrey),
                         ),
                       ],
                     ),

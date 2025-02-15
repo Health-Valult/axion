@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/report.dart';
 import 'package:flutter_application_1/pages/report_detail_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -54,14 +56,15 @@ class _ReportsPageState extends State<ReportsPage> {
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+     final loc = AppLocalizations.of(context)!;
     final sortedDates = getDatesInYear();
     final displayedReports = getDisplayedReports();
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('My Reports'),
+        backgroundColor:Theme.of(context).cardColor,
+        title: Text(loc.myReports),
         centerTitle: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -82,7 +85,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -98,12 +101,12 @@ class _ReportsPageState extends State<ReportsPage> {
                         ),
                         margin: const EdgeInsets.only(left: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[850],
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '$_selectedYear',
-                          style: const TextStyle(color: Colors.white),
+                          
                         ),
                       ),
                     ),
@@ -117,7 +120,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         ),
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
-                          color: Colors.grey[850],
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -125,10 +128,10 @@ class _ReportsPageState extends State<ReportsPage> {
                           children: [
                             Text(
                               _selectedDate == null
-                                  ? 'Select Date'
+                                  ? loc.selectDate
                                   : '${_selectedDate!.month.toString().padLeft(2, '0')}/'
                                     '${_selectedDate!.day.toString().padLeft(2, '0')}',
-                              style: const TextStyle(color: Colors.white),
+                              
                             ),
 
                             // Show a small 'clear' icon only if a date is selected
@@ -143,7 +146,7 @@ class _ReportsPageState extends State<ReportsPage> {
                                   child: Icon(
                                     Icons.close,
                                     size: 16,
-                                    color: Colors.grey[300],
+                                    
                                   ),
                                 ),
                               ),
@@ -158,15 +161,12 @@ class _ReportsPageState extends State<ReportsPage> {
               // -----------------------------------------------------------------
               // If no reports for this year
               // -----------------------------------------------------------------
-              if (sortedDates.isEmpty)
-                const Text(
-                  'No reports found for this year.',
-                  style: TextStyle(color: Colors.grey),
-                )
+               if (sortedDates.isEmpty)
+                Text(loc.noReportsForYear)
               else
-                const Text(
-                  'Recently saved reports',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  loc.recentReports,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
 
               // -----------------------------------------------------------------
@@ -197,7 +197,7 @@ class _ReportsPageState extends State<ReportsPage> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.blue : Colors.grey[850],
+                            color: isSelected ? Colors.deepOrange : Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text('$monthName $day'),
@@ -216,14 +216,11 @@ class _ReportsPageState extends State<ReportsPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(
-                    child: Text(
-                      'No reports for this date.',
-                      style: TextStyle(color: Colors.grey),
-                    ),
+                  child: Center(
+                    child: Text(loc.noReportsForDate),
                   ),
                 ),
 
@@ -276,23 +273,26 @@ class _ReportsPageState extends State<ReportsPage> {
   // No reports popup
   // ---------------------------------------------------------------------------
   void _showNoReportsPopup() {
+    final loc = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (_) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: const Text('No Reports Found'),
-          content: const Text('There are no reports for that date.'),
+          backgroundColor: Theme.of(context).cardColor,
+          title: Text(loc.noReportsFound), // Localized title
+          content: Text(loc.noReportsForDate), // Localized content
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text(loc.ok), // Localized OK button
             ),
           ],
         );
       },
     );
   }
+
 
   // ---------------------------------------------------------------------------
   // Tapping a date chip
@@ -323,7 +323,7 @@ class _ReportsPageState extends State<ReportsPage> {
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2B2B2B),
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -337,7 +337,7 @@ class _ReportsPageState extends State<ReportsPage> {
               return ListTile(
                 title: Text(
                   year.toString(),
-                  style: const TextStyle(color: Colors.white),
+                  
                 ),
                 onTap: () {
                   setState(() {
@@ -404,7 +404,7 @@ class _ReportsPageState extends State<ReportsPage> {
     final timeString = '$hour:$minute';
 
     return Card(
-      color: const Color(0xFF1A1A1A),
+      color: Theme.of(context).cardColor,
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2, // small shadow
@@ -459,7 +459,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         const SizedBox(width: 16),
                         Text(
                           timeString,
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.blueGrey),
                         ),
                       ],
                     ),

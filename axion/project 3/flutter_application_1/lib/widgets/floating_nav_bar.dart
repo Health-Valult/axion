@@ -12,23 +12,22 @@ class FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       height: 60,
       width: MediaQuery.of(context).size.width * 0.9,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        borderRadius: BorderRadius.circular(30),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(29),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _navBarItem(icon: Icons.home, label: 'Home', index: 0),
-          _navBarItem(icon: Icons.receipt_long, label: 'Reports', index: 1),
-          _navBarItem(icon: Icons.bar_chart, label: 'Stats', index: 2),
-          _navBarItem(icon: Icons.person, label: 'Profile', index: 3),
-
-          // NEW: The QR Link icon
-          _navBarItem(icon: Icons.qr_code, label: 'QR Link', index: 4),
+          _navBarItem(icon: Icons.receipt_long, index: 1),
+          _navBarItem(icon: Icons.bar_chart,  index: 2),
+          _navBarItem(icon: Icons.home,  index: 0),
+          _navBarItem(icon: Icons.qr_code,  index: 4),
+          _navBarItem(icon: Icons.person, index: 3),
         ],
       ),
     );
@@ -36,7 +35,6 @@ class FloatingNavBar extends StatelessWidget {
 
   Widget _navBarItem({
     required IconData icon,
-    required String label,
     required int index,
   }) {
     final bool isSelected = (currentIndex == index);
@@ -46,15 +44,9 @@ class FloatingNavBar extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: isSelected ? Colors.blue : Colors.grey),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-          ),
+          Icon(icon, color: isSelected ? Colors.blue : Colors.grey, size: 32,),
+          const SizedBox(height: 0),
+          
         ],
       ),
     );

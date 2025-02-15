@@ -15,7 +15,7 @@ class DetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
-        backgroundColor: Colors.black,
+        
       ),
       body: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),

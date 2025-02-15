@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/report.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ReportDetailPage extends StatelessWidget {
   final Report report;
@@ -11,6 +12,7 @@ class ReportDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final dateString =
         '${report.dateTime.month.toString().padLeft(2, '0')}/'
         '${report.dateTime.day.toString().padLeft(2, '0')}/'
@@ -21,38 +23,111 @@ class ReportDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(report.title),
-        backgroundColor: Colors.black,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Large placeholder image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                report.placeholderImageUrl,
-                height: 200,
-                fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image
+              GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return Dialog(
+                        child: InteractiveViewer(
+                          child: Image.network(
+                            report.placeholderImageUrl,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.network(
+                    report.placeholderImageUrl,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-            Text(
-              'Status: ${report.status}',
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+              // Title and Status
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      report.title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${loc.status}: ${report.status}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Text('Date: $dateString'),
-            Text('Time: $hour:$minute'),
-            const SizedBox(height: 16),
 
-            // Additional details
-            Text(report.details),
-          ],
+              const Divider(height: 30, thickness: 1.5),
+
+              // Date and Time
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${loc.date}: $dateString',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      const Icon(Icons.access_time, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${loc.time}: $hour:$minute',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Details Section
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  report.details,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

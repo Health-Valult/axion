@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
+import 'package:flutter_application_1/pages/log_page.dart';
 import 'package:flutter_application_1/pages/reports_page.dart';
-import 'package:flutter_application_1/pages/temp_page.dart';
+import 'package:flutter_application_1/pages/link_page.dart';
+import 'package:flutter_application_1/pages/profile_page.dart';
 import 'package:flutter_application_1/widgets/floating_nav_bar.dart';
+
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,8 +20,9 @@ class _MainPageState extends State<MainPage> {
   final List<Widget> _pages = const [
     HomePage(),
     ReportsPage(),
-    TempPage(title: 'Stats Page'),
-    TempPage(title: 'Profile Page'),
+    LogPage(),
+    ProfilePage(),
+    LinkPage(),
   ];
 
   @override
@@ -30,7 +34,7 @@ class _MainPageState extends State<MainPage> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 32,
+            bottom:22,
             child: Center(
               child: FloatingNavBar(
                 currentIndex: _currentIndex,
