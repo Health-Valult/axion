@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowUpDown, Calendar } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, ArrowUpDown } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import ReportCard from "@/app/components/ReportCard";
 import ReportModal from "@/app/components/ReportModal";
 import SidebarLayout from "@/app/components/Layout";
@@ -32,7 +40,11 @@ const reportsData: Report[] = [
 function ReportsPage() {
     const [selectedReport, setSelectedReport] = useState<Report | null>(null);
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-    const [filterDate, setFilterDate] = useState<string>("");
+    const [filterDate, setFilterDate] = useState<Date | undefined>();
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+
+    const yearOptions = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
     const sortedReports = [...reportsData].sort((a, b) => {
         return sortOrder === "newest"
@@ -41,7 +53,7 @@ function ReportsPage() {
     });
 
     const filteredReports = filterDate
-        ? sortedReports.filter(report => report.date === filterDate)
+        ? sortedReports.filter(report => report.date === format(filterDate, "yyyy-MM-dd"))
         : sortedReports;
 
     return (
@@ -58,33 +70,70 @@ function ReportsPage() {
             <h1 className="text-2xl font-bold mb-4 text-purple-900">Medical Reports</h1>
 
             <div className="flex justify-between items-center mb-4">
-                <div/>
+                <div />
 
                 <div className="flex items-center space-x-4">
-                    <button
-                        className="flex items-center space-x-2 border px-3 py-2 rounded-md hover:bg-gray-100"
+                    <Button
+                        variant="outline"
                         onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
                     >
-                        <ArrowUpDown className="text-gray-600" />
-                        <span className="text-gray-700 font-semibold">
-                            {sortOrder === "newest" ? "Newest First" : "Oldest First"}
-                        </span>
-                    </button>
+                        <ArrowUpDown className="mr-2" />
+                        {sortOrder === "newest" ? "Newest First" : "Oldest First"}
+                    </Button>
 
-                    <div className="flex items-center space-x-2 border px-3 py-2 rounded-md hover:bg-gray-100">
-                        <Calendar className="text-gray-600" />
-                        <input
-                            type="date"
-                            value={filterDate}
-                            onChange={(e) => setFilterDate(e.target.value)}
-                            className="text-gray-700 font-semibold bg-transparent border-none outline-none cursor-pointer"
-                        />
-                        {filterDate && (
-                            <button onClick={() => setFilterDate("")} className="text-red-600 ml-2">
-                                ✖
-                            </button>
-                        )}
-                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className={cn(
+                                    "w-[200px] justify-start text-left font-normal",
+                                    !filterDate && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {filterDate ? format(filterDate, "PPP") : "Pick a date"}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <div className="flex items-center justify-between px-3 py-2 bg-gray-100 border-b">
+                                <span className="font-semibold">Year:</span>
+                                <Select
+                                    onValueChange={(value) => {
+                                        const newYear = parseInt(value, 10);
+                                        setSelectedYear(newYear);
+                                        setCurrentMonth(new Date(newYear, currentMonth.getMonth(), 1));
+                                    }}
+                                    value={selectedYear.toString()}
+                                >
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue placeholder="Year" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {yearOptions.map((year) => (
+                                            <SelectItem key={year} value={year.toString()}>
+                                                {year}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Calendar
+                                mode="single"
+                                selected={filterDate}
+                                onSelect={setFilterDate}
+                                month={currentMonth}
+                                onMonthChange={setCurrentMonth}
+                                initialFocus
+                            />
+                        </PopoverContent>
+                    </Popover>
+
+                    {filterDate && (
+                        <Button variant="destructive" onClick={() => setFilterDate(undefined)}>
+                            Clear Date
+                        </Button>
+                    )}
                 </div>
             </div>
 

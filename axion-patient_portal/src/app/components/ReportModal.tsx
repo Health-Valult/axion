@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Using ShadCN Dialog components
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"; // Import from Radix UI
 
 interface ReportModalProps {
     report: {
@@ -17,28 +19,12 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
         pdfUrl.current = report.fileUrl;
     }, [report.fileUrl]);
 
-    useEffect(() => {
-        const handleOutsideClick = (event: MouseEvent) => {
-            if ((event.target as HTMLElement).id === "modal-overlay") {
-                onClose();
-            }
-        };
-        window.addEventListener("click", handleOutsideClick);
-        return () => window.removeEventListener("click", handleOutsideClick);
-    }, [onClose]);
-
     return (
-        <div
-            id="modal-overlay"
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-        >
-            <div className="bg-white p-6 rounded-lg shadow-lg w-[80%] h-[80%] relative transition-transform transform scale-95 flex flex-col">
-                <button
-                    className="absolute top-4 right-4 text-black rounded-full p-2 hover:bg-gray-300"
-                    onClick={onClose}
-                >
-                    ✖
-                </button>
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+                <DialogTitle>
+                    <VisuallyHidden>Report: {report.name}</VisuallyHidden> {/* Visually hidden but accessible */}
+                </DialogTitle>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-purple-900">{report.name}</h2>
                 </div>
@@ -52,8 +38,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                         title="PDF Report"
                     />
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
