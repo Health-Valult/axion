@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
+import KidneyChart from '../elements/KidneyChart';
+import LipidProfileChart from '../elements/LipidProfileChart';
 
 const WeightChart = dynamic(() => import('../elements/WeightChart'), {
 	ssr: false,
@@ -20,160 +22,110 @@ const BloodSugarChart = dynamic(() => import('../elements/BloodSugarChart'), {
 const Summary = dynamic(() => import('../elements/Summary'), { ssr: false });
 
 const Dashboard: React.FC = () => {
-	const sampleProps = {
-		data: {
-			normal: [1420, 1620, 1820, 1420, 1650, 2120],
-			actual: [788, 810, 866, 788, 1100, 1200],
-		},
-		bloodGlucose: 5405,
-		risk: 23.5,
-		categories: [
-			'Hemoglobin A1c',
-			'Insulin',
-			'C-Peptide',
-			'Ketones',
-			'Creatinine',
-			'Beta-Hydroxybutyrate',
-		], // X-axis labels
-	};
-
 	return (
-		<div className="flex flex-1 bg-white rounded-l-sm h-full overflow-y-auto">
-			{/* Wrapper with transition animation on page load */}
-			<motion.div
-				initial={{ opacity: 0, scale: 0.95 }}
-				animate={{ opacity: 1, scale: 1 }}
-				transition={{ duration: 0.5 }}
-				className="p-2 md:p-10 rounded-tl-2xl flex-col gap-2 w-full h-full"
-			>
-				<div className="grid grid-cols-3 gap-4">
-					{/* Left-side Charts */}
-					<div className="col-span-2 grid grid-cols-2 grid-rows-2 gap-4 rounded p-4">
-						{/* Weight Chart */}
-						<motion.div
-							whileHover={{ scale: 1.05 }}
-							className="flex items-center justify-center rounded p-2"
-						>
-							<WeightChart
-								series={[
-									{
-										name: 'Weight',
-										data: [
-											231, 122, 63, 421, 122, 323, 111,
-										],
-									},
-								]}
-								categories={[
-									'Mon',
-									'Tue',
-									'Wed',
-									'Thu',
-									'Fri',
-									'Sat',
-									'Sun',
-								]}
-							/>
-						</motion.div>
-
-						{/* Blood Pressure Chart */}
-						<motion.div
-							whileHover={{ scale: 1.05 }}
-							className="flex items-center justify-center rounded p-2"
-						>
-							<BloodPressureChart />
-						</motion.div>
-
-						{/* Blood Sugar Chart */}
-						<motion.div
-							whileHover={{ scale: 1.05 }}
-							className="flex items-center justify-center rounded p-2"
-						>
-							<BloodSugarChart {...sampleProps} />
-						</motion.div>
-
-						{/* Cholesterol Chart */}
-						<motion.div
-							whileHover={{ scale: 1.05 }}
-							className="flex items-center justify-center rounded p-2"
-						>
-							<CholesterolChart
-								data={{
-									categories: [
-										'01 Feb',
-										'02 Feb',
-										'03 Feb',
-										'04 Feb',
-										'05 Feb',
-										'06 Feb',
-										'07 Feb',
-									],
-									series: [
-										{
-											name: 'Total Cholesterol',
-											data: [
-												6500, 6418, 6456, 6526, 6356,
-												6456,
-											],
-											color: '#1A56DB',
-										},
-										{
-											name: 'HDL Cholesterol',
-											data: [
-												6456, 6356, 6526, 6332, 6418,
-												6500,
-											],
-											color: '#7E3AF2',
-										},
-										{
-											name: 'ApoB or Lp(a)',
-											data: [
-												6356, 6236, 6396, 6300, 6425,
-												6550,
-											],
-											color: '#FF5733',
-										},
-										{
-											name: 'Triglycerides',
-											data: [
-												6520, 6480, 6435, 6375, 6420,
-												6450,
-											],
-											color: '#FFC300',
-										},
-										{
-											name: 'LDL Cholesterol',
-											data: [
-												6390, 6350, 6380, 6400, 6420,
-												6440,
-											],
-											color: '#DAF7A6',
-										},
-										{
-											name: 'VLDL and Non-HDL',
-											data: [
-												6450, 6420, 6400, 6390, 6410,
-												6445,
-											],
-											color: '#900C3F',
-										},
-									],
-								}}
-							/>
-						</motion.div>
-					</div>
-
-					{/* Right-side Summary */}
-					<motion.div
-						whileHover={{ scale: 1.05 }}
-						initial={{ opacity: 0, x: 50 }}
-						animate={{ opacity: 1, x: 0 }}
-						transition={{ duration: 0.5 }}
-						className="col-span-1 flex flex-col gap-4 rounded p-4"
-					>
-						<Summary />
-					</motion.div>
+		<div className="grid grid-cols-1 md:grid-cols-2 h-full w-full overflow-y-auto gap-3 mt-2 mb-5">
+			<div className="col-span-1 grid grid-cols-2 gap-3">
+				<div className="col-span-1">
+					<Summary />
 				</div>
-			</motion.div>
+
+				<div className="col-span-1 flex flex-col gap-3">
+					<WeightChart
+						chartData={[
+							{ month: 'January', weight: 186 },
+							{ month: 'February', weight: 305 },
+							{ month: 'March', weight: 237 },
+							{ month: 'April', weight: 73 },
+							{ month: 'May', weight: 209 },
+							{ month: 'June', weight: 214 },
+						]}
+					/>
+					<BloodPressureChart
+						chartData={[
+							{ month: 'January', systolic: 120, diastolic: 80 },
+							{ month: 'February', systolic: 125, diastolic: 82 },
+							{ month: 'March', systolic: 130, diastolic: 85 },
+							{ month: 'April', systolic: 135, diastolic: 88 },
+							{ month: 'May', systolic: 140, diastolic: 90 },
+							{ month: 'June', systolic: 145, diastolic: 95 },
+						]}
+					/>
+					<KidneyChart />
+				</div>
+			</div>
+			<div className="col-span-1 grid gap-2">
+				<LipidProfileChart
+					chartData={[
+						{
+							month: 'January',
+							totalCholesterol: 200,
+							LDL: 130,
+							HDL: 50,
+							triglycerides: 150,
+							nonHDL: 160,
+							VLDL: 30,
+							ApoB: 90,
+							Lp_a: 25,
+						},
+						{
+							month: 'February',
+							totalCholesterol: 190,
+							LDL: 120,
+							HDL: 55,
+							triglycerides: 140,
+							nonHDL: 150,
+							VLDL: 28,
+							ApoB: 85,
+							Lp_a: 23,
+						},
+						{
+							month: 'March',
+							totalCholesterol: 210,
+							LDL: 135,
+							HDL: 52,
+							triglycerides: 160,
+							nonHDL: 170,
+							VLDL: 32,
+							ApoB: 95,
+							Lp_a: 27,
+						},
+						{
+							month: 'April',
+							totalCholesterol: 195,
+							LDL: 125,
+							HDL: 57,
+							triglycerides: 145,
+							nonHDL: 155,
+							VLDL: 29,
+							ApoB: 88,
+							Lp_a: 22,
+						},
+						{
+							month: 'May',
+							totalCholesterol: 205,
+							LDL: 132,
+							HDL: 53,
+							triglycerides: 155,
+							nonHDL: 165,
+							VLDL: 31,
+							ApoB: 92,
+							Lp_a: 26,
+						},
+						{
+							month: 'June',
+							totalCholesterol: 198,
+							LDL: 128,
+							HDL: 56,
+							triglycerides: 148,
+							nonHDL: 158,
+							VLDL: 30,
+							ApoB: 89,
+							Lp_a: 24,
+						},
+					]}
+				/>
+				<BloodSugarChart />
+			</div>
 		</div>
 	);
 };

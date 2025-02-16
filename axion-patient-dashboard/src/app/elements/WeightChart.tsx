@@ -1,153 +1,260 @@
+// 'use client';
+
+// import { useEffect } from 'react';
+// import ApexCharts from 'apexcharts';
+
+// interface ChartProps {
+// 	series: any[];
+// 	categories: string[];
+// }
+
+// const WeightChart: React.FC<ChartProps> = ({ series, categories }) => {
+// 	useEffect(() => {
+// 		const options = {
+// 			colors: ['#1A56DB'],
+// 			series: series,
+// 			chart: {
+// 				type: 'bar',
+// 				height: '320px',
+// 				fontFamily: 'Inter, sans-serif',
+// 				toolbar: {
+// 					show: false,
+// 				},
+// 			},
+// 			plotOptions: {
+// 				bar: {
+// 					horizontal: false,
+// 					columnWidth: '70%',
+// 					borderRadiusApplication: 'end',
+// 					borderRadius: 8,
+// 				},
+// 			},
+// 			tooltip: {
+// 				shared: true,
+// 				intersect: false,
+// 				style: {
+// 					fontFamily: 'Inter, sans-serif',
+// 				},
+// 			},
+// 			states: {
+// 				hover: {
+// 					filter: {
+// 						type: 'darken',
+// 						value: 1,
+// 					},
+// 				},
+// 			},
+// 			stroke: {
+// 				show: true,
+// 				width: 0,
+// 				colors: ['transparent'],
+// 			},
+// 			grid: {
+// 				show: false,
+// 				strokeDashArray: 4,
+// 				padding: {
+// 					left: 2,
+// 					right: 2,
+// 					top: -14,
+// 				},
+// 			},
+// 			dataLabels: {
+// 				enabled: false,
+// 			},
+// 			legend: {
+// 				show: false,
+// 			},
+// 			xaxis: {
+// 				categories: categories,
+// 				labels: {
+// 					show: true,
+// 					style: {
+// 						fontFamily: 'Inter, sans-serif',
+// 						cssClass:
+// 							'text-xs font-normal fill-gray-500 dark:fill-gray-400',
+// 					},
+// 				},
+// 				axisBorder: {
+// 					show: false,
+// 				},
+// 				axisTicks: {
+// 					show: false,
+// 				},
+// 			},
+// 			yaxis: {
+// 				show: false,
+// 			},
+// 			fill: {
+// 				opacity: 1,
+// 			},
+// 		};
+
+// 		const chartElement = document.getElementById('column-chart');
+// 		if (chartElement) {
+// 			const chart = new ApexCharts(chartElement, options);
+// 			chart.render();
+
+// 			return () => {
+// 				chart.destroy();
+// 			};
+// 		}
+// 	}, [series, categories]);
+
+// 	return (
+// 		<div className="w-full h-full bg-white rounded-lg shadow p-4 md:p-6">
+// 			<div className="flex justify-between pb-4 mb-4 border-b border-gray-200 ">
+// 				<div className="flex items-center">
+// 					<div>
+// 						<h5 className="leading-none text-2xl font-bold text-gray-900 pb-1">
+// 							100kg
+// 						</h5>
+// 						<p className="text-sm font-normal text-gray-500 ">
+// 							Weight
+// 						</p>
+// 					</div>
+// 				</div>
+// 				<div>
+// 					<span className="bg-red-100 text-red-800 text-xs font-medium inline-flex items-center px-2.5 py-1 rounded-md ">
+// 						<svg
+// 							className="w-2.5 h-2.5 me-1.5"
+// 							aria-hidden="true"
+// 							xmlns="http://www.w3.org/2000/svg"
+// 							fill="none"
+// 							viewBox="0 0 10 14"
+// 						>
+// 							<path
+// 								stroke="currentColor"
+// 								strokeLinecap="round"
+// 								strokeLinejoin="round"
+// 								strokeWidth="2"
+// 								d="M5 13V1m0 0L1 5m4-4 4 4"
+// 							/>
+// 						</svg>
+// 						42.5%
+// 					</span>
+// 				</div>
+// 			</div>
+
+// 			<div className="grid grid-cols-2">
+// 				<dl className="flex items-center">
+// 					<dt className="text-gray-500  text-sm font-normal me-1">
+// 						Weight difference:
+// 					</dt>
+// 					<dd className="text-gray-900 text-sm  font-semibold">
+// 						10kg
+// 					</dd>
+// 				</dl>
+// 			</div>
+
+// 			<div id="column-chart"></div>
+// 		</div>
+// 	);
+// };
+
+// export default WeightChart;
+
 'use client';
 
-import { useEffect } from 'react';
-import ApexCharts from 'apexcharts';
+import { TrendingDown, TrendingUp } from 'lucide-react';
+import { Bar, BarChart, XAxis, YAxis } from 'recharts';
+
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import {
+	ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+} from '@/components/ui/chart';
+
+const chartConfig = {
+	weight: {
+		label: 'Weight',
+		color: 'hsl(var(--chart-6))',
+	},
+} satisfies ChartConfig;
 
 interface ChartProps {
-	series: any[];
-	categories: string[];
+	chartData: {
+		month: string;
+		weight: number;
+	}[];
 }
 
-const WeightChart: React.FC<ChartProps> = ({ series, categories }) => {
-	useEffect(() => {
-		const options = {
-			colors: ['#1A56DB'],
-			series: series,
-			chart: {
-				type: 'bar',
-				height: '320px',
-				fontFamily: 'Inter, sans-serif',
-				toolbar: {
-					show: false,
-				},
-			},
-			plotOptions: {
-				bar: {
-					horizontal: false,
-					columnWidth: '70%',
-					borderRadiusApplication: 'end',
-					borderRadius: 8,
-				},
-			},
-			tooltip: {
-				shared: true,
-				intersect: false,
-				style: {
-					fontFamily: 'Inter, sans-serif',
-				},
-			},
-			states: {
-				hover: {
-					filter: {
-						type: 'darken',
-						value: 1,
-					},
-				},
-			},
-			stroke: {
-				show: true,
-				width: 0,
-				colors: ['transparent'],
-			},
-			grid: {
-				show: false,
-				strokeDashArray: 4,
-				padding: {
-					left: 2,
-					right: 2,
-					top: -14,
-				},
-			},
-			dataLabels: {
-				enabled: false,
-			},
-			legend: {
-				show: false,
-			},
-			xaxis: {
-				categories: categories,
-				labels: {
-					show: true,
-					style: {
-						fontFamily: 'Inter, sans-serif',
-						cssClass:
-							'text-xs font-normal fill-gray-500 dark:fill-gray-400',
-					},
-				},
-				axisBorder: {
-					show: false,
-				},
-				axisTicks: {
-					show: false,
-				},
-			},
-			yaxis: {
-				show: false,
-			},
-			fill: {
-				opacity: 1,
-			},
-		};
-
-		const chartElement = document.getElementById('column-chart');
-		if (chartElement) {
-			const chart = new ApexCharts(chartElement, options);
-			chart.render();
-
-			return () => {
-				chart.destroy();
-			};
-		}
-	}, [series, categories]);
-
+const WeightChart: React.FC<ChartProps> = ({ chartData }) => {
 	return (
-		<div className="w-full h-full bg-white rounded-lg shadow p-4 md:p-6">
-			<div className="flex justify-between pb-4 mb-4 border-b border-gray-200 ">
-				<div className="flex items-center">
-					<div>
-						<h5 className="leading-none text-2xl font-bold text-gray-900 pb-1">
-							100kg
-						</h5>
-						<p className="text-sm font-normal text-gray-500 ">
-							Weight
-						</p>
+		<Card>
+			<CardHeader>
+				<CardTitle>Weight Chart</CardTitle>
+				<CardDescription>
+					{chartData[0].month} -{' '}
+					{chartData[chartData.length - 1].month}
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<ChartContainer config={chartConfig}>
+					<BarChart
+						accessibilityLayer
+						data={chartData}
+						layout="vertical"
+						margin={{
+							left: -20,
+						}}
+					>
+						<XAxis type="number" dataKey="weight" hide />
+						<YAxis
+							dataKey="month"
+							type="category"
+							tickLine={false}
+							tickMargin={10}
+							axisLine={false}
+							tickFormatter={(value) => value.slice(0, 3)}
+						/>
+						<ChartTooltip
+							cursor={false}
+							content={<ChartTooltipContent hideLabel />}
+						/>
+						<Bar
+							dataKey="weight"
+							fill="var(--color-weight)"
+							radius={5}
+						/>
+					</BarChart>
+				</ChartContainer>
+			</CardContent>
+			<CardFooter className="flex-col items-start gap-2 text-sm">
+				{chartData[chartData.length - 1].weight -
+					chartData[chartData.length - 2].weight >
+				0 ? (
+					<div className="flex gap-2 font-medium leading-none">
+						Increased by{' '}
+						{chartData[chartData.length - 1].weight -
+							chartData[chartData.length - 2].weight}
+						kg this month
+						<TrendingUp className="h-4 w-4" />
 					</div>
+				) : (
+					<div className="flex gap-2 font-medium leading-none">
+						Decreased by{' '}
+						{Math.abs(
+							chartData[chartData.length - 1].weight -
+								chartData[chartData.length - 2].weight
+						)}
+						kg this month
+						<TrendingDown className="h-4 w-4" />
+					</div>
+				)}
+				<div className="leading-none text-muted-foreground">
+					Weight distribution for the last 6 months
 				</div>
-				<div>
-					<span className="bg-red-100 text-red-800 text-xs font-medium inline-flex items-center px-2.5 py-1 rounded-md ">
-						<svg
-							className="w-2.5 h-2.5 me-1.5"
-							aria-hidden="true"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 10 14"
-						>
-							<path
-								stroke="currentColor"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								strokeWidth="2"
-								d="M5 13V1m0 0L1 5m4-4 4 4"
-							/>
-						</svg>
-						42.5%
-					</span>
-				</div>
-			</div>
-
-			<div className="grid grid-cols-2">
-				<dl className="flex items-center">
-					<dt className="text-gray-500  text-sm font-normal me-1">
-						Weight difference:
-					</dt>
-					<dd className="text-gray-900 text-sm  font-semibold">
-						10kg
-					</dd>
-				</dl>
-			</div>
-
-			<div id="column-chart"></div>
-		</div>
+			</CardFooter>
+		</Card>
 	);
 };
 

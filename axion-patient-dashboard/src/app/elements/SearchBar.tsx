@@ -442,7 +442,7 @@ const patients: Patient[] = [
 			{
 				id: 5,
 				name: 'Physical Therapy for Back Pain',
-				dateTime: '2023-10-05',
+				dateTime: '2023-10-05T00:45[America/Los_Angeles]',
 				indication: 'Symptoms',
 				content: 'Referred to physiotherapy.',
 				treatment: [

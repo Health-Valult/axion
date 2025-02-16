@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Form, Input, Button } from '@heroui/react';
+import React, { useState, useEffect } from 'react';
+import { Form, Button } from '@heroui/react';
 import { DatePicker } from '@heroui/react';
 import { DateRangePicker } from '@heroui/react';
 import {
@@ -14,6 +14,7 @@ import { Chip, Avatar } from '@heroui/react';
 import { Textarea } from '@heroui/react';
 import { RadioGroup, Radio, cn } from '@heroui/react';
 import { Autocomplete, AutocompleteItem } from '@heroui/react';
+
 import { now, getLocalTimeZone } from '@internationalized/date';
 
 const Prescriptions: React.FC = () => {
@@ -42,7 +43,6 @@ const Prescriptions: React.FC = () => {
 			label: 'Four times daily',
 			sig: 'Take every 6 hours (four times a day)',
 		},
-		{ key: 'qXh', label: 'Every X hours', sig: 'Take every X hours' },
 		{ key: 'OW', label: 'Once a week', sig: 'Take once per week' },
 		{ key: 'PRN', label: 'As needed', sig: 'Take only when necessary' },
 		{ key: 'AC', label: 'Before meals', sig: 'Take before eating' },
@@ -365,7 +365,7 @@ const Prescriptions: React.FC = () => {
 
 	return (
 		<div className="flex justify-center items-center min-h-screen overflow-hidden">
-			<div className="w-full bg-white p-8 shadow-lg rounded-lg max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200">
+			<div className="w-full bg-white dark:bg-black p-8 shadow-lg rounded-lg max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200">
 				<Form
 					className="flex flex-col gap-4"
 					validationBehavior="native"

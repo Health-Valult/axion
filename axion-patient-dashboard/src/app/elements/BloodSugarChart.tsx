@@ -1,140 +1,223 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import ApexCharts from 'apexcharts';
+import { TrendingUp } from 'lucide-react';
+import {
+	Bar,
+	BarChart,
+	CartesianGrid,
+	XAxis,
+	YAxis,
+	Tooltip,
+	Legend,
+} from 'recharts';
 
-interface BloodSugarChartProps {
-	data: {
-		normal: number[];
-		actual: number[];
-	};
-	bloodGlucose: number;
-	risk: number;
-	categories: string[];
+import { TooltipProps } from 'recharts';
+
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import {
+	ChartConfig,
+	ChartContainer,
+	ChartLegend,
+	ChartLegendContent,
+} from '@/components/ui/chart';
+
+// Updated Chart Data with Normal Ranges
+const chartData = [
+	{
+		parameter: 'FBG (mg/dL)',
+		normalMin: 70,
+		normalMax: 99,
+		actual: 110,
+		excess: 11,
+	},
+	{
+		parameter: 'PPBG (mg/dL)',
+		normalMin: 70,
+		normalMax: 140,
+		actual: 160,
+		excess: 20,
+	},
+	{
+		parameter: 'RBG (mg/dL)',
+		normalMin: 70,
+		normalMax: 140,
+		actual: 145,
+		excess: 5,
+	},
+	{
+		parameter: 'HbA1c (%)',
+		normalMin: 4.0,
+		normalMax: 5.7,
+		actual: 6.8,
+		excess: 1.1,
+	},
+	{
+		parameter: 'Insulin (µU/mL)',
+		normalMin: 2,
+		normalMax: 25,
+		actual: 18,
+		excess: 0,
+	},
+	{
+		parameter: 'C-Peptide (ng/mL)',
+		normalMin: 0.5,
+		normalMax: 2.7,
+		actual: 2.4,
+		excess: 0,
+	},
+	{
+		parameter: 'Ketones (mmol/L)',
+		normalMin: 0,
+		normalMax: 0.3,
+		actual: 0.3,
+		excess: 0,
+	},
+	{
+		parameter: 'BHB (mmol/L)',
+		normalMin: 0,
+		normalMax: 0.4,
+		actual: 0.3,
+		excess: 0,
+	},
+	{
+		parameter: 'Creatinine (mg/dL)',
+		normalMin: 0.6,
+		normalMax: 1.3,
+		actual: 1.1,
+		excess: 0,
+	},
+	{
+		parameter: 'eGFR (mL/min/1.73m²)',
+		normalMin: 90,
+		normalMax: 120,
+		actual: 85,
+		excess: 0,
+	},
+];
+
+// Chart Configuration for Labels and Colors
+const chartConfig = {
+	actual: {
+		label: 'Actual Value',
+		color: 'hsl(var(--chart-1))', // Darker color for test result
+	},
+	normalRange: {
+		label: 'Normal Range',
+		color: 'hsl(var(--chart-2))', // Light color for background reference
+	},
+	excess: {
+		label: 'Excess beyond normal',
+		color: 'hsl(var(--chart-7))', // Red for exceeding values
+	},
+} satisfies ChartConfig;
+
+interface ChartData {
+	parameter: string;
+	normalMin: number;
+	normalMax: number;
+	actual: number;
+	excess: number;
 }
 
-const BloodSugarChart: React.FC<BloodSugarChartProps> = ({
-	data,
-	bloodGlucose,
-	risk,
-	categories,
+// Define the CustomTooltip component with types
+const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
+	active,
+	payload,
 }) => {
-	const chartRef = useRef<HTMLDivElement>(null);
+	if (active && payload && payload.length) {
+		const data = payload[0].payload as ChartData; // Type assertion
 
-	useEffect(() => {
-		if (chartRef.current && typeof ApexCharts !== 'undefined') {
-			const options = {
-				series: [
-					{
-						name: 'Normal',
-						color: '#31C48D',
-						data: data.normal,
-					},
-					{
-						name: 'Actual',
-						data: data.actual,
-						color: '#F05252',
-					},
-				],
-				chart: {
-					sparkline: {
-						enabled: false,
-					},
-					type: 'bar',
-					width: '100%',
-					height: 400,
-					toolbar: {
-						show: false,
-					},
-				},
-				fill: {
-					opacity: 1,
-				},
-				plotOptions: {
-					bar: {
-						horizontal: true,
-						columnWidth: '100%',
-						borderRadiusApplication: 'end',
-						borderRadius: 6,
-						dataLabels: {
-							position: 'top',
-						},
-					},
-				},
-				legend: {
-					show: true,
-					position: 'bottom',
-				},
-				dataLabels: {
-					enabled: false,
-				},
-				tooltip: {
-					shared: true,
-					intersect: false,
-					formatter: (value: number) => value.toString(),
-				},
-				xaxis: {
-					labels: {
-						show: true,
-						style: {
-							fontFamily: 'Inter, sans-serif',
-							cssClass:
-								'text-xs font-normal fill-gray-500 dark:fill-gray-400',
-						},
-						formatter: (value: number) => value.toString(),
-					},
-					categories: categories,
-					axisTicks: {
-						show: false,
-					},
-					axisBorder: {
-						show: false,
-					},
-				},
-				yaxis: {
-					labels: {
-						show: true,
-						style: {
-							fontFamily: 'Inter, sans-serif',
-							cssClass:
-								'text-xs font-normal fill-gray-500 dark:fill-gray-400',
-						},
-					},
-				},
-				grid: {
-					show: true,
-					strokeDashArray: 4,
-					padding: {
-						left: 2,
-						right: 2,
-						top: -20,
-					},
-				},
-			};
-
-			const chart = new ApexCharts(chartRef.current, options);
-			chart.render();
-
-			return () => {
-				chart.destroy();
-			};
-		}
-	}, [data, categories]);
-
-	return (
-		<div className="w-full h-full bg-white rounded-lg shadow p-4 md:p-6">
-			<div className="flex justify-between border-gray-200 border-b  pb-3">
-				<dl>
-					<dt className="text-base font-normal text-gray-500 pb-1">
-						Blood Glucose
-					</dt>
-					<dd className="leading-none text-3xl font-bold text-gray-900">
-						{bloodGlucose} mg/dL
-					</dd>
-				</dl>
+		return (
+			<div className="bg-white p-2 rounded shadow-md">
+				<p className="font-bold">{data.parameter}</p>
+				<p>
+					Normal Range: {data.normalMin} - {data.normalMax}
+				</p>
+				<p>Actual Value: {data.actual}</p>
+				{data.excess > 0 && (
+					<p className="text-red-500">Excess: {data.excess}</p>
+				)}
 			</div>
-			<div ref={chartRef} className="w-full h-full mt-12"></div>;
-		</div>
+		);
+	}
+	return null;
+};
+
+const BloodSugarChart: React.FC = () => {
+	return (
+		<Card>
+			<CardHeader>
+				<CardTitle>Blood Glucose Chart</CardTitle>
+				<CardDescription>Normal vs. Actual Values</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<ChartContainer config={chartConfig}>
+					<BarChart
+						data={chartData}
+						layout="vertical"
+						width={700}
+						height={500}
+					>
+						<CartesianGrid
+							horizontal={false}
+							strokeDasharray="3 3"
+						/>
+						<XAxis
+							type="number"
+							domain={[0, 200]}
+							tick={{ fontSize: 12 }}
+						/>
+						<YAxis
+							type="category"
+							dataKey="parameter"
+							tick={{ fontSize: 12 }}
+							width={150}
+						/>
+						<Tooltip content={<CustomTooltip />} />
+						<Legend content={<ChartLegendContent />} />
+
+						{/* Background Normal Range (from normalMin to normalMax) */}
+						<Bar
+							dataKey="normalMax"
+							stackId="a"
+							fill="var(--color-normalRange)"
+							barSize={20}
+						/>
+
+						{/* Actual Value Bar */}
+						<Bar
+							dataKey="actual"
+							stackId="a"
+							fill="var(--color-actual)"
+							barSize={20}
+						/>
+
+						{/* Excess Value Bar (Only appears when actual > normalMax) */}
+						<Bar
+							dataKey="excess"
+							stackId="a"
+							fill="var(--color-excess)"
+							barSize={20}
+						/>
+					</BarChart>
+				</ChartContainer>
+			</CardContent>
+			<CardFooter className="flex-col items-start gap-2 text-sm">
+				<div className="flex gap-2 font-medium leading-none text-green-600">
+					Low risk <TrendingUp className="h-4 w-4" />
+				</div>
+				<div className="leading-none text-muted-foreground">
+					Showing blood sugar composition against normal ranges
+				</div>
+			</CardFooter>
+		</Card>
 	);
 };
 
