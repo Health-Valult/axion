@@ -10,6 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+import { useLanguage } from "@/app/components/LanguageContext";
 import ReportCard from "@/app/components/ReportCard";
 import ReportModal from "@/app/components/ReportModal";
 import SidebarLayout from "@/app/components/Layout";
@@ -46,6 +47,8 @@ function ReportsPage() {
 
     const yearOptions = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
+    const { t } = useLanguage();
+
     const sortedReports = [...reportsData].sort((a, b) => {
         return sortOrder === "newest"
             ? new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -67,7 +70,7 @@ function ReportsPage() {
                     className="mx-auto mb-4"
                 />
             </div>
-            <h1 className="text-2xl font-bold mb-4 text-purple-900">Medical Reports</h1>
+            <h1 className="text-2xl font-bold mb-4 text-purple-900">{t.medicalReports}</h1>
 
             <div className="flex justify-between items-center mb-4">
                 <div />
@@ -78,7 +81,7 @@ function ReportsPage() {
                         onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
                     >
                         <ArrowUpDown className="mr-2" />
-                        {sortOrder === "newest" ? "Newest First" : "Oldest First"}
+                        {sortOrder === "newest" ? `${t.newestFirst}` : `${t.oldestFirst}`}
                     </Button>
 
                     <Popover>
@@ -91,7 +94,7 @@ function ReportsPage() {
                                 )}
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {filterDate ? format(filterDate, "PPP") : "Pick a date"}
+                                {filterDate ? format(filterDate, "PPP") : `${t.pickDate}`}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
@@ -131,13 +134,13 @@ function ReportsPage() {
 
                     {filterDate && (
                         <Button variant="destructive" onClick={() => setFilterDate(undefined)}>
-                            Clear Date
+                            {t.removeDate}
                         </Button>
                     )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                 {filteredReports.length > 0 ? (
                     filteredReports.map((report) => (
                         <ReportCard
@@ -147,7 +150,7 @@ function ReportsPage() {
                         />
                     ))
                 ) : (
-                    <p className="text-gray-500 text-center col-span-full">No reports found.</p>
+                    <p className="text-gray-500 text-center col-span-full">{t.noReportsFound}</p>
                 )}
             </div>
 

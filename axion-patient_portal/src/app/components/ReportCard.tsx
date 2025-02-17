@@ -16,7 +16,7 @@ interface Report {
 const ReportCard: React.FC<Report> = ({ report, onClick }) => {
     return (
         <Card
-            className="cursor-pointer w-full max-w-[320px] bg-white rounded-lg shadow-md hover:shadow-lg transition-all"
+            className="w-full bg-white rounded-lg shadow-md hover:shadow-lg transition-all"
             onClick={() => onClick(report.fileUrl)}
         >
             <CardHeader className="p-4 items-center">

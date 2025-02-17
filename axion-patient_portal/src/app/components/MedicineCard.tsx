@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useLanguage } from "@/app/components/LanguageContext";
 
 interface Medicine {
     name: string;
@@ -16,6 +17,8 @@ interface Medicine {
 }
 
 const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
+    const { t } = useLanguage();
+
     const getImageForForm = (form: string) => {
         switch (form.toLowerCase()) {
             case "tablet":
@@ -35,7 +38,6 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
 
     return (
         <div>
-            {/* Wrap the entire card in DialogTrigger */}
             <Dialog>
                 <DialogTrigger asChild>
                     <div
@@ -51,10 +53,10 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
                         <div>
                             <h3 className="text-lg font-semibold text-gray-800">{medicine.name}</h3>
                             <p className="text-sm text-gray-600">
-                                <strong>Dosage:</strong> {medicine.dosage} mg
+                                <strong>{t.dosage}:</strong> {medicine.dosage} mg
                             </p>
                             <p className="text-sm text-gray-600">
-                                <strong>Directions:</strong> {medicine.directions}
+                                <strong>{t.directions}:</strong> {medicine.directions}
                             </p>
                         </div>
                     </div>
@@ -70,25 +72,25 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
 
                     <h3 className="text-xl font-semibold text-gray-800">{medicine.name}</h3>
                     <p className="text-sm text-gray-600">
-                        <strong>Form:</strong> {medicine.form}
+                        <strong>{t.form}:</strong> {medicine.form}
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Dosage:</strong> {medicine.dosage} mg
+                        <strong>{t.dosage}:</strong> {medicine.dosage} mg
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Directions:</strong> {medicine.directions}
+                        <strong>{t.directions}:</strong> {medicine.directions}
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Diagnosis:</strong> {medicine.diagnosis}
+                        <strong>{t.diagnosis}:</strong> {medicine.diagnosis}
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Prescribed At:</strong> {medicine.prescribedAt}
+                        <strong>{t.prescribedAt}:</strong> {medicine.prescribedAt}
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Treatment Duration:</strong> {medicine.treatmentDuration}
+                        <strong>{t.treatmentDuration}:</strong> {medicine.treatmentDuration}
                     </p>
                     <p className="text-sm text-gray-600">
-                        <strong>Doctor:</strong> {medicine.doctorProfile}
+                        <strong>{t.doctor}:</strong> {medicine.doctorProfile}
                     </p>
                 </DialogContent>
             </Dialog>

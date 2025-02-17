@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bell } from "lucide-react";
+import {Bell, User} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import SidebarLayout from "@/app/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { useLanguage } from "@/app/components/LanguageContext";
+import LanguageSwitch from '@/app/components/LanguageSwitch';
 
 export default function DashboardLayout() {
     return (
@@ -38,7 +40,14 @@ interface EmergencyInfo {
 }
 
 const Dashboard = () => {
-    const [userName] = useState('John Doe');
+    const { t } = useLanguage();
+    const [healthInfo] = useState({
+        name: 'John Doe',
+        age: 32,
+        height: '5\'9"',
+        weight: '75kg',
+        bloodType: 'O+'
+    });
     const [medications] = useState<Medication[]>([
         { name: 'Paracetamol', dosage: '500mg', schedule: 'Twice daily' },
         { name: 'Amoxicillin', dosage: '250mg', schedule: 'Once daily' },
@@ -52,43 +61,81 @@ const Dashboard = () => {
         chronicIllnesses: ['Diabetes', 'Hypertension'],
         emergencyContacts: ['+1234567890', '+0987654321'],
     });
+    const notifications = [
+        { id: 1, message: "Your appointment is scheduled for tomorrow at 10 AM." },
+        { id: 2, message: "You have a new lab report available for viewing." },
+        { id: 3, message: "Reminder: Take your Amoxicillin at 8 PM." },
+    ];
 
     return (
         <div className="min-h-screen p-6">
             <div className="flex items-center justify-between py-4 px-8 bg-white rounded-lg">
-                <Image src="/logo-with-text-black.png" alt="Logo" width={160} height={160} />
+                <div className="flex justify-center w-full">
+                    <Image src="/logo-with-text-black.png" alt="Logo" width={160} height={160} />
+                </div>
                 <div className="flex items-center space-x-4">
                     <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <Bell size={24} />
-                            </TooltipTrigger>
-                            <TooltipContent>Notifications</TooltipContent>
-                        </Tooltip>
+                        <Popover>
+                            <PopoverTrigger>
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <Bell size={24} className="cursor-pointer mt-3" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Notifications</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64">
+                                <h3 className="text-sm font-semibold mb-2">Notifications</h3>
+                                {notifications.length > 0 ? (
+                                    <ul className="space-y-2">
+                                        {notifications.map((notification) => (
+                                            <li key={notification.id} className="text-sm p-2 bg-gray-100 rounded">
+                                                {notification.message}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p className="text-sm text-gray-500">No new notifications</p>
+                                )}
+                            </PopoverContent>
+                        </Popover>
                         <Tooltip>
                             <TooltipTrigger>
                                 <Link href="/profile">
-                                    <Avatar>
-                                        <AvatarImage src="/user-avatar.png" alt="User" />
-                                        <AvatarFallback>JD</AvatarFallback>
-                                    </Avatar>
+                                    <User size={24} className="cursor-pointer" />
                                 </Link>
                             </TooltipTrigger>
                             <TooltipContent>Profile</TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
+                    <LanguageSwitch />
                 </div>
             </div>
 
-            {/* Welcome Message */}
-            <h1 className="text-2xl font-bold text-gray-800 mt-6">Welcome back, {userName}! Here’s your health summary.</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mt-6">{t.welcomeMessage}</h1>
+            <Card className="mt-4 border-2 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-purple-900">
+                        {t.basicHealthInformation}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="bg-white rounded-lg">
+                    <ul className="text-black space-y-2">
+                        <li>{t.name}: {healthInfo.name}</li>
+                        <li>{t.age}: {healthInfo.age}</li>
+                        <li>{t.height}: {healthInfo.height}</li>
+                        <li>{t.weight}: {healthInfo.weight}</li>
+                        <li>{t.bloodType}: {healthInfo.bloodType}</li>
+                    </ul>
+                </CardContent>
+            </Card>
 
-            {/* Health Information Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                {/* Medications */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>My Medications</CardTitle>
+                        <CardTitle>{t.myMedications}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {medications.map((med, index) => (
@@ -97,10 +144,9 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                {/* Medical Reports */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Medical Reports</CardTitle>
+                        <CardTitle>{t.medicalReports}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {medicalReports.map((report, index) => (
@@ -109,10 +155,9 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                {/* Critical Alerts */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Critical Alerts</CardTitle>
+                        <CardTitle>{t.criticalAlerts}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Alert variant="destructive">
@@ -126,10 +171,9 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                {/* Emergency Info */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Emergency Info</CardTitle>
+                        <CardTitle>{t.emergencyInfo}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="font-semibold text-red-500">Allergies</p>
@@ -148,36 +192,39 @@ const Dashboard = () => {
                 </Card>
             </div>
 
-            {/* Emergency & Security Features */}
-            <h2 className="text-2xl font-bold mt-8 mb-4">Emergency & Security Features</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4">{t.emergencyFeatures}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Emergency Access</CardTitle>
+                        <CardTitle>{t.accessLogs}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>Doctors can view life-saving info like allergies and blood type.</p>
-                        <Button variant="destructive" className="mt-4">Enable Emergency Access</Button>
+                        <p>{t.accessLogsMsg}</p>
+                        <Button variant="outline" className="mt-4">{t.accessLogsBtn}</Button>
                     </CardContent>
                 </Card>
-
                 <Card>
                     <CardHeader>
-                        <CardTitle>Access Logs</CardTitle>
+                        <CardTitle>{t.backupStatus}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>View who accessed your data for transparency and security.</p>
-                        <Button variant="outline" className="mt-4">View Access Logs</Button>
+                        <p>{t.backupStatusMsg}</p>
+                        <Button className="mt-4">{t.backupStatusBtn}</Button>
                     </CardContent>
                 </Card>
-
                 <Card>
                     <CardHeader>
-                        <CardTitle>Backup & Sync Status</CardTitle>
+                        <CardTitle>{t.connectWithDoctor}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>All records are safely backed up and synced.</p>
-                        <Button className="mt-4">Check Backup Status</Button>
+                        <p>{t.connectWithDoctorMsg}</p>
+                        <Image
+                            src="/images/qr.png"
+                            alt="QR Code to connect with doctor"
+                            width={128}
+                            height={128}
+                            className="mx-auto mt-4"
+                        />
                     </CardContent>
                 </Card>
             </div>

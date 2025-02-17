@@ -2,6 +2,7 @@
 
 import React from "react";
 import MedicineCard from "@/app/components/MedicineCard";
+import { useLanguage } from "@/app/components/LanguageContext";
 import SidebarLayout from "@/app/components/Layout";
 import Image from "next/image";
 
@@ -14,6 +15,8 @@ export default function MedicineLayout() {
 }
 
 const PatientMedicineList: React.FC = () => {
+    const { t } = useLanguage();
+
     const medicines = [
         {
             name: "Paracetamol",
@@ -48,7 +51,7 @@ const PatientMedicineList: React.FC = () => {
                     className="mx-auto mb-4"
                 />
             </div>
-            <h1 className="text-2xl text-purple-900 font-bold mb-4">Prescribed Medicines</h1>
+            <h1 className="text-2xl text-purple-900 font-bold mb-4">{t.prescribedMedicines}</h1>
             {medicines.map((medicine, index) => (
                 <MedicineCard key={index} medicine={medicine} />
             ))}
