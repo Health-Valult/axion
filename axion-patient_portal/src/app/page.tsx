@@ -13,6 +13,7 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/compon
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useLanguage } from "@/app/components/LanguageContext";
 import LanguageSwitch from '@/app/components/LanguageSwitch';
+import {useDarkMode} from "@/app/components/DarkModeContext";
 
 export default function DashboardLayout() {
     return (
@@ -41,9 +42,11 @@ interface EmergencyInfo {
 
 const Dashboard = () => {
     const { t } = useLanguage();
+    const { darkMode } = useDarkMode();
     const [healthInfo] = useState({
         name: 'John Doe',
         age: 32,
+        gender: "Male",
         height: '5\'9"',
         weight: '75kg',
         bloodType: 'O+'
@@ -68,10 +71,15 @@ const Dashboard = () => {
     ];
 
     return (
-        <div className="min-h-screen p-6">
-            <div className="flex items-center justify-between py-4 px-8 bg-white rounded-lg">
+        <div className="min-h-screen dark:bg-gray-950 p-6">
+            <div className="flex items-center justify-between py-4 px-8 bg-white dark:bg-gray-950 rounded-lg">
                 <div className="flex justify-center w-full">
-                    <Image src="/logo-with-text-black.png" alt="Logo" width={160} height={160} />
+                    <Image
+                        src={darkMode ? "/logo-with-text.png" : "/logo-with-text-black.png"}
+                        alt="Logo"
+                        width={160}
+                        height={160}
+                    />
                 </div>
                 <div className="flex items-center space-x-4">
                     <TooltipProvider>
@@ -86,18 +94,18 @@ const Dashboard = () => {
                                     </TooltipContent>
                                 </Tooltip>
                             </PopoverTrigger>
-                            <PopoverContent className="w-64">
+                            <PopoverContent className="w-64 dark:bg-gray-950">
                                 <h3 className="text-sm font-semibold mb-2">Notifications</h3>
                                 {notifications.length > 0 ? (
                                     <ul className="space-y-2">
                                         {notifications.map((notification) => (
-                                            <li key={notification.id} className="text-sm p-2 bg-gray-100 rounded">
+                                            <li key={notification.id} className="text-sm p-2 bg-gray-100 dark:bg-gray-950 dark:text-white rounded">
                                                 {notification.message}
                                             </li>
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-sm text-gray-500">No new notifications</p>
+                                    <p className="text-sm text-gray-500 dark:text-white">No new notifications</p>
                                 )}
                             </PopoverContent>
                         </Popover>
@@ -114,17 +122,18 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-800 mt-6">{t.welcomeMessage}</h1>
-            <Card className="mt-4 border-2 shadow-lg">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-400 mt-6">{t.welcomeMessage}</h1>
+            <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950">
                 <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-purple-900">
+                    <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
                         {t.basicHealthInformation}
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="bg-white rounded-lg">
-                    <ul className="text-black space-y-2">
+                <CardContent className="bg-white dark:bg-gray-950 rounded-lg">
+                    <ul className="text-black dark:text-white space-y-2">
                         <li>{t.name}: {healthInfo.name}</li>
                         <li>{t.age}: {healthInfo.age}</li>
+                        <li>{t.gender}: {healthInfo.gender}</li>
                         <li>{t.height}: {healthInfo.height}</li>
                         <li>{t.weight}: {healthInfo.weight}</li>
                         <li>{t.bloodType}: {healthInfo.bloodType}</li>
@@ -133,9 +142,9 @@ const Dashboard = () => {
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.myMedications}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.myMedications}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {medications.map((med, index) => (
@@ -144,9 +153,9 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.medicalReports}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.medicalReports}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {medicalReports.map((report, index) => (
@@ -155,25 +164,25 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.criticalAlerts}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.criticalAlerts}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Alert variant="destructive">
+                        <Alert variant="destructive" className="text-red-500">
                             <AlertTitle>Allergic Alert</AlertTitle>
                             <AlertDescription>Allergic to Panadol</AlertDescription>
                         </Alert>
-                        <Alert className="mt-2">
+                        <Alert className="mt-2 dark:bg-gray-950">
                             <AlertTitle>Reminder</AlertTitle>
                             <AlertDescription>Upcoming doctor visit on 2023-11-15</AlertDescription>
                         </Alert>
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.emergencyInfo}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.emergencyInfo}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="font-semibold text-red-500">Allergies</p>
@@ -192,29 +201,29 @@ const Dashboard = () => {
                 </Card>
             </div>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4">{t.emergencyFeatures}</h2>
+            <h2 className="text-2xl font-bold mt-8 mb-4 dark:text-gray-400">{t.emergencyFeatures}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.accessLogs}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.accessLogs}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p>{t.accessLogsMsg}</p>
                         <Button variant="outline" className="mt-4">{t.accessLogsBtn}</Button>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.backupStatus}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.backupStatus}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p>{t.backupStatusMsg}</p>
                         <Button className="mt-4">{t.backupStatusBtn}</Button>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle>{t.connectWithDoctor}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.connectWithDoctor}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p>{t.connectWithDoctorMsg}</p>

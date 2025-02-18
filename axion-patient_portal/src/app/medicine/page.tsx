@@ -5,6 +5,7 @@ import MedicineCard from "@/app/components/MedicineCard";
 import { useLanguage } from "@/app/components/LanguageContext";
 import SidebarLayout from "@/app/components/Layout";
 import Image from "next/image";
+import {useDarkMode} from "@/app/components/DarkModeContext";
 
 export default function MedicineLayout() {
     return (
@@ -16,6 +17,7 @@ export default function MedicineLayout() {
 
 const PatientMedicineList: React.FC = () => {
     const { t } = useLanguage();
+    const { darkMode } = useDarkMode();
 
     const medicines = [
         {
@@ -44,14 +46,14 @@ const PatientMedicineList: React.FC = () => {
         <div className="p-4 min-h-screen">
             <div className="flex-1 text-center">
                 <Image
-                    src="/logo-with-text-black.png"
+                    src={darkMode ? "/logo-with-text.png" : "/logo-with-text-black.png"}
                     alt="Logo"
                     width={160}
                     height={160}
                     className="mx-auto mb-4"
                 />
             </div>
-            <h1 className="text-2xl text-purple-900 font-bold mb-4">{t.prescribedMedicines}</h1>
+            <h1 className="text-2xl text-purple-900 dark:text-gray-400 font-bold mb-4">{t.prescribedMedicines}</h1>
             {medicines.map((medicine, index) => (
                 <MedicineCard key={index} medicine={medicine} />
             ))}

@@ -3,6 +3,7 @@ import {Geist, Geist_Mono} from "next/font/google";
 import "./globals.css";
 import React from "react";
 import {LanguageProvider} from "@/app/components/LanguageContext";
+import {DarkModeProvider} from "@/app/components/DarkModeContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -28,9 +29,11 @@ export default function RootLayout({children}: Readonly<{ children: React.ReactN
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-            <LanguageProvider>
-                {children}
-            </LanguageProvider>
+            <DarkModeProvider>
+                <LanguageProvider>
+                    {children}
+                </LanguageProvider>
+            </DarkModeProvider>
             </body>
         </html>
     );

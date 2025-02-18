@@ -7,6 +7,9 @@ type Translations = {
     basicHealthInformation: string;
     name: string;
     age: string;
+    gender: string;
+    male: string;
+    female: string;
     height: string;
     weight: string;
     bloodType: string;
@@ -53,16 +56,19 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-    const getInitialLanguage = (): string => {
-        return localStorage.getItem("appLanguage") || "en"; // Get stored language or default to English
-    };
-    const [language, setLanguage] = useState<string>(getInitialLanguage);
+    const [language, setLanguage] = useState<string>("en"); // Default to "en"
     const [currentTranslations, setCurrentTranslations] = useState<Translations>({} as Translations);
 
     useEffect(() => {
+        // Client-side code to access localStorage
+        const storedLanguage = localStorage.getItem("appLanguage");
+        if (storedLanguage) {
+            setLanguage(storedLanguage);
+        }
+
         const loadTranslations = async () => {
             const translationModule = await translations[language]();
-            setCurrentTranslations(translationModule.default); // ✅ Fix: Access `.default`
+            setCurrentTranslations(translationModule.default);
         };
 
         loadTranslations();
@@ -70,7 +76,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
 
     const changeLanguage = (language: string) => {
         setLanguage(language);
-        localStorage.setItem("appLanguage", language);
+        localStorage.setItem("appLanguage", language); // Store the language in localStorage
     };
 
     return (

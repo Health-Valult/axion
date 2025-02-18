@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { Upload } from "lucide-react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 import SidebarLayout from "@/app/components/Layout";
+import ModeSwitch from "@/app/components/ModeSwitch";
 
 export default function Profile() {
     return (
@@ -40,12 +42,15 @@ function ProfileForm() {
     };
 
     const handleSave = () => {
-        alert("Profile updated successfully! ✅");
+        alert("Profile updated successfully!");
     };
 
     return (
-        <div className="min-h-screen bg-white p-6 flex flex-col items-center">
-            <h1 className="text-2xl font-bold mb-4 text-purple-900">Your Profile</h1>
+        <div className="min-h-screen bg-white dark:bg-gray-950 p-6 flex flex-col items-center">
+            <div className="absolute top-6 right-6">
+                <ModeSwitch/>
+            </div>
+            <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-orange-300">Your Profile</h1>
             <div className="flex flex-col items-center space-y-3">
                 <Image
                     src={profile.avatar}
@@ -64,7 +69,7 @@ function ProfileForm() {
                 {[
                     { label: "First Name", name: "firstName", disabled: true },
                     { label: "Last Name", name: "lastName", disabled: true },
-                    { label: "Email", name: "email" },
+                    { label: "Email", name: "email", disabled: true },
                     { label: "Phone", name: "phone" },
                     { label: "NIC", name: "nic", disabled: true },
                     { label: "Date of Birth", name: "dob", type: "date" },
@@ -74,15 +79,15 @@ function ProfileForm() {
                     { label: "District", name: "district" },
                 ].map(({ label, name, type = "text", disabled }) => (
                     <div key={name}>
-                        <label className="block text-sm font-medium text-black">{label}</label>
+                        <label className="block text-sm font-medium text-black dark:text-white">{label}</label>
                         <input
                             type={type}
                             name={name}
                             value={profile[name as keyof typeof profile]}
                             onChange={handleChange}
                             disabled={disabled}
-                            className={`mt-1 block w-full px-4 py-2 border text-black border-gray-300 rounded-md ${
-                                disabled ? "bg-gray-100 cursor-not-allowed" : ""
+                            className={`mt-1 block w-full px-4 py-2 border text-black dark:text-white dark:bg-gray-950 border-gray-300 rounded-md ${
+                                disabled ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed" : ""
                             }`}
                         />
                     </div>
@@ -90,12 +95,12 @@ function ProfileForm() {
             </div>
 
             <div className="mt-6 w-full max-w-lg">
-                <button
+                <Button
                     onClick={handleSave}
-                    className="w-full py-2 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={"w-full py-2 bg-purple-600 dark:bg-orange-300 text-white dark:text-black font-semibold rounded-md hover:bg-purple-700 dark:hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-blue-500"}
                 >
                     Save Changes
-                </button>
+                </Button>
             </div>
         </div>
     );

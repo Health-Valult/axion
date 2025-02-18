@@ -4,6 +4,7 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { MoreVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import ModeSwitch from "@/app/components/ModeSwitch";
 
 interface SidebarContextProps {
     expanded: boolean;
@@ -40,7 +41,7 @@ function Sidebar({ children }: SidebarProps) {
 
     return (
         <aside
-            className={`h-screen max-h-full transition-all bg-white border-r shadow-sm flex flex-col relative group ${expanded ? 'w-56' : 'w-20'}`}
+            className={`h-screen max-h-full transition-all bg-white dark:bg-gray-950 dark:text-white border-r shadow-sm flex flex-col relative group ${expanded ? 'w-56' : 'w-20'}`}
             onMouseEnter={() => setExpanded(true)}
             onMouseLeave={() => setExpanded(false)}
         >
@@ -49,19 +50,21 @@ function Sidebar({ children }: SidebarProps) {
             </div>
 
             <SidebarContext.Provider value={{ expanded, activeItem, setActiveItem }}>
-                <ul className="flex-1 px-3">{children}</ul>
+                <ul className="flex-1 px-3 dark:text-white">{children}</ul>
             </SidebarContext.Provider>
 
             <div className="border-t flex p-3 items-center">
+                <div/>
                 <Image src="/user-icon.jpg" width={40} height={40} className="w-10 h-10 rounded-md" alt="User Avatar" />
                 <div className="overflow-hidden transition-all w-0 group-hover:w-52 ml-3">
-                    <h4 className="font-semibold text-black">John Doe</h4>
-                    <span className="text-xs text-black">johndoe@gmail.com</span>
+                    <h4 className="font-semibold text-black dark:text-white">John Doe</h4>
+                    <span className="text-xs text-black dark:text-white">johndoe@gmail.com</span>
                 </div>
                 <Link href="/profile">
-                    <MoreVertical size={20} className="ml-auto hidden group-hover:block" />
+                    <MoreVertical size={20} className="ml-auto hidden group-hover:block dark:text-white" />
                 </Link>
             </div>
+            <ModeSwitch expanded={expanded}/>
         </aside>
     );
 }
@@ -83,10 +86,10 @@ export function SidebarItem({ icon, text, href }: SidebarItemProps) {
 
     return (
         <li
-            className={`relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
+            className={`relative flex items-center py-2 px-3 my-1 font-medium dark:text-white rounded-md cursor-pointer transition-colors group ${
                 activeItem === text
-                    ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800"
-                    : "hover:bg-indigo-50 text-black"
+                    ? "bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800 dark:from-gray-600 dark:to-gray-500"
+                    : "hover:bg-indigo-50 dark:hover:bg-gray-700 text-black"
             }`}
         >
             <Link href={href} onClick={handleClick} className="flex items-center w-full">

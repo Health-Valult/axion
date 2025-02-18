@@ -26,10 +26,10 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <VisuallyHidden>Report: {report.name}</VisuallyHidden> {/* Visually hidden but accessible */}
                 </DialogTitle>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-purple-900">{report.name}</h2>
+                    <h2 className="text-xl font-semibold text-purple-900 dark:text-orange-300">{report.name}</h2>
                 </div>
                 <div className="mb-4">
-                    <h3 className="text-sm text-gray-600">{new Date(report.date).toLocaleDateString()}</h3>
+                    <h3 className="text-sm text-gray-600 dark:text-orange-300">{new Date(report.date).toLocaleDateString()}</h3>
                 </div>
                 <div className="flex-grow">
                     <iframe

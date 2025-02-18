@@ -17,7 +17,7 @@ export default function SidebarLayout({ children }: ClientSidebarLayoutProps) {
                 <SidebarItem icon={<Pill />} text="Medicines" href="/medicine" />
             </Sidebar>
 
-            <div className="flex-1 p-8 bg-white overflow-auto">{children}</div>
+            <div className="flex-1 p-8 bg-white dark:bg-gray-950 dark:text-white overflow-auto">{children}</div>
         </div>
     );
 }

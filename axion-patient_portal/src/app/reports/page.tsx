@@ -15,6 +15,7 @@ import ReportCard from "@/app/components/ReportCard";
 import ReportModal from "@/app/components/ReportModal";
 import SidebarLayout from "@/app/components/Layout";
 import Image from "next/image";
+import {useDarkMode} from "@/app/components/DarkModeContext";
 
 export default function ReportsLayout() {
     return (
@@ -48,6 +49,7 @@ function ReportsPage() {
     const yearOptions = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
     const { t } = useLanguage();
+    const { darkMode } = useDarkMode();
 
     const sortedReports = [...reportsData].sort((a, b) => {
         return sortOrder === "newest"
@@ -60,22 +62,22 @@ function ReportsPage() {
         : sortedReports;
 
     return (
-        <div className="p-6 min-h-screen bg-white">
+        <div className="p-6 min-h-screen bg-white dark:bg-gray-950">
             <div className="flex-1 text-center">
                 <Image
-                    src="/logo-with-text-black.png"
+                    src={darkMode ? "/logo-with-text.png" : "/logo-with-text-black.png"}
                     alt="Logo"
                     width={160}
                     height={160}
                     className="mx-auto mb-4"
                 />
             </div>
-            <h1 className="text-2xl font-bold mb-4 text-purple-900">{t.medicalReports}</h1>
+            <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-gray-400">{t.medicalReports}</h1>
 
             <div className="flex justify-between items-center mb-4">
                 <div />
 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 dark:bg-gray-950">
                     <Button
                         variant="outline"
                         onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
@@ -89,16 +91,16 @@ function ReportsPage() {
                             <Button
                                 variant="outline"
                                 className={cn(
-                                    "w-[200px] justify-start text-left font-normal",
+                                    "w-[200px] justify-start text-left font-normal dark:text-white",
                                     !filterDate && "text-muted-foreground"
                                 )}
                             >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                <CalendarIcon className="mr-2 h-4 w-4 dark:text-white" />
                                 {filterDate ? format(filterDate, "PPP") : `${t.pickDate}`}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                            <div className="flex items-center justify-between px-3 py-2 bg-gray-100 border-b">
+                            <div className="flex items-center justify-between px-3 py-2 bg-gray-100  dark:bg-gray-950 border-b">
                                 <span className="font-semibold">Year:</span>
                                 <Select
                                     onValueChange={(value) => {

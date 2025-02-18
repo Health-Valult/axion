@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Image from "next/image";
 
 interface Report {
@@ -16,7 +16,7 @@ interface Report {
 const ReportCard: React.FC<Report> = ({ report, onClick }) => {
     return (
         <Card
-            className="w-full bg-white rounded-lg shadow-md hover:shadow-lg transition-all"
+            className="w-full bg-white dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer"
             onClick={() => onClick(report.fileUrl)}
         >
             <CardHeader className="p-4 items-center">
@@ -27,12 +27,11 @@ const ReportCard: React.FC<Report> = ({ report, onClick }) => {
                     height={96}
                     className="object-cover rounded-lg"
                 />
-                <CardTitle className="text-lg font-semibold text-center text-purple-900 mt-2">{report.name}</CardTitle>
-                <CardDescription className="text-purple-900 text-sm text-center">
+                <CardTitle className="text-lg font-semibold text-center text-black dark:text-orange-300 mt-2">{report.name}</CardTitle>
+                <CardDescription className="text-black dark:text-white text-sm text-center">
                     {new Date(report.date).toLocaleDateString()}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="p-4"></CardContent>
         </Card>
     );
 };
