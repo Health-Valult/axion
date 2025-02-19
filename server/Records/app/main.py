@@ -9,8 +9,8 @@ import strawberry
 @strawberry.type
 class Query:
     @strawberry.field
-    def dickweed(self) -> str:
-        return "Hello World"
+    def observations(self, id:str,patientId) -> JSONResponse:
+        
 
 
 schema = strawberry.Schema(Query)
