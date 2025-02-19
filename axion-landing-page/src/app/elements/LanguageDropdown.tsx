@@ -1,26 +1,13 @@
 import React, { useState } from 'react'
 
-export default function LanguageDropdown({
-  onLanguageSelect,
-}: {
-  onLanguageSelect: (language: string) => void;
-}) {
+export default function LanguageDropdown() {
     const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState("Select Language");
 
-
-  const languages = [
-    { label: "සිංහල", value: "si" },
-    { label: "தமிழ்", value: "ta" },
-    { label: "English", value: "en" },
-];
-
-const handleSelect = (lang: string, label: string) => {
-    setSelected(label);
+  const handleSelect = (value: string) => {
+    setSelected(value);
     setIsOpen(false);
-    onLanguageSelect(lang); // Pass selected language to parent
-};
-
+  };
   return (
     <div className="relative inline-block text-left">
       
@@ -47,14 +34,24 @@ const handleSelect = (lang: string, label: string) => {
       {isOpen && (
         <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
           <div className="py-1">
-            {languages.map((language) => (
-              <button
-              key={language.value}
-              onClick={() => handleSelect(language.value, language.label)}
+            <button
+              onClick={() => handleSelect("සිංහල")}
               className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
             >
-              {language.label}
-            </button>))}
+              සිංහල
+            </button>
+            <button
+              onClick={() => handleSelect("தமிழ்")}
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            >
+              தமிழ்
+            </button>
+            <button
+              onClick={() => handleSelect("English")}
+              className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100"
+            >
+              English
+            </button>
           </div>
         </div>
       )}
