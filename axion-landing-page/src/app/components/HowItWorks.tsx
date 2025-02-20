@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 export const HowItWorks = () => {
 	const steps = [
@@ -63,9 +64,11 @@ export const HowItWorks = () => {
 							viewport={{ once: true }}
 						>
 							<div className="overflow-hidden rounded-2xl shadow-lg">
-								<img
+								<Image
 									src={step.image}
 									alt={step.title}
+									width={600} // Set a reasonable width
+									height={256} // 64 * 4 (Tailwind h-64 is 256px)
 									className="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300"
 								/>
 								<div className="absolute inset-0 bg-black/40 rounded-2xl group-hover:bg-black/50 transition-colors" />

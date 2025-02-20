@@ -11,6 +11,7 @@ import {
 	FileText,
 	PenTool,
 } from 'lucide-react';
+import Image from 'next/image';
 
 const stakeholders = [
 	{
@@ -83,11 +84,12 @@ export const StakeholderSection = () => {
 							transition={{ duration: 0.5, delay: index * 0.2 }} // Stagger effect
 							viewport={{ once: true }}
 						>
-							<div className="h-48 mb-6 rounded-xl overflow-hidden">
-								<img
+							<div className="relative h-48 mb-6 rounded-xl overflow-hidden w-full">
+								<Image
 									src={item.image}
 									alt={item.title}
-									className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+									fill
+									className="object-cover transform hover:scale-105 transition-transform duration-300"
 								/>
 							</div>
 							<div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm mb-6">

@@ -11,19 +11,6 @@ import { cn } from '@/lib/utils';
 import NumberFlow from '@/components/ui/number-flow';
 import confetti from 'canvas-confetti';
 
-interface PricingPlan {
-	name: string;
-	description: string;
-	price: number;
-	yearlyPrice: number;
-	period: string;
-	features: string[];
-	isPopular?: boolean;
-	buttonText?: string;
-	href: string;
-	buttonVariant?: 'default' | 'outline';
-}
-
 const pricingOptions = {
 	title: 'Personalized Health Plans for Every Need',
 	description: 'Choose the plan that fits your health journey.',

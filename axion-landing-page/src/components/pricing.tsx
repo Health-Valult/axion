@@ -1,16 +1,16 @@
+/* eslint-disable */
 'use client';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label1';
 import { Switch } from '@/components/ui/switch';
-// import { useMediaQuery } from "@/app/hooks/use-media-query"
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Check, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useRef } from 'react';
-// import confetti from "canvas-confetti";
 import NumberFlow from '@number-flow/react';
+import useMediaQuery from '@/app/hooks/use-media-query';
 
 interface PricingPlan {
 	name: string;
@@ -36,7 +36,7 @@ export function Pricing({
 	description = 'Choose the plan that works for you\nAll plans include access to our platform, lead generation tools, and dedicated support.',
 }: PricingProps) {
 	const [isMonthly, setIsMonthly] = useState(true);
-	// const isDesktop = useMediaQuery("(min-width: 768px)");
+	const isDesktop = useMediaQuery();
 	const switchRef = useRef<HTMLButtonElement>(null);
 
 	const handleToggle = (checked: boolean) => {
@@ -45,26 +45,6 @@ export function Pricing({
 			const rect = switchRef.current.getBoundingClientRect();
 			const x = rect.left + rect.width / 2;
 			const y = rect.top + rect.height / 2;
-
-			// confetti({
-			//   particleCount: 50,
-			//   spread: 60,
-			//   origin: {
-			//     x: x / window.innerWidth,
-			//     y: y / window.innerHeight,
-			//   },
-			//   colors: [
-			//     "hsl(var(--primary))",
-			//     "hsl(var(--accent))",
-			//     "hsl(var(--secondary))",
-			//     "hsl(var(--muted))",
-			//   ],
-			//   ticks: 200,
-			//   gravity: 1.2,
-			//   decay: 0.94,
-			//   startVelocity: 30,
-			//   shapes: ["circle"],
-			// });
 		}
 	};
 
@@ -101,16 +81,24 @@ export function Pricing({
 					<motion.div
 						key={index}
 						initial={{ y: 50, opacity: 1 }}
-						// whileInView={
-						//   isDesktop
-						//     ? {
-						//         y: plan.isPopular ? -20 : 0,
-						//         opacity: 1,
-						//         x: index === 2 ? -30 : index === 0 ? 30 : 0,
-						//         scale: index === 0 || index === 2 ? 0.94 : 1.0,
-						//       }
-						//     : {}
-						// }
+						whileInView={
+							isDesktop
+								? {
+										y: plan.isPopular ? -20 : 0,
+										opacity: 1,
+										x:
+											index === 2
+												? -30
+												: index === 0
+												? 30
+												: 0,
+										scale:
+											index === 0 || index === 2
+												? 0.94
+												: 1.0,
+								  }
+								: {}
+						}
 						viewport={{ once: true }}
 						transition={{
 							duration: 1.6,

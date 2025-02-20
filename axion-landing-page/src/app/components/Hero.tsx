@@ -5,6 +5,7 @@ import { Button } from '@heroui/button';
 import { ChevronRight } from 'lucide-react';
 import { TypewriterEffectSmooth } from '@/components/ui/typewriter-effect';
 import { Link } from '@heroui/link';
+import Image from 'next/image';
 
 const words = [
 	{
@@ -69,10 +70,13 @@ const Hero = () => {
 						className="relative animate-fade-in"
 						style={{ animationDelay: '0.3s' }}
 					>
-						<img
+						<Image
 							src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80"
 							alt="HealthVault Dashboard"
+							width={800}
+							height={533}
 							className="rounded-2xl shadow-2xl"
+							priority
 						/>
 						<div className="absolute -bottom-6 -right-6 -z-10 w-full h-full bg-accent/10 rounded-2xl"></div>
 					</div>

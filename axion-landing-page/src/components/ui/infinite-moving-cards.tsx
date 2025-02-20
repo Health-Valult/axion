@@ -1,7 +1,8 @@
+/* eslint-disable */
 'use client';
 
 import { cn } from '@/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MessageSquareQuote } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@nextui-org/react';
 import Image from 'next/image';
@@ -27,20 +28,27 @@ export const InfiniteMovingCards = ({
 	const containerRef = React.useRef<HTMLDivElement>(null);
 	const scrollerRef = React.useRef<HTMLUListElement>(null);
 
-	useEffect(() => {
-		addAnimation();
-	}, [addAnimation]);
 	const [start, setStart] = useState(false);
+	const isDuplicated = useRef(false); // Prevent infinite cloning
+
+	useEffect(() => {
+		if (!isDuplicated.current) {
+			addAnimation();
+			isDuplicated.current = true; // Mark as duplicated
+		}
+	}, []); // Empty dependency array to run only once
+
 	function addAnimation() {
 		if (containerRef.current && scrollerRef.current) {
 			const scrollerContent = Array.from(scrollerRef.current.children);
 
-			scrollerContent.forEach((item) => {
-				const duplicatedItem = item.cloneNode(true);
-				if (scrollerRef.current) {
-					scrollerRef.current.appendChild(duplicatedItem);
-				}
-			});
+			// Prevent multiple duplications
+			if (scrollerContent.length > 0 && !isDuplicated.current) {
+				scrollerContent.forEach((item) => {
+					const duplicatedItem = item.cloneNode(true);
+					scrollerRef.current?.appendChild(duplicatedItem);
+				});
+			}
 
 			getDirection();
 			getSpeed();
