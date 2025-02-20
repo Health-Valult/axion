@@ -1,9 +1,7 @@
 'use client';
 
 import { InfiniteMovingCards } from '@/components/ui/infinite-moving-cards';
-import { Card, CardBody, CardHeader } from '@nextui-org/react';
 import { motion } from 'framer-motion';
-import { MessageSquareQuote } from 'lucide-react';
 
 export const Testimonials = () => {
 	const testimonials = [

@@ -24,13 +24,6 @@ interface PricingPlan {
 	buttonVariant?: 'default' | 'outline';
 }
 
-interface Pricingnewps {
-	title?: string;
-	description?: string;
-	plans: PricingPlan[];
-	className?: string;
-}
-
 const pricingOptions = {
 	title: 'Personalized Health Plans for Every Need',
 	description: 'Choose the plan that fits your health journey.',

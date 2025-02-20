@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import React, { useEffect, useState } from 'react';
 import { MessageSquareQuote } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '@nextui-org/react';
+import Image from 'next/image';
 
 export const InfiniteMovingCards = ({
 	items,
@@ -28,7 +29,7 @@ export const InfiniteMovingCards = ({
 
 	useEffect(() => {
 		addAnimation();
-	}, []);
+	}, [addAnimation]);
 	const [start, setStart] = useState(false);
 	function addAnimation() {
 		if (containerRef.current && scrollerRef.current) {
@@ -97,7 +98,7 @@ export const InfiniteMovingCards = ({
 					pauseOnHover && 'hover:[animation-play-state:paused]'
 				)}
 			>
-				{items.map((item, idx) => (
+				{items.map((item) => (
 					<li
 						className="w-[350px] max-w-full relative rounded-2xl border-none flex-shrink-0 px-8 py-6 md:w-[450px]"
 						style={{
@@ -117,10 +118,12 @@ export const InfiniteMovingCards = ({
 									<div className="flex items-center gap-3">
 										{' '}
 										{/* Reduced gap */}
-										<img
+										<Image
 											src={item.image}
 											alt={item.name}
-											className="w-10 h-10 rounded-full object-cover"
+											width={40} // Set width explicitly
+											height={40} // Set height explicitly
+											className="rounded-full object-cover"
 										/>
 										<div>
 											<h4 className="font-semibold text-gray-900">

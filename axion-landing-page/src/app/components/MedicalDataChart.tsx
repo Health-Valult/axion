@@ -12,27 +12,34 @@ import {
 } from 'recharts';
 import { Card, CardHeader, Tabs, Tab } from '@nextui-org/react';
 
-const patientData = [
+// Define the structure for the data
+interface DataPoint {
+	category: string;
+	value: number;
+}
+
+// Data arrays with proper type
+const patientData: DataPoint[] = [
 	{ category: 'Reassurance', value: 68 },
 	{ category: 'Motivation to follow medical recommendations', value: 80 },
 	{ category: 'Reduced anxiety', value: 98 },
 ];
 
-const medicalStaffData = [
+const medicalStaffData: DataPoint[] = [
 	{ category: 'Improved preparation prior to consultations', value: 48.3 },
 	{ category: 'Ability to detect inaccuracies in medical notes', value: 79 },
 	{ category: 'Growth in clinician-patient trust', value: 82.8 },
 ];
 
-const CustomTooltip = ({
-	active,
-	payload,
-	label,
-}: {
+// CustomTooltip props interface
+interface CustomTooltipProps {
 	active?: boolean;
-	payload?: any;
+	payload?: { value: number }[];
 	label?: string;
-}) => {
+}
+
+// Custom tooltip with proper types
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 	if (active && payload && payload.length) {
 		return (
 			<div className="bg-white p-4 border border-gray-300 rounded-lg shadow-lg">
@@ -47,7 +54,9 @@ const CustomTooltip = ({
 };
 
 const MedicalDataChart = () => {
-	const [activeTab, setActiveTab] = useState<string>('patient');
+	const [activeTab, setActiveTab] = useState<'patient' | 'medicalStaff'>(
+		'patient'
+	);
 
 	return (
 		<div className="w-full max-w-7xl mx-auto p-6 space-y-8">
@@ -58,7 +67,9 @@ const MedicalDataChart = () => {
 
 				<Tabs
 					selectedKey={activeTab}
-					onSelectionChange={(key) => setActiveTab(key.toString())}
+					onSelectionChange={(key) =>
+						setActiveTab(key as 'patient' | 'medicalStaff')
+					}
 					className="ml-5"
 				>
 					<Tab key="patient" title="Patient Data">
@@ -76,10 +87,8 @@ const MedicalDataChart = () => {
 									<CartesianGrid strokeDasharray="3 3" />
 									<XAxis
 										dataKey="category"
-										angle={0} // ✅ Set to 0 for straight labels
-										textAnchor="middle"
-										height={50} // ✅ Increased height to avoid overlap
-										dy={10} // ✅ Moves labels slightly down
+										height={50}
+										dy={10}
 									/>
 									<YAxis
 										domain={[0, 100]}
@@ -112,10 +121,8 @@ const MedicalDataChart = () => {
 									<CartesianGrid strokeDasharray="3 3" />
 									<XAxis
 										dataKey="category"
-										angle={0} // ✅ Set to 0 for straight labels
-										textAnchor="middle"
-										height={50} // ✅ Increased height to avoid overlap
-										dy={10} // ✅ Moves labels slightly down
+										height={50}
+										dy={10}
 									/>
 									<YAxis
 										domain={[0, 100]}

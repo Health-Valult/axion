@@ -2,10 +2,6 @@
 
 import React from 'react';
 import {
-	ShieldCheck,
-	Lock,
-	History,
-	Key,
 	EarthLock,
 	FolderKey,
 	Logs,
