@@ -36,41 +36,42 @@ import {
 import { Button } from '@/components/ui/button';
 import { ChartConfig, ChartContainer } from '@/components/ui/chart';
 
-const urineTestData = [
-	{ parameter: 'Protein', isNormal: false },
-	{ parameter: 'Blood (Hematuria)', isNormal: false },
-	{ parameter: 'Leukocytes (WBCs)', isNormal: false },
-	{ parameter: 'Nitrites', isNormal: false },
-	{ parameter: 'RBCs', isNormal: false },
-	{ parameter: 'WBCs', isNormal: false },
-	{ parameter: 'Crystals', isNormal: false },
-	{ parameter: 'Bacteria', isNormal: false },
-	{ parameter: 'pH', isNormal: true },
-	{ parameter: 'Specific Gravity', isNormal: true },
-	{ parameter: 'Glucose', isNormal: true },
-	{ parameter: 'Ketones', isNormal: true },
-	{ parameter: 'Bilirubin', isNormal: true },
-	{ parameter: 'Urobilinogen', isNormal: true },
+type testData = {
+	parameter: string;
+	isNormal: boolean;
+};
+
+const liverTestData: testData[] = [
+	{ parameter: 'SERUM BILIRUBIN (TOTAL)', isNormal: true },
+	{ parameter: 'SERUM BILIRUBIN (DIRECT)', isNormal: true },
+	{ parameter: 'SERUM BILIRUBIN (INDIRECT)', isNormal: true },
+	{ parameter: 'SGPT (ALT)', isNormal: true },
+	{ parameter: 'SGOT (AST)', isNormal: true },
+	{ parameter: 'SERUM ALKALINE PHOSPHATASE', isNormal: false },
+	{ parameter: 'SERUM PROTEIN', isNormal: true },
+	{ parameter: 'SERUM ALBUMIN', isNormal: true },
+	{ parameter: 'GLOBULIN', isNormal: true },
+	{ parameter: 'A/G RATIO', isNormal: true },
 ];
 
-// Calculate Overall Urine Health Score (Percentage of Normal Markers)
-const totalParameters = urineTestData.length;
-const normalCount = urineTestData.filter((test) => test.isNormal).length;
-const urineHealthScore = Math.round((normalCount / totalParameters) * 100);
+// Calculate Overall liver Health Score (Percentage of Normal Markers)
+const totalParameters = liverTestData.length;
+const normalCount = liverTestData.filter((test) => test.isNormal).length;
+const liverHealthScore = Math.round((normalCount / totalParameters) * 100);
 
 const chartData = [
 	{
-		name: 'Urine Health Score',
-		value: urineHealthScore,
-		fill: 'var(--color-urineHealth)',
+		name: 'Liver Health Score',
+		value: liverHealthScore,
+		fill: 'var(--color-liverHealth)',
 	},
 ];
 
 const chartConfig = {
 	health: {
-		label: 'Overall Kidney Health',
+		label: 'Overall Liver Health',
 	},
-	urineHealth: {
+	liverHealth: {
 		label: 'Patient Health Score',
 		color: 'hsl(var(--chart-1))',
 	},
@@ -78,112 +79,64 @@ const chartConfig = {
 
 const testResults = [
 	{
-		parameter: 'Color',
-		result: 'Yellow',
-		normalRange: 'Pale Yellow to Amber',
+		parameter: 'SERUM BILIRUBIN (TOTAL)',
+		result: '0.9 mg/dl',
+		normalRange: '0.2 - 1.2 mg/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Clarity',
-		result: 'Clear',
-		normalRange: 'Clear',
+		parameter: 'SERUM BILIRUBIN (DIRECT)',
+		result: '0.2 mg/dl',
+		normalRange: '0 - 0.3 mg/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Odor',
-		result: 'Slightly Foul',
-		normalRange: 'Normal (Mild)',
-		remarks: 'May indicate infection',
-	},
-	{
-		parameter: 'pH',
-		result: '6.5',
-		normalRange: '4.5 – 8.0',
+		parameter: 'SERUM BILIRUBIN (INDIRECT)',
+		result: '0.70 mg/dl',
+		normalRange: '0.2 - 1 mg/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Specific Gravity',
-		result: '1.020',
-		normalRange: '1.005 – 1.030',
+		parameter: 'SGPT (ALT)',
+		result: '36 U/I',
+		normalRange: '13 - 40 U/I',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Protein',
-		result: '+1 (30 mg/dL)',
-		normalRange: 'Negative / <30 mg/dL',
-		remarks: 'Mild Proteinuria',
-	},
-	{
-		parameter: 'Glucose',
-		result: 'Negative',
-		normalRange: 'Negative',
+		parameter: 'SGOT (AST)',
+		result: '32 U/I',
+		normalRange: '0 - 37 U/I',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Ketones',
-		result: 'Negative',
-		normalRange: 'Negative',
+		parameter: 'SERUM ALKALINE PHOSPHATASE',
+		result: '11 U/I',
+		normalRange: 'Reference range not provided', // Assuming no reference range was given
+		remarks: 'Low', // Based on the context of other values being normal, we can infer it's low
+	},
+	{
+		parameter: 'SERUM PROTEIN',
+		result: '7.2 g/dl',
+		normalRange: '6.4 - 8.3 g/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Bilirubin',
-		result: 'Negative',
-		normalRange: 'Negative',
+		parameter: 'SERUM ALBUMIN',
+		result: '4.7 g/dl',
+		normalRange: '3.5 - 5.2 g/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Urobilinogen',
-		result: '0.2 mg/dL',
-		normalRange: '0.1 – 1.0 mg/dL',
+		parameter: 'GLOBULIN',
+		result: '2.50 g/dl',
+		normalRange: '1.8 - 3.6 g/dl',
 		remarks: 'Normal',
 	},
 	{
-		parameter: 'Blood (Hematuria)',
-		result: '+1 (RBCs detected)',
-		normalRange: 'Negative',
-		remarks: 'Possible infection/stones',
-	},
-	{
-		parameter: 'Leukocytes (WBCs)',
-		result: '+2',
-		normalRange: 'Negative',
-		remarks: 'Possible UTI',
-	},
-	{
-		parameter: 'Nitrites',
-		result: 'Positive',
-		normalRange: 'Negative',
-		remarks: 'Suggests bacterial infection',
-	},
-	{
-		parameter: 'Red Blood Cells (RBCs)',
-		result: '8 / HPF',
-		normalRange: '0 – 3 / HPF',
-		remarks: 'Possible infection/stones',
-	},
-	{
-		parameter: 'White Blood Cells (WBCs)',
-		result: '15 / HPF',
-		normalRange: '0 – 5 / HPF',
-		remarks: 'Suggests UTI',
-	},
-	{
-		parameter: 'Casts',
-		result: 'Hyaline Casts',
-		normalRange: 'None or Few',
+		parameter: 'A/G RATIO',
+		result: '1.88',
+		normalRange: '1.1 - 2.1',
 		remarks: 'Normal',
-	},
-	{
-		parameter: 'Crystals',
-		result: 'Few Oxalate Crystals',
-		normalRange: 'Absent / Few',
-		remarks: 'May indicate kidney stones',
-	},
-	{
-		parameter: 'Bacteria',
-		result: 'Present',
-		normalRange: 'Absent',
-		remarks: 'UTI suspected',
 	},
 ];
 
@@ -191,8 +144,8 @@ const KidneyChart: React.FC = () => {
 	return (
 		<Card className="flex flex-col shadow-none border-gray-300 dark:border-gray-700">
 			<CardHeader className="items-center pb-0">
-				<CardTitle>Urinalysis Overview</CardTitle>
-				<CardDescription>Test taken 10.02.2024</CardDescription>
+				<CardTitle>Liver Function Overview</CardTitle>
+				<CardDescription>Test taken 27.01.2024</CardDescription>
 			</CardHeader>
 			<CardContent className="flex-1 flex flex-col items-center justify-center py-2">
 				<ChartContainer
@@ -250,7 +203,7 @@ const KidneyChart: React.FC = () => {
 													y={(viewBox.cy || 0) + 24}
 													className="fill-muted-foreground"
 												>
-													Kidney Health
+													Liver Health
 												</tspan>
 											</text>
 										);
@@ -269,15 +222,15 @@ const KidneyChart: React.FC = () => {
 					<DialogContent className="flex flex-col gap-0 p-0 sm:max-h-[min(640px,80vh)] sm:max-w-lg [&>button:last-child]:top-3.5">
 						<DialogHeader className="contents space-y-0 text-left">
 							<DialogTitle className="border-b border-border px-6 py-4 text-base">
-								Kidney Health
+								Liver Health
 							</DialogTitle>
 							<div className="overflow-y-auto">
 								<DialogDescription asChild>
 									<div className="px-6 py-4">
 										<Table>
 											<TableCaption>
-												Composition of urine as at
-												10.02.2024
+												Liver Functionality as at
+												27.01.2024
 											</TableCaption>
 											<TableHeader>
 												<TableRow>

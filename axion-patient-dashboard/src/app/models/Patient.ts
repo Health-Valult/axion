@@ -1,1 +1,1 @@
-// loading patient data from mongodb
+// loading patient data from documentdb

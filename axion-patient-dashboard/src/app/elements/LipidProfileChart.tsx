@@ -1,13 +1,7 @@
 'use client';
 
-import {
-	AlertCircle,
-	CheckCircle,
-	HelpCircle,
-	TrendingUp,
-	TriangleAlert,
-} from 'lucide-react';
-import { CartesianGrid, LabelList, Line, LineChart, XAxis } from 'recharts';
+import { CheckCircle, CircleAlert, TriangleAlert } from 'lucide-react';
+import { CartesianGrid, Line, LineChart, XAxis } from 'recharts';
 
 import {
 	Card,
@@ -26,36 +20,40 @@ import {
 
 const chartConfig = {
 	totalCholesterol: {
-		label: 'Total',
+		label: 'Total Cholesterol',
 		color: 'hsl(var(--chart-1))',
-	},
-	LDL: {
-		label: 'LDL',
-		color: 'hsl(var(--chart-2))',
-	},
-	HDL: {
-		label: 'HDL',
-		color: 'hsl(var(--chart-3))',
 	},
 	triglycerides: {
 		label: 'Triglycerides',
 		color: 'hsl(var(--chart-4))',
 	},
-	nonHDL: {
-		label: 'Non-HDL',
-		color: 'hsl(var(--chart-5))',
+	HDL: {
+		label: 'HDL Cholesterol',
+		color: 'hsl(var(--chart-3))',
+	},
+	LDL: {
+		label: 'LDL Cholesterol (Calculated)',
+		color: 'hsl(var(--chart-2))',
 	},
 	VLDL: {
-		label: 'VLDL ',
+		label: 'VLDL Cholesterol (Calculated)',
 		color: 'hsl(var(--chart-6))',
 	},
-	ApoB: {
-		label: 'ApoB',
+	LDL_HDL: {
+		label: 'LDL / HDL (Calculated)',
 		color: 'hsl(var(--chart-7))',
 	},
-	Lp_a: {
-		label: 'Lp(a) - Lipoprotein(a)',
+	TC_HDL: {
+		label: 'Total Cholesterol / HDL (Calculated)',
 		color: 'hsl(var(--chart-8))',
+	},
+	TG_HDL: {
+		label: 'TG / HDL (Calculated)',
+		color: 'hsl(var(--chart-9))',
+	},
+	nonHDL: {
+		label: 'Non-HDL cholesterol (Calculated)',
+		color: 'hsl(var(--chart-5))',
 	},
 } satisfies ChartConfig;
 
@@ -63,74 +61,102 @@ interface chartProps {
 	chartData: {
 		month: string;
 		totalCholesterol: number;
-		LDL: number;
-		HDL: number;
 		triglycerides: number;
-		nonHDL: number;
+		HDL: number;
+		LDL: number;
 		VLDL: number;
-		ApoB: number;
-		Lp_a: number;
+		LDL_HDL: number;
+		TC_HDL: number;
+		TG_HDL: number;
+		nonHDL: number;
 	}[];
 }
 
 const getCholesterolRisk = (
 	totalCholesterol: number,
-	LDL: number,
-	HDL: number,
 	triglycerides: number,
-	nonHDL: number,
+	HDL: number,
+	LDL: number,
 	VLDL: number,
-	ApoB: number,
-	Lp_a: number
+	LDL_HDL: number,
+	TC_HDL: number,
+	nonHDL: number
 ) => {
-	if (totalCholesterol < 200 && LDL < 100 && HDL >= 60) {
+	if (
+		totalCholesterol >= 125 &&
+		totalCholesterol <= 200 &&
+		triglycerides >= 25 &&
+		triglycerides <= 200 &&
+		HDL >= 35 &&
+		HDL <= 80 &&
+		LDL >= 85 &&
+		LDL <= 130 &&
+		VLDL >= 5 &&
+		VLDL <= 40 &&
+		LDL_HDL >= 1.5 &&
+		LDL_HDL <= 3.5 &&
+		TC_HDL >= 3.5 &&
+		TC_HDL <= 5
+	) {
 		return {
 			label: 'Optimal Cholesterol Levels',
 			color: 'text-green-600',
 			icon: <CheckCircle className="h-4 w-4" />,
 		};
-	} else if (
-		(totalCholesterol >= 200 && totalCholesterol < 240) ||
-		(LDL >= 100 && LDL < 160) ||
-		(HDL < 60 && HDL >= 40) ||
-		(triglycerides >= 150 && triglycerides < 200) ||
-		(nonHDL >= 130 && nonHDL < 160) ||
-		(VLDL >= 30 && VLDL < 40) // Added VLDL here
-	) {
+	} else if (LDL < 50 && nonHDL < 80) {
 		return {
-			label: 'Borderline High Cholesterol',
-			color: 'text-yellow-600',
-			icon: <AlertCircle className="h-4 w-4" />,
+			label: 'Extreme Risk Group Category A (Treatment Goal)',
+			color: 'text-blue-600',
+			icon: <CircleAlert className="h-4 w-4" />,
 		};
-	} else if (
-		totalCholesterol >= 240 ||
-		LDL >= 160 ||
-		HDL < 40 ||
-		triglycerides >= 200 ||
-		nonHDL >= 160 ||
-		VLDL >= 40 // Added VLDL here
-	) {
+	} else if (LDL <= 30 && nonHDL <= 60) {
 		return {
-			label: 'High Cholesterol Risk',
-			color: 'text-orange-600',
+			label: 'Extreme Risk Group Category A (Optional Goal)',
+			color: 'text-blue-600',
+			icon: <CircleAlert className="h-4 w-4" />,
+		};
+	} else if (LDL >= 50 && nonHDL >= 80) {
+		return {
+			label: 'Consider Therapy (Extreme Risk Group Category A)',
+			color: 'text-red-600',
 			icon: <TriangleAlert className="h-4 w-4" />,
 		};
-	} else if (
-		ApoB >= 130 ||
-		Lp_a >= 50 ||
-		triglycerides >= 500 // Severe case
-	) {
+	} else if (LDL > 30 && nonHDL > 60) {
 		return {
-			label: 'Very High Cholesterol Risk',
+			label: 'Consider Therapy (Extreme Risk Group Category A - Optional Goal)',
+			color: 'text-red-600',
+			icon: <TriangleAlert className="h-4 w-4" />,
+		};
+	} else if (LDL < 50 && nonHDL < 80) {
+		return {
+			label: 'Very High Risk (Treatment Goal)',
+			color: 'text-blue-600',
+			icon: <CircleAlert className="h-4 w-4" />,
+		};
+	} else if (LDL >= 50 && nonHDL >= 80) {
+		return {
+			label: 'Consider Therapy (Very High Risk)',
+			color: 'text-red-600',
+			icon: <TriangleAlert className="h-4 w-4" />,
+		};
+	} else if (LDL < 70 && nonHDL < 100) {
+		return {
+			label: 'High Risk (Treatment Goal)',
+			color: 'text-orange-600',
+			icon: <CircleAlert className="h-4 w-4" />,
+		};
+	} else if (LDL >= 70 && nonHDL >= 100) {
+		return {
+			label: 'Consider Therapy (High Risk)',
 			color: 'text-red-600',
 			icon: <TriangleAlert className="h-4 w-4" />,
 		};
 	} else {
 		return {
-			label: 'Unknown Risk Level',
-			color: 'text-gray-600',
-			icon: <HelpCircle className="h-4 w-4" />,
-		};
+			label: 'High Cholesterol Risk',
+			color: 'text-orange-600',
+			icon: <TriangleAlert className="h-4 w-4" />,
+		}; // Default to High Cholesterol Risk if no other condition is met
 	}
 };
 
@@ -138,16 +164,16 @@ const LipidProfileChart: React.FC<chartProps> = ({ chartData }) => {
 	const latest = chartData[chartData.length - 1];
 	const status = getCholesterolRisk(
 		latest.totalCholesterol,
-		latest.LDL,
-		latest.HDL,
 		latest.triglycerides,
-		latest.nonHDL,
+		latest.HDL,
+		latest.LDL,
 		latest.VLDL,
-		latest.ApoB,
-		latest.Lp_a
+		latest.LDL_HDL, // Added LDL_HDL
+		latest.TC_HDL, // Added TC_HDL
+		latest.nonHDL
 	);
 	return (
-		<Card>
+		<Card className="shadow-none border-gray-300 dark:border-gray-700">
 			<CardHeader>
 				<CardTitle>Cholesterol Chart (mg/dL)</CardTitle>
 				<CardDescription>

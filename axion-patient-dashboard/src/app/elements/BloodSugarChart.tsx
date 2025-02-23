@@ -24,11 +24,9 @@ import {
 import {
 	ChartConfig,
 	ChartContainer,
-	ChartLegend,
 	ChartLegendContent,
 } from '@/components/ui/chart';
 
-// Updated Chart Data with Normal Ranges
 const chartData = [
 	{
 		parameter: 'FBG (mg/dL)',
@@ -102,19 +100,18 @@ const chartData = [
 	},
 ];
 
-// Chart Configuration for Labels and Colors
 const chartConfig = {
 	actual: {
 		label: 'Actual Value',
-		color: 'hsl(var(--chart-1))', // Darker color for test result
+		color: 'hsl(var(--chart-1))',
 	},
-	normalRange: {
+	normalMax: {
 		label: 'Normal Range',
-		color: 'hsl(var(--chart-2))', // Light color for background reference
+		color: 'hsl(var(--chart-2))',
 	},
 	excess: {
 		label: 'Excess beyond normal',
-		color: 'hsl(var(--chart-7))', // Red for exceeding values
+		color: 'hsl(var(--chart-7))',
 	},
 } satisfies ChartConfig;
 
@@ -135,7 +132,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 		const data = payload[0].payload as ChartData; // Type assertion
 
 		return (
-			<div className="bg-white p-2 rounded shadow-md">
+			<div className="bg-white dark:bg-black dark:text-white p-2 rounded shadow-md">
 				<p className="font-bold">{data.parameter}</p>
 				<p>
 					Normal Range: {data.normalMin} - {data.normalMax}
@@ -152,7 +149,7 @@ const CustomTooltip: React.FC<TooltipProps<number, string>> = ({
 
 const BloodSugarChart: React.FC = () => {
 	return (
-		<Card>
+		<Card className="shadow-none border-gray-300 dark:border-gray-700">
 			<CardHeader>
 				<CardTitle>Blood Glucose Chart</CardTitle>
 				<CardDescription>Normal vs. Actual Values</CardDescription>
@@ -181,13 +178,13 @@ const BloodSugarChart: React.FC = () => {
 							width={150}
 						/>
 						<Tooltip content={<CustomTooltip />} />
+
 						<Legend content={<ChartLegendContent />} />
 
-						{/* Background Normal Range (from normalMin to normalMax) */}
 						<Bar
 							dataKey="normalMax"
 							stackId="a"
-							fill="var(--color-normalRange)"
+							fill="var(--color-normalMax)"
 							barSize={20}
 						/>
 

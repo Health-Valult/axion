@@ -208,7 +208,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 	return (
 		<div
 			className={cn(
-				'rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden',
+				'rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 mx-auto border border-neutral-200 dark:border-neutral-700 md:overflow-hidden',
 				'h-screen' // for your use case, use `h-screen` instead of `h-[60vh]`
 			)}
 		>
@@ -261,21 +261,12 @@ const SideBar: React.FC<Component> = ({ children }) => {
 										Dr. Steven James
 									</p>
 								</DropdownItem>
-								<DropdownItem key="settings">
-									My Settings
+								<DropdownItem key="edit">
+									Edit Profile
 								</DropdownItem>
-								<DropdownItem key="team_settings">
-									Team Settings
-								</DropdownItem>
-								<DropdownItem key="analytics">
-									Analytics
-								</DropdownItem>
-								<DropdownItem key="system">System</DropdownItem>
-								<DropdownItem key="configurations">
-									Configurations
-								</DropdownItem>
+								<DropdownItem key="theme">Theme</DropdownItem>
 								<DropdownItem key="help_and_feedback">
-									Help & Feedback
+									Contact Support
 								</DropdownItem>
 								<DropdownItem key="logout" color="danger">
 									Log Out
@@ -285,7 +276,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 					</div>
 				</SidebarBody>
 			</Sidebar>
-			<div className="flex-1">{children}</div>
+			<div className="flex-1 bg-white dark:bg-black">{children}</div>
 		</div>
 	);
 };

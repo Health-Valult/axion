@@ -68,7 +68,13 @@ type CardProps = React.ComponentProps<typeof Card>;
 
 const Summary: React.FC = ({ className, ...props }: CardProps) => {
 	return (
-		<Card className={cn('w-full', className)} {...props}>
+		<Card
+			className={cn(
+				'w-full shadow-none border-gray-300 dark:border-gray-700',
+				className
+			)}
+			{...props}
+		>
 			<CardHeader>
 				<CardTitle>
 					<User />

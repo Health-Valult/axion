@@ -45,22 +45,15 @@ const Prescriptions: React.FC = () => {
 		},
 		{ key: 'OW', label: 'Once a week', sig: 'Take once per week' },
 		{ key: 'PRN', label: 'As needed', sig: 'Take only when necessary' },
+	];
+
+	const timingMeals = [
 		{ key: 'AC', label: 'Before meals', sig: 'Take before eating' },
 		{ key: 'PC', label: 'After meals', sig: 'Take after eating' },
 		{ key: 'HS', label: 'At bedtime', sig: 'Take before sleeping' },
 		{ key: 'CC', label: 'With food', sig: 'Take with meals' },
 		{ key: 'SF', label: 'Without food', sig: 'Take on an empty stomach' },
 	];
-
-	// const [medicine, setMedicine] = useState([]);
-	// const [selectedDescription, setSelectedDescription] = useState("");
-
-	// useEffect(() => {
-	//   fetch("http://localhost:8000/medicine?key={}") // Update with your FastAPI server URL
-	//     .then((res) => res.json())
-	//     .then((data) => setMedicine(data))
-	//     .catch((error) => console.error("Error loading medicine data:", error));
-	// }, []);
 
 	const postPrescription = async (data: string) => {
 		try {
@@ -93,6 +86,10 @@ const Prescriptions: React.FC = () => {
 
 	const [dosageInstruction, setDosageInstruction] = useState(
 		'Set Dosage Instructions'
+	);
+
+	const [mealTiming, setMealTiming] = useState(
+		'Set Meal Timing Instructions'
 	);
 
 	useEffect(() => {
@@ -539,37 +536,70 @@ const Prescriptions: React.FC = () => {
 						)}
 					</Autocomplete>
 
-					<Dropdown backdrop="blur">
-						<DropdownTrigger>
-							<Button variant="bordered">
-								{dosageInstruction}
-							</Button>
-						</DropdownTrigger>
-						<DropdownMenu
-							aria-label="Dosage Instructions"
-							variant="faded"
-							selectionMode="single"
-							selectedKeys={new Set([dosageInstruction])} // Wrap in Set
-							onSelectionChange={(keys) => {
-								const selectedKey = Array.from(keys)[0]; // Extract selected value
-								const selectedLabel = dosageInstructions.find(
-									(instruction) =>
-										instruction.key === selectedKey
-								)?.label;
-								if (selectedLabel)
-									setDosageInstruction(selectedLabel); // Update state
-							}}
-						>
-							{dosageInstructions.map((instruction) => (
-								<DropdownItem
-									key={instruction.key}
-									description={instruction.sig}
-								>
-									{instruction.label}
-								</DropdownItem>
-							))}
-						</DropdownMenu>
-					</Dropdown>
+					<div className="flex flex-row justify-evenly text-center gap-8 mx-auto">
+						<Dropdown backdrop="blur">
+							<DropdownTrigger>
+								<Button variant="bordered">
+									{dosageInstruction}
+								</Button>
+							</DropdownTrigger>
+							<DropdownMenu
+								aria-label="Dosage Instructions"
+								variant="faded"
+								selectionMode="single"
+								selectedKeys={new Set([dosageInstruction])} // Wrap in Set
+								onSelectionChange={(keys) => {
+									const selectedKey = Array.from(keys)[0]; // Extract selected value
+									const selectedLabel =
+										dosageInstructions.find(
+											(instruction) =>
+												instruction.key === selectedKey
+										)?.label;
+									if (selectedLabel)
+										setDosageInstruction(selectedLabel); // Update state
+								}}
+							>
+								{dosageInstructions.map((instruction) => (
+									<DropdownItem
+										key={instruction.key}
+										description={instruction.sig}
+									>
+										{instruction.label}
+									</DropdownItem>
+								))}
+							</DropdownMenu>
+						</Dropdown>
+
+						<Dropdown backdrop="blur">
+							<DropdownTrigger>
+								<Button variant="bordered">{mealTiming}</Button>
+							</DropdownTrigger>
+							<DropdownMenu
+								aria-label="Dosage Instructions"
+								variant="faded"
+								selectionMode="single"
+								selectedKeys={new Set([mealTiming])} // Wrap in Set
+								onSelectionChange={(keys) => {
+									const selectedKey = Array.from(keys)[0]; // Extract selected value
+									const selectedLabel = timingMeals.find(
+										(instruction) =>
+											instruction.key === selectedKey
+									)?.label;
+									if (selectedLabel)
+										setMealTiming(selectedLabel); // Update state
+								}}
+							>
+								{timingMeals.map((instruction) => (
+									<DropdownItem
+										key={instruction.key}
+										description={instruction.sig}
+									>
+										{instruction.label}
+									</DropdownItem>
+								))}
+							</DropdownMenu>
+						</Dropdown>
+					</div>
 
 					<div className="flex w-full flex-wrap md:flex-nowrap gap-4">
 						<DateRangePicker

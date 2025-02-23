@@ -77,7 +77,7 @@ const BloodPressureChart: React.FC<ChartProps> = ({ chartData }) => {
 	const latest = chartData[chartData.length - 1];
 	const status = getBloodPressureStatus(latest.systolic, latest.diastolic);
 	return (
-		<Card>
+		<Card className="shadow-none border-gray-300 dark:border-gray-700">
 			<CardHeader>
 				<CardTitle>Blood Pressure Chart (mmHg)</CardTitle>
 				<CardDescription>
@@ -119,9 +119,6 @@ const BloodPressureChart: React.FC<ChartProps> = ({ chartData }) => {
 							className={`flex items-center gap-2 ${status.color} font-medium leading-none`}
 						>
 							{status.label} {status.icon}
-						</div>
-						<div className="flex items-center gap-2 leading-none text-muted-foreground">
-							Blood pressure variation for the last 6 months
 						</div>
 					</div>
 				</div>

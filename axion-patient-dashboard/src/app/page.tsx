@@ -2,7 +2,7 @@
 
 import { Calendar } from '@heroui/react';
 import RecentPatients from './elements/RecentPatients';
-import SearchBar from './elements/SearchBar';
+import SearchBar from './components/SearchBar';
 import { today, getLocalTimeZone } from '@internationalized/date';
 
 const page: React.FC = () => {
