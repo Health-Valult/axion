@@ -2,14 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_application_1/pages/main_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_application_1/models/report.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(ReportAdapter());
+  await Hive.openBox<Report>('downloadedReports');
+  
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  static ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
-  static ValueNotifier<Locale> localeNotifier = ValueNotifier(const Locale('en'));
+  static ValueNotifier<ThemeMode> themeNotifier =
+      ValueNotifier(ThemeMode.dark);
+  static ValueNotifier<Locale> localeNotifier =
+      ValueNotifier(const Locale('en'));
 
   const MyApp({super.key});
 
@@ -29,7 +38,7 @@ class _MyAppState extends State<MyApp> {
     appBarTheme: const AppBarTheme(
       backgroundColor: Color.fromARGB(255, 21, 23, 28),
     ),
-    cardColor: const Color.fromARGB(255, 13, 14, 18), // Restored your card color
+    cardColor: const Color.fromARGB(255, 13, 14, 18),
     textTheme: ThemeData.dark().textTheme.apply(
           bodyColor: Colors.white,
           displayColor: Colors.white,
@@ -44,7 +53,7 @@ class _MyAppState extends State<MyApp> {
       backgroundColor: Color.fromARGB(255, 189, 189, 189),
       foregroundColor: Colors.black,
     ),
-    cardColor: const Color.fromARGB(255, 255, 255, 255), // Restored your card color
+    cardColor: const Color.fromARGB(255, 255, 255, 255),
     textTheme: ThemeData.light().textTheme.apply(
           bodyColor: Colors.black,
           displayColor: Colors.black,

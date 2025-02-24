@@ -43,7 +43,6 @@ class ReportCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-
               // Title & status
               Expanded(
                 child: Column(
