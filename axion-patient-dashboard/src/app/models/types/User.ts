@@ -14,7 +14,9 @@ export interface User {
     firstName: string;
     lastName: string;
     email: string;
+    officeHours: string;
     phone: string;
+    location: string,
     gender: "Male" | "Female"
     designation: string,
     specialisation: string
@@ -27,6 +29,13 @@ export interface User {
         tel: string
     }
     dateOfBirth: string;
+    image: string,
+    education: {
+        degree: string;
+        institution: string;
+        year: string;
+        description?: string;
+    }
     recentPatients?: examinedPatient[],
     notes: string
 };

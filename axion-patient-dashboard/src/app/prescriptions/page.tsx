@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Form, Button } from '@heroui/react';
+import React, { useState, useEffect, Key } from 'react';
+import { Form, Button, RangeValue } from '@heroui/react';
 import { DatePicker } from '@heroui/react';
 import { DateRangePicker } from '@heroui/react';
 import {
@@ -15,7 +15,7 @@ import { Textarea } from '@heroui/react';
 import { RadioGroup, Radio, cn } from '@heroui/react';
 import { Autocomplete, AutocompleteItem } from '@heroui/react';
 
-import { now, getLocalTimeZone } from '@internationalized/date';
+import { now, getLocalTimeZone, DateValue } from '@internationalized/date';
 
 const Prescriptions: React.FC = () => {
 	const [defaultDate, setDefaultDate] = useState<any>(null);
@@ -350,9 +350,55 @@ const Prescriptions: React.FC = () => {
 	// Store the selected drug's description
 	const [selectedDescription, setSelectedDescription] = useState('');
 
+	const [selectedValue, setSelectedValue] = useState<string>('');
+
 	const [selectedMedicines, setSelectedMedicines] = useState<
-		{ key: string; label: string }[]
+		{
+			key: string;
+			label: string;
+			description: string;
+			frequency: string;
+			mealTiming: string;
+			treatmentDuration: RangeValue<DateValue> | null;
+		}[]
 	>([]);
+
+	const handleMedicineSelection = (key: Key | null) => {
+		if (!key) return;
+
+		const selectedDrug = medicine.find(
+			(drug) => drug.key === key.toString()
+		);
+
+		if (
+			selectedDrug &&
+			!selectedMedicines.some((med) => med.key === selectedDrug.key)
+		) {
+			setSelectedMedicines([
+				...selectedMedicines,
+				{
+					...selectedDrug,
+					frequency: '',
+					mealTiming: '',
+					treatmentDuration: null, // Uses RangeValue<DateValue>
+				},
+			]);
+		}
+
+		setSelectedValue('');
+	};
+
+	const updateMedicineField = (
+		key: string,
+		field: 'frequency' | 'mealTiming' | 'treatmentDuration',
+		value: string | RangeValue<DateValue> | null
+	) => {
+		setSelectedMedicines((prev) =>
+			prev.map((med) =>
+				med.key === key ? { ...med, [field]: value } : med
+			)
+		);
+	};
 
 	const handleRemoveChip = (key: string) => {
 		setSelectedMedicines(
@@ -418,7 +464,6 @@ const Prescriptions: React.FC = () => {
 							/>
 						)}
 					</div>
-
 					<RadioGroup
 						isRequired
 						value={selectedIndication}
@@ -465,7 +510,6 @@ const Prescriptions: React.FC = () => {
 							Signs
 						</Radio>
 					</RadioGroup>
-
 					{/* Dynamically update textarea label & placeholder */}
 					<Textarea
 						minRows={3}
@@ -473,7 +517,6 @@ const Prescriptions: React.FC = () => {
 						variant="bordered"
 						placeholder={`Enter patient's ${selectedIndication.toLowerCase()}`}
 					/>
-
 					<div className="flex flex-wrap gap-2">
 						{selectedMedicines.map((med) => (
 							<Chip
@@ -486,48 +529,16 @@ const Prescriptions: React.FC = () => {
 							</Chip>
 						))}
 					</div>
-
 					<Autocomplete
 						className="max-w-md"
 						defaultItems={medicine}
 						label="Treatment"
-						labelPlacement="outside"
 						placeholder="Start typing..."
-						description={selectedDescription}
 						size="md"
 						variant="bordered"
-						startContent={
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="16"
-								height="16"
-								fill="currentColor"
-								className="bi bi-capsule"
-								viewBox="0 0 16 16"
-							>
-								<path d="M1.828 8.9 8.9 1.827a4 4 0 1 1 5.657 5.657l-7.07 7.071A4 4 0 1 1 1.827 8.9Zm9.128.771 2.893-2.893a3 3 0 1 0-4.243-4.242L6.713 5.429z" />
-							</svg>
-						}
-						onSelectionChange={(key) => {
-							// Find the selected drug based on the key
-							const selectedDrug = medicine.find(
-								(drug) => drug.key === key
-							);
-							setSelectedDescription(
-								selectedDrug ? selectedDrug.description : ''
-							); // Update the description
-							if (
-								selectedDrug &&
-								!selectedMedicines.some(
-									(med) => med.key === selectedDrug.key
-								)
-							) {
-								setSelectedMedicines([
-									...selectedMedicines,
-									selectedDrug,
-								]); // Add new selection
-							}
-						}}
+						selectedKey={selectedValue} // Bind state to the input field
+						onInputChange={(value) => setSelectedValue(value)} // Keep track of input
+						onSelectionChange={handleMedicineSelection}
 					>
 						{(drug) => (
 							<AutocompleteItem key={drug.key}>
@@ -536,77 +547,104 @@ const Prescriptions: React.FC = () => {
 						)}
 					</Autocomplete>
 
-					<div className="flex flex-row justify-evenly text-center gap-8 mx-auto">
-						<Dropdown backdrop="blur">
-							<DropdownTrigger>
-								<Button variant="bordered">
-									{dosageInstruction}
-								</Button>
-							</DropdownTrigger>
-							<DropdownMenu
-								aria-label="Dosage Instructions"
-								variant="faded"
-								selectionMode="single"
-								selectedKeys={new Set([dosageInstruction])} // Wrap in Set
-								onSelectionChange={(keys) => {
-									const selectedKey = Array.from(keys)[0]; // Extract selected value
-									const selectedLabel =
-										dosageInstructions.find(
-											(instruction) =>
-												instruction.key === selectedKey
-										)?.label;
-									if (selectedLabel)
-										setDosageInstruction(selectedLabel); // Update state
-								}}
+					<div className="flex flex-wrap gap-4">
+						{selectedMedicines.map((med) => (
+							<div
+								key={med.key}
+								className="flex flex-col gap-4 border p-4 rounded-lg"
 							>
-								{dosageInstructions.map((instruction) => (
-									<DropdownItem
-										key={instruction.key}
-										description={instruction.sig}
-									>
-										{instruction.label}
-									</DropdownItem>
-								))}
-							</DropdownMenu>
-						</Dropdown>
+								<div className="flex  justify-between items-center">
+									<div className="flex-1">{med.label}</div>
 
-						<Dropdown backdrop="blur">
-							<DropdownTrigger>
-								<Button variant="bordered">{mealTiming}</Button>
-							</DropdownTrigger>
-							<DropdownMenu
-								aria-label="Dosage Instructions"
-								variant="faded"
-								selectionMode="single"
-								selectedKeys={new Set([mealTiming])} // Wrap in Set
-								onSelectionChange={(keys) => {
-									const selectedKey = Array.from(keys)[0]; // Extract selected value
-									const selectedLabel = timingMeals.find(
-										(instruction) =>
-											instruction.key === selectedKey
-									)?.label;
-									if (selectedLabel)
-										setMealTiming(selectedLabel); // Update state
-								}}
-							>
-								{timingMeals.map((instruction) => (
-									<DropdownItem
-										key={instruction.key}
-										description={instruction.sig}
-									>
-										{instruction.label}
-									</DropdownItem>
-								))}
-							</DropdownMenu>
-						</Dropdown>
-					</div>
+									<div className="mx-4"></div>
 
-					<div className="flex w-full flex-wrap md:flex-nowrap gap-4">
-						<DateRangePicker
-							label="Treatment Duration"
-							visibleMonths={2}
-							variant="bordered"
-						/>
+									{/* Frequency Dropdown */}
+									<Dropdown>
+										<DropdownTrigger>
+											<Button variant="bordered">
+												{med.frequency ||
+													'Select Frequency'}
+											</Button>
+										</DropdownTrigger>
+										<DropdownMenu
+											selectionMode="single"
+											selectedKeys={
+												new Set([med.frequency])
+											}
+											onSelectionChange={(keys) => {
+												const selectedKey =
+													Array.from(keys)[0];
+												updateMedicineField(
+													med.key,
+													'frequency',
+													selectedKey as string
+												);
+											}}
+										>
+											{dosageInstructions.map(
+												(instruction) => (
+													<DropdownItem
+														key={instruction.key}
+													>
+														{instruction.label}
+													</DropdownItem>
+												)
+											)}
+										</DropdownMenu>
+									</Dropdown>
+
+									<div className="mx-4"></div>
+
+									{/* Meal Timing Dropdown */}
+									<Dropdown>
+										<DropdownTrigger>
+											<Button variant="bordered">
+												{med.mealTiming ||
+													'Select Meal Timing'}
+											</Button>
+										</DropdownTrigger>
+										<DropdownMenu
+											selectionMode="single"
+											selectedKeys={
+												new Set([med.mealTiming])
+											}
+											onSelectionChange={(keys) => {
+												const selectedKey =
+													Array.from(keys)[0];
+												updateMedicineField(
+													med.key,
+													'mealTiming',
+													selectedKey as string
+												);
+											}}
+										>
+											{timingMeals.map((instruction) => (
+												<DropdownItem
+													key={instruction.key}
+												>
+													{instruction.label}
+												</DropdownItem>
+											))}
+										</DropdownMenu>
+									</Dropdown>
+								</div>
+
+								{/* Treatment Duration Picker */}
+								<DateRangePicker
+									label="Treatment Duration"
+									visibleMonths={2}
+									variant="bordered"
+									value={med.treatmentDuration || null}
+									onChange={(newRange) => {
+										updateMedicineField(
+											med.key,
+											'treatmentDuration',
+											newRange
+										);
+									}}
+								/>
+							</div>
+						))}
 					</div>
 
 					<div className="flex gap-4">
@@ -622,7 +660,6 @@ const Prescriptions: React.FC = () => {
 							Dr. Steven James
 						</Chip>
 					</div>
-
 					<div className="flex gap-2">
 						<Button color="primary" type="submit">
 							Prescribe

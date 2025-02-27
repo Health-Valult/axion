@@ -5,6 +5,14 @@ import { Avatar } from '@heroui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { selectPatient } from '../store/patientSlice';
+import { useState, useEffect } from 'react';
+
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
 
 const patients: Patient[] = [
 	{
@@ -500,12 +508,9 @@ const patients: Patient[] = [
 	},
 ];
 
-const searchPatients = async (query?: string): Promise<Patient[]> => {
-	// Simulate API delay
-	await new Promise((resolve) => setTimeout(resolve, 500));
-
+const searchPatients = async (query = '') => {
+	await new Promise<Patient[]>((resolve) => setTimeout(resolve, 500));
 	if (!query) return patients;
-
 	return patients.filter(
 		(patient) =>
 			patient.firstName.toLowerCase().includes(query.toLowerCase()) ||
@@ -514,19 +519,20 @@ const searchPatients = async (query?: string): Promise<Patient[]> => {
 	);
 };
 
-// Basic Demo
-const SearchBar: React.FC = () => {
-	// const [selectedPatient, setSelectedPatient] = React.useState('');
-
+const SearchBar = () => {
 	const dispatch = useDispatch();
 	const selectedPatient = useSelector(
 		(state: RootState) => state.patient.state
 	);
+	const [showDialog, setShowDialog] = useState(false);
+	const [randomNumber, setRandomNumber] = useState<number | null>(null);
 
 	const handleSelectPatient = (patient: Patient | null) => {
 		if (patient) {
 			dispatch(selectPatient({ state: patient }));
-			console.log(patient);
+			setRandomNumber(Math.floor(10 + Math.random() * 90)); // Generate 2-digit number
+			setShowDialog(true);
+			setTimeout(() => setShowDialog(false), 5000); // Hide after 5 seconds
 		} else {
 			dispatch(selectPatient({ state: null }));
 		}
@@ -534,15 +540,15 @@ const SearchBar: React.FC = () => {
 
 	return (
 		<div className="flex flex-col gap-2">
-			<h3 className="text-lg font-medium">Select Patient to checkup</h3>
-			<AsyncSelect<Patient>
+			<h3 className="text-lg font-medium">Select Patient to Checkup</h3>
+			<AsyncSelect
 				fetcher={searchPatients}
 				renderOption={(patient) => (
 					<div className="flex items-center gap-2">
 						<Avatar
 							isBordered
 							name={patient.firstName}
-							className="transition-transform h-7 w-7 flex-shrink-0 rounded-full"
+							className="h-7 w-7 rounded-full"
 							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
 						/>
 						<div className="flex flex-col">
@@ -554,22 +560,9 @@ const SearchBar: React.FC = () => {
 					</div>
 				)}
 				getOptionValue={(patient) => patient.id}
-				getDisplayValue={(patient) => (
-					<div className="flex items-center gap-2 text-left">
-						<Avatar
-							isBordered
-							name={patient.firstName}
-							className="transition-transform h-7 w-7 flex-shrink-0 rounded-md"
-							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-						/>
-						<div className="flex flex-col leading-tight">
-							<div className="font-medium">{patient.id}</div>
-							<div className="text-xxs text-muted-foreground">
-								{patient.firstName} {patient.lastName}
-							</div>
-						</div>
-					</div>
-				)}
+				getDisplayValue={(patient) =>
+					`${patient.firstName} ${patient.lastName}`
+				}
 				notFound={
 					<div className="py-6 text-center text-sm">
 						No Patients found
@@ -587,6 +580,21 @@ const SearchBar: React.FC = () => {
 			<p className="text-sm text-muted-foreground">
 				Selected Patient ID: {selectedPatient?.id || 'none'}
 			</p>
+
+			{/* Dialog */}
+			<Dialog open={showDialog}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle className="text-center m-3">
+							Axion sent a notification to the patient's phone.
+							Tap the number shown here to sign in.
+						</DialogTitle>
+					</DialogHeader>
+					<div className="text-3xl font-bold text-center border-gray-500 p-8">
+						{randomNumber}
+					</div>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

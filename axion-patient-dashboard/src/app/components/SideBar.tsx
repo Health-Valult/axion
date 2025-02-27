@@ -21,6 +21,7 @@ import {
 	Avatar,
 } from '@nextui-org/react';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export const AxionLogo = ({
 	width,
@@ -205,6 +206,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 		},
 	];
 	const [open, setOpen] = useState(false);
+	const router = useRouter();
 	return (
 		<div
 			className={cn(
@@ -261,10 +263,12 @@ const SideBar: React.FC<Component> = ({ children }) => {
 										Dr. Steven James
 									</p>
 								</DropdownItem>
-								<DropdownItem key="edit">
-									Edit Profile
+								<DropdownItem
+									key="edit"
+									onPress={() => router.push('/settings')}
+								>
+									Settings
 								</DropdownItem>
-								<DropdownItem key="theme">Theme</DropdownItem>
 								<DropdownItem key="help_and_feedback">
 									Contact Support
 								</DropdownItem>
@@ -309,30 +313,5 @@ export const LogoIcon = () => {
 		>
 			<AxionLogo width={32} height={32} />
 		</Link>
-	);
-};
-
-const Dashboard = () => {
-	return (
-		<div className="flex flex-1">
-			<div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
-				<div className="flex gap-2">
-					{[...new Array(4)].map((_, index) => (
-						<div
-							key={`first-array-${index}`}
-							className="h-20 w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
-						></div>
-					))}
-				</div>
-				<div className="flex gap-2 flex-1">
-					{[...new Array(2)].map((_, index) => (
-						<div
-							key={`second-array-${index}`}
-							className="h-full w-full rounded-lg bg-gray-100 dark:bg-neutral-800 animate-pulse"
-						></div>
-					))}
-				</div>
-			</div>
-		</div>
 	);
 };

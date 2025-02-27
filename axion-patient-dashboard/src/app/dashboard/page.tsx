@@ -189,9 +189,9 @@ const Dashboard: React.FC = () => {
 							},
 						]}
 					/>
-					<KidneyChart />
-					<LiverFunctionTest />
 					<GlycatedHemoglobinChart />
+					<SerumElectrolytesChart />
+					<CRPChart />
 				</div>
 			</div>
 			<div className="col-span-1 grid gap-2">
@@ -268,8 +268,8 @@ const Dashboard: React.FC = () => {
 							{ month: 'June', systolic: 145, diastolic: 95 },
 						]}
 					/>
-					<CRPChart />
-					<SerumElectrolytesChart />
+					<KidneyChart />
+					<LiverFunctionTest />
 				</div>
 			</div>
 		</div>

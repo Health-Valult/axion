@@ -1,23 +1,18 @@
 'use client';
 
-import { Calendar } from '@heroui/react';
 import RecentPatients from './elements/RecentPatients';
 import SearchBar from './components/SearchBar';
-import { today, getLocalTimeZone } from '@internationalized/date';
+import { EmptyStateDefault } from '@/components/ui/calendar';
 
 const page: React.FC = () => {
 	return (
-		<div className="p-4 flex flex-col flex-1 bg-white rounded-l-sm h-full overflow-y-auto">
-			<div className="flex flex-1 gap-x-8">
-				<div className="flex-1 ml-20 mt-15">
+		<div className="p-4 flex flex-col flex-1 bg-white dark:bg-black rounded-l-sm h-full overflow-y-auto">
+			<div className="flex flex-1 items-center gap-x-4 px-16 py-8">
+				<div className="flex-1">
 					<SearchBar />
 				</div>
-				<div className="flex-1 mr-15">
-					<Calendar
-						aria-label="Date (Visible Month)"
-						visibleMonths={3}
-						value={today(getLocalTimeZone())}
-					/>
+				<div className="flex-1">
+					<EmptyStateDefault />
 				</div>
 			</div>
 

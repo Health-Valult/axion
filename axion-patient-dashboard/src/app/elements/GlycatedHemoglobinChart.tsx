@@ -1,6 +1,5 @@
 'use client';
 
-import { TrendingUp } from 'lucide-react';
 import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from 'recharts';
 
 import {
@@ -34,9 +33,8 @@ const GlycatedHemoglobinChart: React.FC = () => {
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
 				<CardTitle>HbA1c %</CardTitle>
-				<CardDescription>Gycated Hemoglobin percentage</CardDescription>
 			</CardHeader>
-			<CardContent className="flex flex-1 items-center pb-0">
+			<CardContent className="flex flex-1 items-center pt-8">
 				<ChartContainer
 					config={chartConfig}
 					className="mx-auto aspect-square w-full max-w-[250px] max-h-48"
