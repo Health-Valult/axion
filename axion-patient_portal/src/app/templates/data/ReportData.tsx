@@ -1,0 +1,22 @@
+export const CBCReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    hemoglobin: "",
+    totalLeukocyteCount: "",
+    differentialLeukocyteCount: {
+        neutrophils: "",
+        lymphocytes: "",
+        eosinophils: "",
+        monocytes: "",
+        basophils: "",
+    },
+    plateletCount: "",
+    totalRBCCount: "",
+    hematocrit: "",
+    meanCorpuscularVolume: "",
+    meanCellHemoglobin: "",
+    meanCellHemoglobinConcentration: "",
+};

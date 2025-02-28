@@ -8,7 +8,6 @@ interface Report {
         name: string;
         date: string;
         fileUrl: string;
-        thumbnail: string;
     };
     onClick: (fileUrl: string) => void;
 }
@@ -21,7 +20,7 @@ const ReportCard: React.FC<Report> = ({ report, onClick }) => {
         >
             <CardHeader className="p-4 items-center">
                 <Image
-                    src={report.thumbnail}
+                    src="/images/medical-report-icon.jpg"
                     alt={report.name}
                     width={96}
                     height={96}
