@@ -49,7 +49,7 @@ const links = [
     icon: "",
        },
   ];
-const [open, setOpen] = useState(false);
+/* const [open, setOpen] = useState(false); */
 
 export const AxionLogo = ({
 	width,
@@ -215,74 +215,53 @@ export const LogoIcon = () => {
 
 
 export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-      <Sidebar open={open} setOpen={setOpen}>
-
-        <SidebarBody className="justify-between gap-10">
-
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-
-            {open ? <Logo /> : <LogoIcon />}
-
-            <div className="mt-8 flex flex-col gap-2">
-
-              {links.map((link, idx) => (
-
-                <SidebarLink key={idx} link={link} />
-
-              ))}
-
-            </div>
-
-          </div>
-
-          <div>
-
-            <SidebarLink
-
-              link={{
-
-                label: "Manu Arora",
-
-                href: "#",
-
-                icon: (
-
-                  <Image
-
-                    src="https://assets.aceternity.com/manu.png"
-
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-
-                    width={50}
-
-                    height={50}
-
-                    alt="Avatar"
-
-                  />
-
-                ),
-
-              }}
-
-            />
-
-          </div>
-
-        </SidebarBody>
-
-        </Sidebar>
-        {children}
-      </body>
-    </html>
-  );
-}
+	children,
+  }: Readonly<{
+	children: React.ReactNode;
+  }>) {
+	// ✅ useState must be inside the component
+	const [open, setOpen] = useState(false);
+  
+	return (
+	  <html lang="en">
+		<body
+		  className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+		>
+		  <Sidebar open={open} setOpen={setOpen}>
+  
+			<SidebarBody className="justify-between gap-10">
+			  <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+				{open ? <Logo /> : <LogoIcon />}
+  
+				<div className="mt-8 flex flex-col gap-2">
+				  {links.map((link, idx) => (
+					<SidebarLink key={idx} link={link} />
+				  ))}
+				</div>
+			  </div>
+  
+			  <div>
+				<SidebarLink
+				  link={{
+					label: "Manu Arora",
+					href: "#",
+					icon: (
+					  <Image
+						src="https://assets.aceternity.com/manu.png"
+						className="h-7 w-7 flex-shrink-0 rounded-full"
+						width={50}
+						height={50}
+						alt="Avatar"
+					  />
+					),
+				  }}
+				/>
+			  </div>
+			</SidebarBody>
+		  </Sidebar>
+		  {children}
+		</body>
+	  </html>
+	);
+  }
+  
