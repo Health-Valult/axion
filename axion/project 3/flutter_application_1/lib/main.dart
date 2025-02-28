@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/models/base_report.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_application_1/pages/main_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_application_1/models/report.dart';
+import 'package:flutter_application_1/models/cbc_report.dart';
+import 'package:flutter_application_1/models/serum_chloride_report.dart';
+import 'package:flutter_application_1/models/serum_sodium_report.dart';
+import 'package:flutter_application_1/models/hba1c_report.dart';
+import 'package:flutter_application_1/models/serum_potassium_report.dart';
+import 'package:flutter_application_1/models/lipid_profile_report.dart';
+import 'package:flutter_application_1/models/liver_function_test_report.dart';
+import 'package:flutter_application_1/models/thyroid_function_test_report.dart';
+import 'package:flutter_application_1/models/crp_report.dart';
+import 'package:flutter_application_1/models/serum_creatinine_report.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  Hive.registerAdapter(ReportAdapter());
-  await Hive.openBox<Report>('downloadedReports');
-  
+
+  // Register adapters for all report types.
+  Hive.registerAdapter(CBCReportAdapter());
+  Hive.registerAdapter(SerumChlorideReportAdapter());
+  Hive.registerAdapter(SerumSodiumReportAdapter());
+  Hive.registerAdapter(HBA1cReportAdapter());
+  Hive.registerAdapter(SerumPotassiumReportAdapter());
+  Hive.registerAdapter(LipidProfileReportAdapter());
+  Hive.registerAdapter(LiverFunctionTestReportAdapter());
+  Hive.registerAdapter(ThyroidFunctionTestReportAdapter());
+  Hive.registerAdapter(CRPReportAdapter());
+  Hive.registerAdapter(SerumCreatinineReportAdapter());
+
+  // Open the box with the correct type.
+  await Hive.openBox<BaseReport>('downloadedReports');
+
   runApp(const MyApp());
 }
 

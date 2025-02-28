@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/report.dart';
+import 'package:flutter_application_1/models/base_report.dart';
 import 'package:flutter_application_1/pages/report_detail_page.dart';
 
 class ReportCard extends StatelessWidget {
-  final Report report;
+  final BaseReport report;
 
   const ReportCard({super.key, required this.report});
 
@@ -32,18 +32,18 @@ class ReportCard extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              // Thumbnail image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  report.placeholderImageUrl,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
+              // Instead of using report.placeholderImageUrl, we use a default icon
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                child: const Icon(Icons.insert_drive_file, color: Colors.white),
               ),
               const SizedBox(width: 12),
-              // Title & status
+              // Title & time information
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,14 +58,6 @@ class ReportCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text(
-                          report.status,
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
                         Text(
                           timeString,
                           style: const TextStyle(color: Colors.blueGrey),
