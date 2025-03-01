@@ -85,3 +85,16 @@ export const SerumCreatinineReportTemplate = {
     date: "",
     serumCreatinine: "",
 }
+
+export const SerumElectrolytesReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    sodium: "",
+    potassium: "",
+    chloride: "",
+    bicarbonate: "",
+    calcium: "",
+    magnesium: "",
+}

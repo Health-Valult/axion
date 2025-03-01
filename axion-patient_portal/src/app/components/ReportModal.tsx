@@ -5,7 +5,7 @@ import {
     CBCReportTemplate,
     CRPReportTemplate,
     FBSReportTemplate,
-    LFTReportTemplate, SerumCreatinineReportTemplate,
+    LFTReportTemplate, SerumCreatinineReportTemplate, SerumElectrolytesReportTemplate,
     UFRTemplate
 } from "@/app/templates/data/ReportData";
 import CBCReport from "@/app/templates/CBC";
@@ -14,6 +14,7 @@ import CRPReport from "@/app/templates/CRP";
 import LFTReport from "@/app/templates/LFT";
 import FBSReport from "@/app/templates/FBS";
 import SerumCreatinineReport from "@/app/templates/Serum-Creatinine";
+import SerumElectrolytesReport from "@/app/templates/Serum-Electrolytes";
 
 interface ReportModalProps {
     report: {
@@ -44,6 +45,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <FBSReport reportData={FBSReportTemplate} />
                 ) : report.name === "Serum Creatinine Report" ? (
                     <SerumCreatinineReport reportData={SerumCreatinineReportTemplate} />
+                ) : report.name === "Serum Electrolytes Report" ? (
+                    <SerumElectrolytesReport reportData={SerumElectrolytesReportTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}

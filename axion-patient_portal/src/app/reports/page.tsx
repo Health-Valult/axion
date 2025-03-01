@@ -38,6 +38,7 @@ const reportsData: Report[] = [
     { id: 4, name: "Liver Function Test (LFT) Report", date: "2024-02-29" },
     { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2023-12-30"},
     { id: 6, name: "Serum Creatinine Report", date: "2024-02-10" },
+    { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
 ];
 
 function ReportsPage() {
