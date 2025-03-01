@@ -1,21 +1,27 @@
+import warnings
+
 import pymongo
 import uvicorn
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 import strawberry
-
+import asyncio
 from strawberry import Info
 from .ax_types.observation import *
 from typing import Optional,List
-
+from .test.test_reciever import recieveMQ
+from .test.test_sender import sendMQ
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
 
 DBClient = pymongo.MongoClient(URL)
 Database = DBClient.get_database("records_db")
 Collection = Database.get_collection("observations")
 
 observation_type = strawberry.union(name="obs_u", types=(Observation,ObservationStack))
+
+MQ = sendMQ("localhost")
 
 @strawberry.type
 class Query:
@@ -27,6 +33,7 @@ class Query:
             code:str,
             encounter:str
         ) -> Observation: # type: ignore
+        
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
         observationAggregate = Collection.aggregate([
                 {"$match": {
@@ -36,6 +43,7 @@ class Query:
                     }},
                 {"$project": query|{"_id":0}} 
             ])
+        
         observationAggregateResult = next(observationAggregate,None)
         if observationAggregateResult is None:
             return None
@@ -47,14 +55,25 @@ class Query:
     def observationStack(
         self,
         info:Info,
-        patientId:str,
+        patient:str,
         code:str,
         start:Optional[str] = strawberry.UNSET,
         end:Optional[str] = strawberry.UNSET
         )-> ObservationStack:
-        query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        print(info.context["request"].headers["authorization"])
-        return 
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        observationAggregate = Collection.aggregate([
+                {"$match": {
+                    "patient": patient, 
+                    "code": code, 
+                    }},
+                {"$project": query|{"_id":0}} 
+            ])
+        
+        MQ.send("hello",{"token":info.context["request"].headers["authorization"]})
+        return ObservationStack(
+            Observations=[Observation(**obs) for obs in observationAggregate]
+        )
     @strawberry.field
     def medications(self, id:str,patientId:str) -> str:
         return "med"
@@ -88,16 +107,49 @@ app.include_router(graphql_app, prefix="/graphql")
 
 
 
+@app.on_event("startup")
+async def startup_event():
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/",'hello'))
 
-def main():
-    print("running security services")
-    uvicorn.run("app.main:app",port=8000,reload=True)
+
+
+
+    
 
 if __name__ == '__main__':
-    main()
+    uvicorn.run("app.main:app",port=8000,reload=True)
 
-# Az cluster user - TestAxionAdmin
-# Az cluster pw - YRmx2JtrK44FDLV
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 """
@@ -113,3 +165,5 @@ HBA1C
 ESR
 Thyroxine
 """
+# Az cluster user - TestAxionAdmin
+# Az cluster pw - YRmx2JtrK44FDLV
