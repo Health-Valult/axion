@@ -40,6 +40,7 @@ const reportsData: Report[] = [
     { id: 6, name: "Serum Creatinine Report", date: "2024-02-10" },
     { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
     { id: 8, name: "Lipid Profile Test (LPT) Report", date: "2023-11-11" },
+    { id: 9, name: "HbA1c Report", date: "2024-03-15" },
 ];
 
 function ReportsPage() {

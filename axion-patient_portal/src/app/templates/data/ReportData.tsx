@@ -114,3 +114,13 @@ export const LipidProfileReportTemplate = {
     tgToHdlRatio: "",
     nonHdlCholesterol: "",
 }
+
+export const HbA1cReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    hba1c: "",
+    estimatedAvgGlucose: "",
+}

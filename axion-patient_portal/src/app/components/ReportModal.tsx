@@ -4,7 +4,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
     CBCReportTemplate,
     CRPReportTemplate,
-    FBSReportTemplate,
+    FBSReportTemplate, HbA1cReportTemplate,
     LFTReportTemplate, LipidProfileReportTemplate, SerumCreatinineReportTemplate, SerumElectrolytesReportTemplate,
     UFRTemplate
 } from "@/app/templates/data/ReportData";
@@ -16,6 +16,7 @@ import FBSReport from "@/app/templates/FBS";
 import SerumCreatinineReport from "@/app/templates/Serum-Creatinine";
 import SerumElectrolytesReport from "@/app/templates/Serum-Electrolytes";
 import LipidProfileReport from "@/app/templates/LPT";
+import HbA1cReport from "@/app/templates/HbA1c";
 
 interface ReportModalProps {
     report: {
@@ -50,6 +51,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <SerumElectrolytesReport reportData={SerumElectrolytesReportTemplate} />
                 ) : report.name === "Lipid Profile Test (LPT) Report" ? (
                     <LipidProfileReport reportData={LipidProfileReportTemplate} />
+                ) : report.name === "HbA1c Report" ? (
+                    <HbA1cReport reportData={HbA1cReportTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}
