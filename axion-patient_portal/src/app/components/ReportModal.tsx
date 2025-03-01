@@ -1,11 +1,18 @@
 import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import {CBCReportTemplate, CRPReportTemplate, LFTReportTemplate, UFRTemplate} from "@/app/templates/data/ReportData";
+import {
+    CBCReportTemplate,
+    CRPReportTemplate,
+    FBSReportTemplate,
+    LFTReportTemplate,
+    UFRTemplate
+} from "@/app/templates/data/ReportData";
 import CBCReport from "@/app/templates/CBC";
 import UFRReport from "@/app/templates/UFR";
 import CRPReport from "@/app/templates/CRP";
 import LFTReport from "@/app/templates/LFT";
+import FBSReport from "@/app/templates/FBS";
 
 interface ReportModalProps {
     report: {
@@ -32,6 +39,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <CRPReport reportData={CRPReportTemplate} />
                 ) : report.name === "Liver Function Test (LFT) Report" ? (
                     <LFTReport reportData={LFTReportTemplate} />
+                ) : report.name === "Fasting Blood Sugar (FBS) Report" ? (
+                    <FBSReport reportData={FBSReportTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}

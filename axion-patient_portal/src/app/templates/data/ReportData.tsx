@@ -69,3 +69,11 @@ export const LFTReportTemplate = {
     globulin: "",
     agRatio: "",
 }
+
+export const FBSReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    fastingBloodSugar: "",
+}

@@ -36,6 +36,7 @@ const reportsData: Report[] = [
     { id: 2, name: "Urine Full Report (UFR)", date: "2024-01-28" },
     { id: 3, name: "C-Reactive Protein (CRP) Report", date: "2024-02-10" },
     { id: 4, name: "Liver Function Test (LFT) Report", date: "2024-02-29" },
+    { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2023-12-30"}
 ];
 
 function ReportsPage() {
