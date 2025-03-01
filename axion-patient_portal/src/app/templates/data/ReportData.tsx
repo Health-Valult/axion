@@ -51,3 +51,21 @@ export const CRPReportTemplate = {
     investigations: "",
     crpLevel: "",
 }
+
+export const LFTReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    serumBilirubinTotal: "",
+    serumBilirubinDirect: "",
+    serumBilirubinIndirect: "",
+    sGPTALT: "",
+    sGOTAST: "",
+    serumAlkalinePhosphatase: "",
+    serumProtein: "",
+    serumAlbumin: "",
+    globulin: "",
+    agRatio: "",
+}
