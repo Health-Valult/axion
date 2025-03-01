@@ -77,3 +77,11 @@ export const FBSReportTemplate = {
     date: "",
     fastingBloodSugar: "",
 }
+
+export const SerumCreatinineReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    serumCreatinine: "",
+}
