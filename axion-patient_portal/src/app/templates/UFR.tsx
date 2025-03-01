@@ -149,29 +149,6 @@ const UFRReport: React.FC<UFRReportProps> = ({ reportData }) => {
                         </tbody>
                     </table>
 
-                    <div className="mt-6 bg-gray-50 p-6 rounded-lg">
-                        <h3 className="text-2xl font-semibold text-center text-gray-800 mb-4">Urine Analysis Interpretations</h3>
-                        <ul className="space-y-4 text-sm text-gray-700">
-                            <li className="flex flex-col gap-1">
-                                <strong className="text-gray-900">Protein:</strong>
-                                <span className="text-gray-600">Elevated urinary protein levels can signal early kidney disease but may also rise due to strenuous exercise, orthostatic proteinuria, dehydration, urinary tract infections, or acute illness with fever.</span>
-                            </li>
-                            <li className="flex flex-col gap-1">
-                                <strong className="text-gray-900">Glucose and Ketones:</strong>
-                                <span className="text-gray-600">Uncontrolled diabetes mellitus can lead to the presence of glucose in urine. Other causes include pregnancy, hormonal disturbances, liver disease, and certain medications. Uncontrolled diabetes mellitus can lead to the presence of ketones in urine. Ketones can also be seen in starvation, frequent vomiting, pregnancy, and strenuous exercise.</span>
-                            </li>
-                            <li className="flex flex-col gap-1">
-                                <strong className="text-gray-900">Blood and Leukocytes:</strong>
-                                <span className="text-gray-600">Occult blood can occur in urine as intact erythrocytes or hemoglobin, which can occur in various urological, nephrological, and bleeding disorders. An increase in leukocytes is an indication of inflammation or infection in the urinary tract or kidneys.</span>
-                            </li>
-                            <li className="flex flex-col gap-1">
-                                <strong className="text-gray-900">pH and Specific Gravity:</strong>
-                                <span className="text-gray-600">The kidneys maintain the body&#39;s acid-base balance, and factors like acidosis, alkalosis, or certain foods can affect urine pH. Specific gravity - Increased - dehydration, glycosuria, or proteinuria. Decreased - excessive fluid intake, renal failure, or diabetes insipidus.</span>
-                            </li>
-                        </ul>
-                    </div>
-
-
                     <div className="mt-6 flex justify-center">
                         <Button onClick={downloadPDF}>Download PDF</Button>
                     </div>

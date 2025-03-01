@@ -3,9 +3,15 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
     CBCReportTemplate,
-    CRPReportTemplate, ESRReportTemplate,
-    FBSReportTemplate, HbA1cReportTemplate,
-    LFTReportTemplate, LipidProfileReportTemplate, SerumCreatinineReportTemplate, SerumElectrolytesReportTemplate,
+    CRPReportTemplate,
+    ESRReportTemplate,
+    FBSReportTemplate,
+    HbA1cReportTemplate,
+    LFTReportTemplate,
+    LipidProfileReportTemplate,
+    SerumCreatinineReportTemplate,
+    SerumElectrolytesReportTemplate,
+    TFTReportTemplate,
     UFRTemplate
 } from "@/app/templates/data/ReportData";
 import CBCReport from "@/app/templates/CBC";
@@ -18,6 +24,7 @@ import SerumElectrolytesReport from "@/app/templates/Serum-Electrolytes";
 import LipidProfileReport from "@/app/templates/LPT";
 import HbA1cReport from "@/app/templates/HbA1c";
 import ESRReport from "@/app/templates/ESR";
+import TFTReport from "@/app/templates/TFT";
 
 interface ReportModalProps {
     report: {
@@ -56,6 +63,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <HbA1cReport reportData={HbA1cReportTemplate} />
                 ) : report.name === "Erythrocyte Sedimentation Rate (ESR) Report" ? (
                     <ESRReport reportData={ESRReportTemplate} />
+                ) : report.name === "Thyroid Function Test (TFT) Report" ? (
+                    <TFTReport reportData={TFTReportTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}

@@ -6,13 +6,11 @@ export const CBCReportTemplate = {
     investigations: "",
     hemoglobin: "",
     totalLeukocyteCount: "",
-    differentialLeukocyteCount: {
-        neutrophils: "",
-        lymphocytes: "",
-        eosinophils: "",
-        monocytes: "",
-        basophils: "",
-    },
+    neutrophils: "",
+    lymphocytes: "",
+    eosinophils: "",
+    monocytes: "",
+    basophils: "",
     plateletCount: "",
     totalRBCCount: "",
     hematocrit: "",
@@ -132,4 +130,15 @@ export const ESRReportTemplate = {
     date: "",
     investigations: "",
     esr: "",
+}
+
+export const TFTReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    tsh: "",
+    t3: "",
+    t4: "",
 }

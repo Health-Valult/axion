@@ -36,12 +36,13 @@ const reportsData: Report[] = [
     { id: 2, name: "Urine Full Report (UFR)", date: "2024-01-28" },
     { id: 3, name: "C-Reactive Protein (CRP) Report", date: "2024-02-10" },
     { id: 4, name: "Liver Function Test (LFT) Report", date: "2024-02-29" },
-    { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2023-12-30"},
+    { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2024-01-25"},
     { id: 6, name: "Serum Creatinine Report", date: "2024-02-10" },
     { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
     { id: 8, name: "Lipid Profile Test (LPT) Report", date: "2023-11-11" },
     { id: 9, name: "HbA1c Report", date: "2024-03-15" },
     { id: 10, name: "Erythrocyte Sedimentation Rate (ESR) Report", date: "2024-01-31" },
+    { id: 11, name: "Thyroid Function Test (TFT) Report", date: "2024-01-01" },
 ];
 
 function ReportsPage() {

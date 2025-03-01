@@ -13,13 +13,11 @@ interface CBCReportProps {
         investigations: string;
         hemoglobin: string;
         totalLeukocyteCount: string;
-        differentialLeukocyteCount: {
-            neutrophils: string;
-            lymphocytes: string;
-            eosinophils: string;
-            monocytes: string;
-            basophils: string;
-        };
+        neutrophils: string;
+        lymphocytes: string;
+        eosinophils: string;
+        monocytes: string;
+        basophils: string;
         plateletCount: string;
         totalRBCCount: string;
         hematocrit: string;
@@ -38,13 +36,11 @@ const referenceRanges = {
     meanCorpuscularVolume: { min: 80, max: 100, unit: "fL" },
     meanCellHemoglobin: { min: 27, max: 33, unit: "pg" },
     meanCellHemoglobinConcentration: { min: 32, max: 36, unit: "g/dL" },
-    differentialLeukocyteCount: {
-        neutrophils: { min: 40, max: 70, unit: "%" },
-        lymphocytes: { min: 20, max: 40, unit: "%" },
-        eosinophils: { min: 1, max: 6, unit: "%" },
-        monocytes: { min: 2, max: 10, unit: "%" },
-        basophils: { min: 0, max: 2, unit: "%" },
-    },
+    neutrophils: { min: 40, max: 70, unit: "%" },
+    lymphocytes: { min: 20, max: 40, unit: "%" },
+    eosinophils: { min: 1, max: 6, unit: "%" },
+    monocytes: { min: 2, max: 10, unit: "%" },
+    basophils: { min: 0, max: 2, unit: "%" },
 };
 
 const CBCReport: React.FC<CBCReportProps> = ({ reportData }) => {
@@ -67,11 +63,11 @@ const CBCReport: React.FC<CBCReportProps> = ({ reportData }) => {
         const tableData = [
             ["Hemoglobin", reportData.hemoglobin, "g/dL", `${referenceRanges.hemoglobin.min} - ${referenceRanges.hemoglobin.max}`],
             ["Total Leukocyte Count", reportData.totalLeukocyteCount, "x10⁹/L", `${referenceRanges.totalLeukocyteCount.min} - ${referenceRanges.totalLeukocyteCount.max}`],
-            ["Neutrophils", reportData.differentialLeukocyteCount.neutrophils, "%", `${referenceRanges.differentialLeukocyteCount.neutrophils.min} - ${referenceRanges.differentialLeukocyteCount.neutrophils.max}`],
-            ["Lymphocytes", reportData.differentialLeukocyteCount.lymphocytes, "%", `${referenceRanges.differentialLeukocyteCount.lymphocytes.min} - ${referenceRanges.differentialLeukocyteCount.lymphocytes.max}`],
-            ["Eosinophils", reportData.differentialLeukocyteCount.eosinophils, "%", `${referenceRanges.differentialLeukocyteCount.eosinophils.min} - ${referenceRanges.differentialLeukocyteCount.eosinophils.max}`],
-            ["Monocytes", reportData.differentialLeukocyteCount.monocytes, "%", `${referenceRanges.differentialLeukocyteCount.monocytes.min} - ${referenceRanges.differentialLeukocyteCount.monocytes.max}`],
-            ["Basophils", reportData.differentialLeukocyteCount.basophils, "%", `${referenceRanges.differentialLeukocyteCount.basophils.min} - ${referenceRanges.differentialLeukocyteCount.basophils.max}`],
+            ["Neutrophils", reportData.neutrophils, "%", `${referenceRanges.neutrophils.min} - ${referenceRanges.neutrophils.max}`],
+            ["Lymphocytes", reportData.lymphocytes, "%", `${referenceRanges.lymphocytes.min} - ${referenceRanges.lymphocytes.max}`],
+            ["Eosinophils", reportData.eosinophils, "%", `${referenceRanges.eosinophils.min} - ${referenceRanges.eosinophils.max}`],
+            ["Monocytes", reportData.monocytes, "%", `${referenceRanges.monocytes.min} - ${referenceRanges.monocytes.max}`],
+            ["Basophils", reportData.basophils, "%", `${referenceRanges.basophils.min} - ${referenceRanges.basophils.max}`],
             ["Platelet Count", reportData.plateletCount, "x10⁹/L", `${referenceRanges.plateletCount.min} - ${referenceRanges.plateletCount.max}`],
             ["Total RBC Count", reportData.totalRBCCount, "x10¹²/L", `${referenceRanges.totalRBCCount.min} - ${referenceRanges.totalRBCCount.max}`],
             ["Hematocrit", reportData.hematocrit, "%", `${referenceRanges.hematocrit.min} - ${referenceRanges.hematocrit.max}`],
@@ -148,11 +144,11 @@ const CBCReport: React.FC<CBCReportProps> = ({ reportData }) => {
                             {renderTestRow("Hemoglobin", reportData.hemoglobin, "g/dL", `${referenceRanges.hemoglobin.min} - ${referenceRanges.hemoglobin.max}`)}
                             {renderTestRow("Total Leukocyte Count", reportData.totalLeukocyteCount, "x10⁹/L", `${referenceRanges.totalLeukocyteCount.min} - ${referenceRanges.totalLeukocyteCount.max}`)}
                             {renderTestRow("Differential Leukocyte Count", "", "", "")}
-                            {renderdlcTestRow("Neutrophils", reportData.differentialLeukocyteCount.neutrophils, "%", `${referenceRanges.differentialLeukocyteCount.neutrophils.min} - ${referenceRanges.differentialLeukocyteCount.neutrophils.max}`)}
-                            {renderdlcTestRow("Lymphocytes", reportData.differentialLeukocyteCount.lymphocytes, "%", `${referenceRanges.differentialLeukocyteCount.lymphocytes.min} - ${referenceRanges.differentialLeukocyteCount.lymphocytes.max}`)}
-                            {renderdlcTestRow("Eosinophils", reportData.differentialLeukocyteCount.eosinophils, "%", `${referenceRanges.differentialLeukocyteCount.eosinophils.min} - ${referenceRanges.differentialLeukocyteCount.eosinophils.max}`)}
-                            {renderdlcTestRow("Monocytes", reportData.differentialLeukocyteCount.monocytes, "%", `${referenceRanges.differentialLeukocyteCount.monocytes.min} - ${referenceRanges.differentialLeukocyteCount.monocytes.max}`)}
-                            {renderdlcTestRow("Basophils", reportData.differentialLeukocyteCount.basophils, "%", `${referenceRanges.differentialLeukocyteCount.basophils.min} - ${referenceRanges.differentialLeukocyteCount.basophils.max}`)}
+                            {renderdlcTestRow("Neutrophils", reportData.neutrophils, "%", `${referenceRanges.neutrophils.min} - ${referenceRanges.neutrophils.max}`)}
+                            {renderdlcTestRow("Lymphocytes", reportData.lymphocytes, "%", `${referenceRanges.lymphocytes.min} - ${referenceRanges.lymphocytes.max}`)}
+                            {renderdlcTestRow("Eosinophils", reportData.eosinophils, "%", `${referenceRanges.eosinophils.min} - ${referenceRanges.eosinophils.max}`)}
+                            {renderdlcTestRow("Monocytes", reportData.monocytes, "%", `${referenceRanges.monocytes.min} - ${referenceRanges.monocytes.max}`)}
+                            {renderdlcTestRow("Basophils", reportData.basophils, "%", `${referenceRanges.basophils.min} - ${referenceRanges.basophils.max}`)}
                             {renderTestRow("Platelet Count", reportData.plateletCount, "x10⁹/L", `${referenceRanges.plateletCount.min} - ${referenceRanges.plateletCount.max}`)}
                             {renderTestRow("Total RBC Count", reportData.totalRBCCount, "x10¹²/L", `${referenceRanges.totalRBCCount.min} - ${referenceRanges.totalRBCCount.max}`)}
                             {renderTestRow("Hematocrit", reportData.hematocrit, "%", `${referenceRanges.hematocrit.min} - ${referenceRanges.hematocrit.max}`)}
@@ -161,25 +157,6 @@ const CBCReport: React.FC<CBCReportProps> = ({ reportData }) => {
                             {renderTestRow("Mean Cell Hemoglobin Concentration", reportData.meanCellHemoglobinConcentration, "g/dL", `${referenceRanges.meanCellHemoglobinConcentration.min} - ${referenceRanges.meanCellHemoglobinConcentration.max}`)}
                         </tbody>
                     </table>
-
-                    <div className="mt-6">
-                        <h3 className="font-semibold text-lg">Possible Causes of Abnormal Parameters:</h3>
-                        <table className="w-full text-sm mt-4">
-                            <thead>
-                            <tr className="bg-gray-200">
-                                <th className="px-3 py-2 text-left">Reference</th>
-                                <th className="px-3 py-2 text-left">High</th>
-                                <th className="px-3 py-2 text-left">Low</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {createConditionRow("RBC, Hb, or HCT", "Dehydration, polycythemia, shock, chronic hypoxia", "Anemia, thalassemia, and other hemoglobinopathies")}
-                            {createConditionRow("MCV", "Macrocytic anemia, liver disease", "Microcytic anemia")}
-                            {createConditionRow("WBC", "Acute stress, infection, malignancies", "Sepsis, marrow hypoplasia")}
-                            {createConditionRow("Platelets", "Risk of thrombosis", "Risk of bleeding")}
-                            </tbody>
-                        </table>
-                    </div>
 
                     <div className="mt-6 flex justify-center">
                         <Button onClick={downloadPDF}>Download PDF</Button>
