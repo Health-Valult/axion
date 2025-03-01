@@ -34,7 +34,7 @@ interface Report {
 const reportsData: Report[] = [
     { id: 1, name: "Complete Blood Count (CBC)", date: "2024-01-25" },
     { id: 2, name: "Urine Full Report (UFR)", date: "2024-01-28" },
-    { id: 3, name: "X-Ray Report", date: "2024-02-10" },
+    { id: 3, name: "C-Reactive Protein (CRP) Report", date: "2024-02-10" },
 ];
 
 function ReportsPage() {

@@ -42,3 +42,12 @@ export const UFRTemplate = {
     crystals: "",
     bacteria: "",
 }
+
+export const CRPReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    crpLevel: "",
+}
