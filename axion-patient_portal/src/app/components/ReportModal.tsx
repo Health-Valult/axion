@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
     CBCReportTemplate,
-    CRPReportTemplate,
+    CRPReportTemplate, ESRReportTemplate,
     FBSReportTemplate, HbA1cReportTemplate,
     LFTReportTemplate, LipidProfileReportTemplate, SerumCreatinineReportTemplate, SerumElectrolytesReportTemplate,
     UFRTemplate
@@ -17,6 +17,7 @@ import SerumCreatinineReport from "@/app/templates/Serum-Creatinine";
 import SerumElectrolytesReport from "@/app/templates/Serum-Electrolytes";
 import LipidProfileReport from "@/app/templates/LPT";
 import HbA1cReport from "@/app/templates/HbA1c";
+import ESRReport from "@/app/templates/ESR";
 
 interface ReportModalProps {
     report: {
@@ -53,6 +54,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                     <LipidProfileReport reportData={LipidProfileReportTemplate} />
                 ) : report.name === "HbA1c Report" ? (
                     <HbA1cReport reportData={HbA1cReportTemplate} />
+                ) : report.name === "Erythrocyte Sedimentation Rate (ESR) Report" ? (
+                    <ESRReport reportData={ESRReportTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}

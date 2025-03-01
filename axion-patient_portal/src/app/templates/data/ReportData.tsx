@@ -124,3 +124,12 @@ export const HbA1cReportTemplate = {
     hba1c: "",
     estimatedAvgGlucose: "",
 }
+
+export const ESRReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    investigations: "",
+    esr: "",
+}

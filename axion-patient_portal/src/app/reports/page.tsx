@@ -41,6 +41,7 @@ const reportsData: Report[] = [
     { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
     { id: 8, name: "Lipid Profile Test (LPT) Report", date: "2023-11-11" },
     { id: 9, name: "HbA1c Report", date: "2024-03-15" },
+    { id: 10, name: "Erythrocyte Sedimentation Rate (ESR) Report", date: "2024-01-31" },
 ];
 
 function ReportsPage() {
