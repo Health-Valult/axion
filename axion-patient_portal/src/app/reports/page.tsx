@@ -39,6 +39,7 @@ const reportsData: Report[] = [
     { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2023-12-30"},
     { id: 6, name: "Serum Creatinine Report", date: "2024-02-10" },
     { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
+    { id: 8, name: "Lipid Profile Test (LPT) Report", date: "2023-11-11" },
 ];
 
 function ReportsPage() {

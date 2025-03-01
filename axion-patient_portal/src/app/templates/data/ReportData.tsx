@@ -98,3 +98,19 @@ export const SerumElectrolytesReportTemplate = {
     calcium: "",
     magnesium: "",
 }
+
+export const LipidProfileReportTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    totalCholesterol: "",
+    triglycerides: "",
+    hdl: "",
+    ldl: "",
+    vldl: "",
+    ldlToHdlRatio: "",
+    totalCholesterolToHdlRatio: "",
+    tgToHdlRatio: "",
+    nonHdlCholesterol: "",
+}
