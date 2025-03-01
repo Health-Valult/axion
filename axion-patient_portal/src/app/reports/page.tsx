@@ -29,14 +29,12 @@ interface Report {
     id: number;
     name: string;
     date: string;
-    fileUrl: string;
-    thumbnail: string;
 }
 
 const reportsData: Report[] = [
-    { id: 1, name: "Complete Blood Count (CBC)", date: "2024-01-25", fileUrl: "/sample_reports/cbc.pdf", thumbnail: "/images/medical-report-icon.jpg" },
-    { id: 2, name: "Lipid Profile Report", date: "2024-01-28", fileUrl: "/sample_reports/lipid-profile.pdf", thumbnail: "/images/medical-report-icon.jpg" },
-    { id: 3, name: "X-Ray Report", date: "2024-02-10", fileUrl: "/sample_reports/xray.pdf", thumbnail: "/images/medical-report-icon.jpg" },
+    { id: 1, name: "Complete Blood Count (CBC)", date: "2024-01-25" },
+    { id: 2, name: "Urine Full Report (UFR)", date: "2024-01-28" },
+    { id: 3, name: "X-Ray Report", date: "2024-02-10" },
 ];
 
 function ReportsPage() {

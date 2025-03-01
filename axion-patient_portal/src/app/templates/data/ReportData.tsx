@@ -20,3 +20,25 @@ export const CBCReportTemplate = {
     meanCellHemoglobin: "",
     meanCellHemoglobinConcentration: "",
 };
+
+export const UFRTemplate = {
+    patientName: "",
+    referredBy: "",
+    ageSex: "",
+    date: "",
+    quantity: "",
+    color: "",
+    transparency: "",
+    specificGravity: "",
+    pH: "",
+    protein: "",
+    sugar: "",
+    ketones: "",
+    bilirubin: "",
+    rbc: "",
+    pusCells: "",
+    epithelialCells: "",
+    casts: "",
+    crystals: "",
+    bacteria: "",
+}

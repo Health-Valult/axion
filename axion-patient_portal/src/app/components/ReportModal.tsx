@@ -1,8 +1,9 @@
 import React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { CBCReportTemplate } from "@/app/templates/data/ReportData";
+import {CBCReportTemplate, UFRTemplate} from "@/app/templates/data/ReportData";
 import CBCReport from "@/app/templates/CBC";
+import UFRReport from "@/app/templates/UFR";
 
 interface ReportModalProps {
     report: {
@@ -23,6 +24,8 @@ const ReportModal: React.FC<ReportModalProps> = ({ report, onClose }) => {
                 </DialogTitle>
                 {report.name === "Complete Blood Count (CBC)" ? (
                     <CBCReport reportData={CBCReportTemplate} />
+                ) : report.name === "Urine Full Report (UFR)" ? (
+                    <UFRReport reportData={UFRTemplate} />
                 ) : (
                     <p>Report type not supported.</p>
                 )}

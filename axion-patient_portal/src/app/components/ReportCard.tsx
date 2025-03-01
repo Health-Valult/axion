@@ -7,16 +7,15 @@ interface Report {
         id: number;
         name: string;
         date: string;
-        fileUrl: string;
     };
-    onClick: (fileUrl: string) => void;
+    onClick: () => void;
 }
 
 const ReportCard: React.FC<Report> = ({ report, onClick }) => {
     return (
         <Card
             className="w-full bg-white dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer"
-            onClick={() => onClick(report.fileUrl)}
+            onClick={() => onClick()}
         >
             <CardHeader className="p-4 items-center">
                 <Image
