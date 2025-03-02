@@ -29,7 +29,7 @@ class LiverFunctionTestReport implements BaseReport {
   @HiveField(10)
   final String patientID;
   
-  // Specific fields for Liver Function Test
+  // Specific fields for LFT
   @HiveField(11)
   final String bilirubinTotal;
   @HiveField(12)

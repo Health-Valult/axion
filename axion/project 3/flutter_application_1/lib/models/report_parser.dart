@@ -1,14 +1,5 @@
-import 'base_report.dart';
-import 'cbc_report.dart';
-import 'serum_chloride_report.dart';
-import 'serum_sodium_report.dart';
-import 'hba1c_report.dart';
-import 'serum_potassium_report.dart';
-import 'lipid_profile_report.dart';
-import 'liver_function_test_report.dart';
-import 'thyroid_function_test_report.dart';
-import 'crp_report.dart';
-import 'serum_creatinine_report.dart';
+import 'models.dart'; // This imports all models so they’re all included in the build.
+
 
 BaseReport parseReportFromJson(Map<String, dynamic> json) {
   final String type = json['reportType'];
@@ -33,6 +24,12 @@ BaseReport parseReportFromJson(Map<String, dynamic> json) {
       return CRPReport.fromJson(json);
     case 'serumCreatinine':
       return SerumCreatinineReport.fromJson(json);
+    case 'esrWintrobe':
+      return ESRWintrobeReport.fromJson(json);
+    case 'esrWestergren':
+      return ESRWestergrenReport.fromJson(json);
+    case 'urineRoutine':
+      return UrineRoutineReport.fromJson(json);
     default:
       throw Exception('Unsupported report type: $type');
   }

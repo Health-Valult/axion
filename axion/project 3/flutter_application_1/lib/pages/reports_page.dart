@@ -1,8 +1,11 @@
+// lib/pages/reports_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/base_report.dart';
-import 'package:flutter_application_1/models/report_parser.dart';  // <-- Import the parser
+import 'package:flutter_application_1/models/report_parser.dart';
 import 'package:flutter_application_1/pages/downloaded_reports_page.dart';
 import 'package:flutter_application_1/widgets/report_card.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
@@ -14,13 +17,13 @@ class _ReportsPageState extends State<ReportsPage> {
   int _selectedYear = 2024;
   DateTime? _selectedDate;
   
-  // 10 sample JSON reports with various types and all required fields.
+  // 13 sample JSON reports
   final List<Map<String, dynamic>> jsonReports = [
     // CBC Report
     {
       "id": "r1",
       "reportType": "cbc",
-      "dateTime": "2024-11-14T13:30:00",
+      "dateTime": "2024-10-14T13:40:00",
       "title": "CBC Report 1",
       "status": "Verified",
       "placeholderImageUrl": "https://example.com/image1.jpg",
@@ -207,6 +210,72 @@ class _ReportsPageState extends State<ReportsPage> {
       "unit": "mg/dl",
       "reference": "0.6 - 1.2",
     },
+    // ESR Wintrobe Report (New)
+    {
+      "id": "r11",
+      "reportType": "esrWintrobe",
+      "dateTime": "2024-11-24T10:00:00",
+      "title": "ESR (Wintrobe) Report",
+      "status": "Verified",
+      "placeholderImageUrl": "https://example.com/image11.jpg",
+      "patientName": "Ivan Ivanov",
+      "referredBy": "Dr. Petrova",
+      "ageSex": "40/M",
+      "investigations": "Haematology",
+      "dailyCaseNumber": "12355",
+      "patientID": "P011",
+      "esrValue": "15",
+      "unit": "mm for 1st hour",
+      "reference": "0 - 20",
+    },
+    // ESR Westergren Report (New)
+    {
+      "id": "r12",
+      "reportType": "esrWestergren",
+      "dateTime": "2024-11-25T11:00:00",
+      "title": "ESR (Westergren) Report",
+      "status": "Verified",
+      "placeholderImageUrl": "https://example.com/image12.jpg",
+      "patientName": "Olga Petrova",
+      "referredBy": "Dr. Ivanov",
+      "ageSex": "35/F",
+      "investigations": "Haematology",
+      "dailyCaseNumber": "12356",
+      "patientID": "P012",
+      "esrValue": "8",
+      "unit": "mm for 1st hour",
+      "reference": "0 - 10",
+    },
+    // Urine Routine Report (New)
+    {
+      "id": "r13",
+      "reportType": "urineRoutine",
+      "dateTime": "2024-11-26T08:45:00",
+      "title": "Urine Routine Report",
+      "status": "Verified",
+      "placeholderImageUrl": "https://example.com/image13.jpg",
+      "patientName": "Vladimir Kuznetsov",
+      "referredBy": "Dr. Sidorov",
+      "ageSex": "50/M",
+      "investigations": "Urine Examination",
+      "dailyCaseNumber": "12357",
+      "patientID": "P013",
+      "physicalQuantity": "50 ml",
+      "physicalColour": "Pale Yellow",
+      "physicalTransparency": "Clear",
+      "specificGravity": "1.010",
+      "pH": "6",
+      "chemicalProtein": "Absent",
+      "chemicalSugar": "Absent",
+      "chemicalKetoneBodies": "Absent",
+      "chemicalBilirubin": "Absent",
+      "microscopicRBC": "Absent",
+      "microscopicPusCells": "Absent",
+      "microscopicEpithelialCells": "Absent",
+      "microscopicCasts": "Absent",
+      "microscopicCrystals": "Absent",
+      "microscopicBacteria": "Absent",
+    },
   ];
   
   late List<BaseReport> allReports;
@@ -214,7 +283,6 @@ class _ReportsPageState extends State<ReportsPage> {
   @override
   void initState() {
     super.initState();
-    // Replace BaseReport.fromJson with our parser function.
     allReports = jsonReports.map((json) => parseReportFromJson(json)).toList();
   }
   
@@ -247,9 +315,13 @@ class _ReportsPageState extends State<ReportsPage> {
     final startYear = 2020;
     final endYear = 2030;
     final years = List.generate(endYear - startYear + 1, (i) => startYear + i);
+    // Use the current theme's cardColor for modal background.
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    
     await showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -261,7 +333,10 @@ class _ReportsPageState extends State<ReportsPage> {
             itemBuilder: (ctx, index) {
               final year = years[index];
               return ListTile(
-                title: Text(year.toString(), style: const TextStyle(color: Colors.white)),
+                title: Text(
+                  year.toString(),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: textColor),
+                ),
                 onTap: () {
                   setState(() {
                     _selectedYear = year;
@@ -287,6 +362,7 @@ class _ReportsPageState extends State<ReportsPage> {
       firstDate: firstDate,
       lastDate: lastDate,
       builder: (ctx, child) {
+        // Use the dark theme for the date picker if desired, or you could use Theme.of(context) for consistency.
         return Theme(
           data: ThemeData.dark(),
           child: child ?? const SizedBox(),
@@ -302,12 +378,19 @@ class _ReportsPageState extends State<ReportsPage> {
   
   @override
   Widget build(BuildContext context) {
+    // Define card color and text color based on the current theme.
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    
     final sortedDates = _getDatesInYear();
     final displayedReports = _getDisplayedReports();
+    
+    // Use the current locale for month abbreviations
+    final locale = Localizations.localeOf(context).toString();
+    
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text('My Reports'),
+        title: Text(AppLocalizations.of(context)!.myReports),
         centerTitle: true,
         actions: [
           IconButton(
@@ -332,7 +415,7 @@ class _ReportsPageState extends State<ReportsPage> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -345,10 +428,13 @@ class _ReportsPageState extends State<ReportsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         margin: const EdgeInsets.only(left: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text('$_selectedYear', style: const TextStyle(color: Colors.white)),
+                        child: Text(
+                          '$_selectedYear',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: textColor),
+                        ),
                       ),
                     ),
                     // "Select Date" pill with optional clear icon
@@ -358,7 +444,7 @@ class _ReportsPageState extends State<ReportsPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A1A),
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -366,18 +452,18 @@ class _ReportsPageState extends State<ReportsPage> {
                           children: [
                             Text(
                               _selectedDate == null
-                                  ? 'Select Date'
-                                  : '${_selectedDate!.month.toString().padLeft(2, '0')}/${_selectedDate!.day.toString().padLeft(2, '0')}',
-                              style: const TextStyle(color: Colors.white),
+                                  ? AppLocalizations.of(context)!.selectDate
+                                  : DateFormat('MM/dd').format(_selectedDate!),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: textColor),
                             ),
                             if (_selectedDate != null)
                               GestureDetector(
                                 onTap: () {
                                   setState(() => _selectedDate = null);
                                 },
-                                child: const Padding(
-                                  padding: EdgeInsets.only(left: 8),
-                                  child: Icon(Icons.close, size: 16, color: Colors.white),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 8),
+                                  child: Icon(Icons.close, size: 16, color: textColor),
                                 ),
                               ),
                           ],
@@ -396,8 +482,8 @@ class _ReportsPageState extends State<ReportsPage> {
                       final isSelected = _selectedDate != null &&
                           date.month == _selectedDate!.month &&
                           date.day == _selectedDate!.day;
-                      final monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                      final monthName = monthNames[date.month - 1];
+                      // Use DateFormat.MMM with the current locale for localized month names.
+                      final monthName = DateFormat.MMM(locale).format(date);
                       final day = date.day.toString();
                       return GestureDetector(
                         onTap: () => _handleDateChipTap(date, isSelected),
@@ -405,10 +491,13 @@ class _ReportsPageState extends State<ReportsPage> {
                           margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.deepOrange : const Color(0xFF1A1A1A),
+                            color: isSelected ? Colors.deepOrange : cardColor,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text('$monthName $day', style: const TextStyle(color: Colors.white)),
+                          child: Text(
+                            '$monthName $day',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textColor),
+                          ),
                         ),
                       );
                     }).toList(),
@@ -420,10 +509,15 @@ class _ReportsPageState extends State<ReportsPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
+                    color: cardColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(child: Text('No reports for selected date', style: TextStyle(color: Colors.white))),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.noReportsForDate,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textColor),
+                    ),
+                  ),
                 ),
               // List of ReportCards
               ...displayedReports.map((r) => ReportCard(report: r)),

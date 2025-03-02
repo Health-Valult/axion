@@ -4,41 +4,32 @@ import 'package:flutter_application_1/main.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ==========================
 /// DatabaseService
 /// ==========================
-///
-/// Simulates endpoints for changing password and deleting account.
+
 class DatabaseService {
   static const String baseUrl = 'https://api.example.com';
 
-  // Create a static instance of MockClient.
   static final http.Client client = MockClient((http.Request request) async {
     final String url = request.url.toString();
-
-    // Simulate a short network delay.
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // Simulated endpoint for changing password.
     if (request.method == 'POST' && url == '$baseUrl/change-password') {
       final Map<String, dynamic> data = json.decode(request.body);
-      // For simulation: if currentPassword equals "password123", then the change succeeds.
       if (data["currentPassword"] == "password123") {
         return http.Response(json.encode({"success": true}), 200);
       } else {
         return http.Response(json.encode({"success": false}), 200);
       }
-    }
-    // Simulated endpoint for deleting the account.
-    else if (request.method == 'POST' && url == '$baseUrl/delete-account') {
+    } else if (request.method == 'POST' && url == '$baseUrl/delete-account') {
       return http.Response(json.encode({"success": true}), 200);
     }
-    // Unknown endpoint.
     return http.Response('Not Found', 404);
   });
 
-  /// Simulated endpoint to change password.
   static Future<bool> changePassword(String currentPassword, String newPassword) async {
     final response = await client.post(
       Uri.parse('$baseUrl/change-password'),
@@ -55,7 +46,6 @@ class DatabaseService {
     return false;
   }
 
-  /// Simulated endpoint to delete the account.
   static Future<bool> deleteAccount() async {
     final response = await client.post(
       Uri.parse('$baseUrl/delete-account'),
@@ -70,6 +60,32 @@ class DatabaseService {
 }
 
 /// ==========================
+/// Helper methods to persist settings
+/// ==========================
+
+Future<void> saveThemeMode(ThemeMode mode) async {
+  final prefs = await SharedPreferences.getInstance();
+  String modeString;
+  switch (mode) {
+    case ThemeMode.dark:
+      modeString = 'dark';
+      break;
+    case ThemeMode.light:
+      modeString = 'light';
+      break;
+    default:
+      modeString = 'system';
+      break;
+  }
+  await prefs.setString('theme_mode', modeString);
+}
+
+Future<void> saveLocale(Locale locale) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('locale', locale.languageCode);
+}
+
+/// ==========================
 /// SettingsPage
 /// ==========================
 
@@ -81,7 +97,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  // These settings (dark mode and language) remain as in your original code.
   bool _isDarkMode = true;
   late String _selectedLanguage;
   final Map<String, Locale> _languageMap = {
@@ -128,7 +143,9 @@ class _SettingsPageState extends State<SettingsPage> {
         value: _isDarkMode,
         onChanged: (bool value) {
           setState(() => _isDarkMode = value);
-          MyApp.themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+          final newMode = value ? ThemeMode.dark : ThemeMode.light;
+          MyApp.themeNotifier.value = newMode;
+          saveThemeMode(newMode);
         },
       ),
     );
@@ -151,7 +168,9 @@ class _SettingsPageState extends State<SettingsPage> {
             if (value != null) {
               setState(() {
                 _selectedLanguage = value;
-                MyApp.setLocale(_languageMap[value]!);
+                final newLocale = _languageMap[value]!;
+                MyApp.setLocale(newLocale);
+                saveLocale(newLocale);
               });
             }
           },
@@ -328,7 +347,6 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     );
   }
 
-  /// Builds a password field with a label and a visibility toggle.
   Widget _buildPasswordField(
     String label,
     TextEditingController controller,
