@@ -11,7 +11,7 @@ async def callback(message:AbstractIncomingMessage) -> None:
 
 async def recieveMQ(host:str,Qname:str,):
         print("reciever active")
-        connection = await connect(host)
+        connection = await connect(host,heartbeat=30)
         async with connection:
             channel = await connection.channel()
             queue = await channel.declare_queue(Qname)

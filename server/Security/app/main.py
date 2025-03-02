@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 import pymongo.errors
 import uuid
@@ -9,18 +10,19 @@ import pymongo
 from argon2 import PasswordHasher
 from authlib.jose import jwt
 import bson
-
+from app.utils.reciever import recieveMQ
+from app.utils.sender import sendMQ
 URL = "mongodb://localhost:27017"
 
-with open('./data/keys/private.pem', 'r') as file:
+with open('./app/data/keys/private.pem', 'r') as file:
         private_key = file.read()
 
-with open('./data/keys/refresh_private.pem', 'r') as file:
+with open('./app/data/keys/refresh_private.pem', 'r') as file:
         refresh_private_key = file.read()
 
 app = FastAPI()
 hasher = PasswordHasher()
-
+MQ = sendMQ("localhost","security")
 DBClient = pymongo.MongoClient(URL)
 Database = DBClient.get_database("User")
 ClientCollection = Database.get_collection("Clients")
@@ -98,9 +100,12 @@ def staff_login(cred:Userlg):
 def refresh():
     pass
 
-def main():
-    print("running security services")
-    uvicorn.run("app.main:app",port=8000,reload=True)
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/",'security'))
+
+
 
 if __name__ == '__main__':
-    main()
+    uvicorn.run("app.main:app",port=8000,reload=True)
