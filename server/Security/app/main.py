@@ -1,17 +1,20 @@
 import asyncio
 from datetime import datetime
-import pymongo.errors
+from pymongo import errors, MongoClient
 import uuid
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from .models.user import *
-import pymongo
+
 from argon2 import PasswordHasher
 from authlib.jose import jwt
 import bson
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
+from redis import Redis
+
+RedisServe = Redis(host="localhost",port=6379)
 URL = "mongodb://localhost:27017"
 
 with open('./app/data/keys/private.pem', 'r') as file:
@@ -23,7 +26,7 @@ with open('./app/data/keys/refresh_private.pem', 'r') as file:
 app = FastAPI()
 hasher = PasswordHasher()
 MQ = sendMQ("localhost","security")
-DBClient = pymongo.MongoClient(URL)
+DBClient = MongoClient(URL)
 Database = DBClient.get_database("User")
 ClientCollection = Database.get_collection("Clients")
 
@@ -48,7 +51,7 @@ def user_signup(user:User):
         ClientCollection.insert_one(dictifiedUser)
         return JSONResponse(status_code=201, content={"details":"user created successfuly"})
     
-    except pymongo.errors.OperationFailure:
+    except errors.OperationFailure:
         print("error")
 
 

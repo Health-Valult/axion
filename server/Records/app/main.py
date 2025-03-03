@@ -70,7 +70,7 @@ class Query:
                 {"$project": query|{"_id":0}} 
             ])
         
-        MQ.send("security",{"token":info.context["request"].headers["authorization"]})
+        MQ.send("security","sessionAuth",{"token":info.context["request"].headers["authorization"]})
         return ObservationStack(
             Observations=[Observation(**obs) for obs in observationAggregate]
         )

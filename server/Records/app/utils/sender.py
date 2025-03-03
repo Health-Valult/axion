@@ -9,10 +9,11 @@ class sendMQ:
             ConnectionParameters(host=host,heartbeat=0))
         self.channel = self.connection.channel()
 
-    def send(self,Qname:str,msg:dict):
+    def send(self,Qname:str,task:str,msg:dict):
         msg_obj = {
             "service":self.service,
             "id":f"{self.service}-{uuid.uuid4()}",
+            "task":task,
             "data":msg
         }
         msg = dumps(msg_obj).encode("utf-8")
