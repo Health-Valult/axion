@@ -33,7 +33,7 @@ const geistMono = Geist_Mono({
 const links = [
   {
     label: "Home",
-    href: "/",
+    href: "/search_patients",
     icon: "",
   },
   {
@@ -43,7 +43,7 @@ const links = [
   },
   {
     label: "upload file",
-    href: "/",
+    href: "/upload_file",
     icon: "",
   },
 
