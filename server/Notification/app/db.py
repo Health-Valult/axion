@@ -9,4 +9,6 @@ DB_NAME = "notifications_db"
 
 client = AsyncIOMotorClient(DB_URI)
 db = client[DB_NAME]
+
 notifications_collection = db["notifications"]
+otp_collection = db["otp"]

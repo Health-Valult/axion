@@ -8,34 +8,33 @@ FASTAPI_NOTIFICATION_URL = "http://127.0.0.1:8000/process-notification/"
 
 # Retry Config
 MAX_RETRIES = 3
-RETRY_DELAY = 5  # seconds
+RETRY_DELAY = 5 
 
 def rabbitmq_callback(ch, method, properties, body):
     """Handle incoming RabbitMQ messages and forward to FastAPI"""
     notification = json.loads(body)
-    print(f"📩 Received from RabbitMQ: {notification}")
+    print(f"Received from RabbitMQ: {notification}")
 
     success = False
     for attempt in range(MAX_RETRIES):
         try:
             response = requests.post(FASTAPI_NOTIFICATION_URL, json=notification)
             if response.status_code == 200:
-                print("✅ Notification sent to WebSockets")
+                print("Notification sent to WebSockets")
                 success = True
-                ch.basic_ack(delivery_tag=method.delivery_tag)  # Acknowledge success
+                ch.basic_ack(delivery_tag=method.delivery_tag) 
                 break
             else:
-                print(f"❌ Failed to send: {response.status_code} - {response.text}")
+                print(f"Failed to send: {response.status_code} - {response.text}")
         except Exception as e:
-            print(f"⚠️ Retry {attempt + 1}/{MAX_RETRIES} - Error: {e}")
-            time.sleep(RETRY_DELAY)  # Wait before retrying
+            print(f"Retry {attempt + 1}/{MAX_RETRIES} - Error: {e}")
+            time.sleep(RETRY_DELAY) 
 
     if not success:
-        print("🚨 Sending to Dead Letter Queue (DLQ)")
-        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)  # Send to DLQ
+        print("Sending to Dead Letter Queue (DLQ)")
+        ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
 
 def start_rabbitmq_listener():
-    """Start RabbitMQ consumer"""
     connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
     channel = connection.channel()
 
@@ -50,12 +49,10 @@ def start_rabbitmq_listener():
 
     channel.basic_consume(queue="notifications", on_message_callback=rabbitmq_callback)
 
-    print("🐇 Waiting for notifications...")
+    print("Waiting for notifications...")
     channel.start_consuming()
 
-# Run RabbitMQ listener in a separate thread
 rabbitmq_thread = threading.Thread(target=start_rabbitmq_listener, daemon=True)
 rabbitmq_thread.start()
 
-# Keep the main thread alive
 rabbitmq_thread.join()
