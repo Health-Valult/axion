@@ -1,32 +1,26 @@
-'use client';
+"use client";
+import { useState } from "react";
 
-import * as React from 'react';
-import * as SwitchPrimitives from '@radix-ui/react-switch';
-import { cn } from '@/lib/utils'; // Ensure this file exists
-
-interface SwitchProps extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {
-  className?: string;
+interface SwitchProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
 }
 
-const Switch = React.forwardRef<React.ElementRef<typeof SwitchPrimitives.Root>, SwitchProps>(
-  ({ className, ...props }, ref) => (
-    <SwitchPrimitives.Root
-      ref={ref}
-      className={cn(
-        'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
-        className
-      )}
-      {...props}
-    >
-      <SwitchPrimitives.Thumb
-        className={cn(
-          'pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0'
-        )}
-      />
-    </SwitchPrimitives.Root>
-  )
-);
+const Switch = ({ checked, onCheckedChange }: SwitchProps) => {
+  console.log("Switch checked state:", checked); // Debugging
 
-Switch.displayName = 'Switch';
+  return (
+    <button
+      onClick={() => onCheckedChange(!checked)}
+      className={`relative w-12 h-6 flex items-center rounded-full border transition-colors
+        ${checked ? "bg-blue-500 border-blue-500" : "bg-gray-300 border-gray-300"}`}
+    >
+      <div
+        className={`absolute left-1 h-4 w-4 rounded-full bg-white shadow transition-transform
+          ${checked ? "translate-x-6" : "translate-x-0"}`}
+      />
+    </button>
+  );
+};
 
 export default Switch;

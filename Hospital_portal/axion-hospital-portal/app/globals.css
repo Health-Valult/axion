@@ -60,13 +60,23 @@ body {
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
+
+  .switch {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full border transition-colors;
+  }
+  
+  .switch-thumb {
+    @apply block h-4 w-4 rounded-full bg-white shadow transition-transform;
+  }
+  
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }

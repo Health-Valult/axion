@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -23,14 +23,32 @@ const PatientSearch = () => {
   const router = useRouter();
 
   // Mock patient data - in a real app, replace this with an API call
-  const mockPatientData: Patient = {
-    id: "p123456",
-    nationalId: "1234567890",
-    name: "John Doe",
-    age: 45,
-    gender: "Male",
-    lastVisit: "10 Apr 2024",
-  };
+  const mockPatientData: Patient[] = [
+    {
+      id: "p123456",
+      nationalId: "1234567890",
+      name: "John Doe",
+      age: 45,
+      gender: "Male",
+      lastVisit: "30 Apr 2024",
+    },
+    {
+      id: "p123457",
+      nationalId: "1234567891",
+      name: "Hema Zue",
+      age: 20,
+      gender: "Female",
+      lastVisit: "10 Jan 2025",
+    },
+    {
+      id: "p123458",
+      nationalId: "1234567892",
+      name: "Katherin John",
+      age: 60,
+      gender: "Female",
+      lastVisit: "21 Feb 2025",
+    },
+  ];
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,9 +61,11 @@ const PatientSearch = () => {
     setIsSearching(true);
 
     setTimeout(() => {
-      if (searchQuery === mockPatientData.nationalId) {
-        setPatient(mockPatientData);
-        setAlert({ type: "success", message: `Found records for ${mockPatientData.name}` });
+      const foundPatient = mockPatientData.find((p) => p.nationalId === searchQuery);
+
+      if (foundPatient) {
+        setPatient(foundPatient);
+        setAlert({ type: "success", message: `Found records for ${foundPatient.name}` });
       } else {
         setPatient(null);
         setAlert({ type: "error", message: "No patient found with that National ID" });

@@ -15,7 +15,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -38,8 +37,13 @@ const links = [
     icon: "",
   },
   {
+    label: "Search Patient",
+    href: "/search_patients",
+    icon: "",
+  },
+  {
     label: "upload file",
-    href: "/upload_file",
+    href: "/",
     icon: "",
   },
 
@@ -219,7 +223,7 @@ export default function RootLayout({
   }: Readonly<{
 	children: React.ReactNode;
   }>) {
-	// ✅ useState must be inside the component
+	
 	const [open, setOpen] = useState(false);
   
 	return (
@@ -227,39 +231,43 @@ export default function RootLayout({
 		<body
 		  className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 		>
-		  <Sidebar open={open} setOpen={setOpen}>
-  
+		  <div className="flex h-screen"> {/* This is the parent flex container */}
+			<Sidebar open={open} setOpen={setOpen}>
 			<SidebarBody className="justify-between gap-10">
-			  <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+				<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
 				{open ? <Logo /> : <LogoIcon />}
-  
+
 				<div className="mt-8 flex flex-col gap-2">
-				  {links.map((link, idx) => (
+					{links.map((link, idx) => (
 					<SidebarLink key={idx} link={link} />
-				  ))}
+					))}
 				</div>
-			  </div>
-  
-			  <div>
+				</div>
+
+				<div>
 				<SidebarLink
-				  link={{
+					link={{
 					label: "Manu Arora",
 					href: "#",
 					icon: (
-					  <Image
+						<Image
 						src="https://assets.aceternity.com/manu.png"
 						className="h-7 w-7 flex-shrink-0 rounded-full"
 						width={50}
 						height={50}
 						alt="Avatar"
-					  />
+						/>
 					),
-				  }}
+					}}
 				/>
-			  </div>
+				</div>
 			</SidebarBody>
-		  </Sidebar>
-		  {children}
+			</Sidebar>
+
+			<div className="flex-1 overflow-y-auto p-4"> {/* This is the main content area */}
+			{children}
+			</div>
+		</div>
 		</body>
 	  </html>
 	);

@@ -1,4 +1,5 @@
-import Settings from "./components/settings";
+import Settings from "./settings/settings";
+import "@/app/globals.css";
 import PatientSearch from "./search_patients/page";
 
 export default function HomePage() {
