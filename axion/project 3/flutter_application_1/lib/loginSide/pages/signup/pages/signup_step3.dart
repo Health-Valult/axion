@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
+import 'package:go_router/go_router.dart'; // Import go_router package
 
 class SignupStep3 extends StatefulWidget {
   const SignupStep3({Key? key}) : super(key: key);
@@ -26,6 +27,12 @@ class _SignupStep3State extends State<SignupStep3>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('OTP Verified! Signup Complete!')),
       );
+      // Delay to allow the SnackBar to show before navigating
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          context.go('/login');
+        }
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all OTP boxes')),
