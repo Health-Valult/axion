@@ -39,7 +39,8 @@ dependencies:
   go_router: ^14.6.2
   flutter_svg: ^2.0.9
   google_fonts: ^4.0.4
-  
+
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -81,7 +82,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   generate: true
-
+  assets:
+    - assets/img/Logo.svg
+    - assets/img/biometricAuth.svg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
