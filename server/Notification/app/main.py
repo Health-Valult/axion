@@ -1,5 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query, HTTPException
 from pydantic import BaseModel
+from twilio.rest import Client as TwilioClient
+from mailjet_rest import Client as MailjetClient
 import pika
 import json
 import uuid
@@ -9,11 +11,23 @@ from typing import List
 from .db import notifications_collection, otp_collection
 from .otp import generate_otp
 from bson import ObjectId
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI()
 
 connected_clients = set()
 notification_queue = asyncio.Queue() 
+
+TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
+
+MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
+MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET")
+MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL")
 
 def get_rabbitmq_connection():
     connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
@@ -62,10 +76,12 @@ async def startup_event():
     asyncio.create_task(process_queue()) 
 
 class Notification(BaseModel):
-    user_id: str | None  # If None, it's a global notification
+    user_id: str | None = None # If None, it's a global notification
     message: str
     type: str  # e.g., "alert", "reminder"
     is_global: bool = False
+    phone_number: str | None = None
+    email: str | None = None
 
 @app.post("/send-notification/")
 async def send_notification(notification: Notification):
@@ -76,7 +92,7 @@ async def send_notification(notification: Notification):
         "message": notification.message,
         "type": notification.type,
         "is_global": notification.is_global,
-        "timestamp": datetime.timezone.utc(),
+        "timestamp": datetime.datetime.utcnow(),
         "read": False
     }
 
@@ -89,6 +105,13 @@ async def send_notification(notification: Notification):
         body=json.dumps(notification_data, default=str)
     )
     connection.close()
+
+    if notification.phone_number:
+        await send_sms(notification.phone_number, notification.message)
+
+    # Send Email if email is provided
+    if notification.email:
+        await send_email(notification.email, "New Notification", notification.message)
 
     return {"status": "Notification sent!", "notification_id": notification_data["_id"]}
 
@@ -139,7 +162,7 @@ async def generate_otp_api(patient_nic: str):
         "patient_nic": patient_nic,
         "otp": otp_code,
         "secret": otp_secret,
-        "expires_at": expiry_time,  # Store as a proper datetime object
+        "expires_at": expiry_time,  
         "used": False
     })
 
@@ -174,3 +197,42 @@ async def verify_otp(patient_nic: str, otp_data: OTPVerificationRequest):
     )
 
     return {"status": "OTP verified, access granted"}
+
+twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+mailjet_client = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
+
+async def send_sms(phone_number: str, message: str):
+    try:
+        twilio_client.messages.create(
+            body=message,
+            from_=TWILIO_PHONE_NUMBER,
+            to=phone_number
+        )
+        print(f"SMS sent to {phone_number}: {message}")
+    except Exception as e:
+        print(f"Failed to send SMS: {e}")
+
+async def send_email(to_email: str, subject: str, message: str):
+    try:
+        data = {
+            'Messages': [
+                {
+                    "From": {
+                        "Email": MAILJET_FROM_EMAIL,
+                        "Name": "AXION HEALTH"
+                    },
+                    "To": [
+                        {
+                            "Email": to_email,
+                            "Name": "User"
+                        }
+                    ],
+                    "Subject": subject,
+                    "TextPart": message
+                }
+            ]
+        }
+        response = mailjet_client.send.create(data=data)
+        print(f"Email sent to {to_email}: {subject}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
