@@ -20,6 +20,7 @@ import 'package:flutter_application_1/models/serum_creatinine_report.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 /// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
