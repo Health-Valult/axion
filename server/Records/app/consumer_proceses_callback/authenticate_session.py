@@ -12,9 +12,8 @@ def authenticate_session(bearerToken:str):
         
         decoded_token = jwt.decode(token,key)
         decoded_token.validate()
-        return {
-            "user":decoded_token["sub"]
-            }
+        print("decode sucessful")
+        return {"user":decoded_token["sub"]}
 
     except FileNotFoundError:
         print("File not found.")

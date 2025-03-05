@@ -9,15 +9,18 @@ class sendMQ:
             ConnectionParameters(host=host,heartbeat=0))
         self.channel = self.connection.channel()
 
-    def send(self,Qname:str,msg:dict):
+    def send(self,Qname:str,task:str,msg:dict,declare:bool = True):
         msg_obj = {
             "service":self.service,
             "id":f"{self.service}-{uuid.uuid4()}",
+            "task":task,
             "data":msg
         }
         msg = dumps(msg_obj).encode("utf-8")
-        self.channel.queue_declare(queue=Qname)
+        if declare:
+            self.channel.queue_declare(queue=Qname)
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
     
     def terminate_session(self):
         self.connection.close()
+

@@ -1,7 +1,7 @@
 import warnings
 import pymongo
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 import asyncio
@@ -32,7 +32,7 @@ class Query:
             patient:str,
             code:str,
             encounter:str
-        ) -> Observation: # type: ignore
+        ) -> Observation:
         
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
         observationAggregate = Collection.aggregate([
@@ -60,20 +60,30 @@ class Query:
         start:Optional[str] = strawberry.UNSET,
         end:Optional[str] = strawberry.UNSET
         )-> ObservationStack:
+            auth_header = info.context["request"].headers.get("authorization")
+            if not auth_header:
+                raise HTTPException(status_code=401, detail="Missing authorization token")
+            
+            rq = MQ.send_and_await("security","sessionAuth",{"token":auth_header})
 
-        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-        observationAggregate = Collection.aggregate([
-                {"$match": {
-                    "patient": patient, 
-                    "code": code, 
-                    }},
-                {"$project": query|{"_id":0}} 
-            ])
+            if rq["task"] != "verifiedToken":
+                raise HTTPException(status_code=401, detail="invalid token")
+            
+            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+            observationAggregate = Collection.aggregate([
+                    {"$match": {
+                        "patient": patient, 
+                        "code": code, 
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
+            
+            return ObservationStack(
+                Observations=[Observation(**obs) for obs in observationAggregate]
+            )
         
-        MQ.send("security","sessionAuth",{"token":info.context["request"].headers["authorization"]})
-        return ObservationStack(
-            Observations=[Observation(**obs) for obs in observationAggregate]
-        )
+        
+
     @strawberry.field
     def medications(self, id:str,patientId:str) -> str:
         return "med"
@@ -109,7 +119,7 @@ app.include_router(graphql_app, prefix="/graphql")
 
 @app.on_event("startup")
 async def startup_event():
-    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/",'hello'))
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/","record"))
 
 
 if __name__ == '__main__':

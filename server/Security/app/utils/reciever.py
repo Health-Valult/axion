@@ -1,7 +1,6 @@
 from asyncio import Future
 from aio_pika import connect
 from ..consumer_proceses_callback.callBack import callback_security
-from json import loads
 
 
 
