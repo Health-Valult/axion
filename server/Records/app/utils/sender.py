@@ -13,7 +13,7 @@ class sendMQ:
         self.channel = self.connection.channel()
 
     def send(self,Qname:str,task:str,msg:dict):
-        print("it works ur the problem")
+        
         msg_obj = {
             "service":self.service,
             "id":f"{self.service}-{uuid.uuid4()}",

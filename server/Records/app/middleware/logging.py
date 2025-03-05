@@ -17,12 +17,13 @@ class Logging(BaseHTTPMiddleware):
         print(request.headers['authorization'])
         body = await request.body()
         body = json.loads(body)
-        
+        if hasattr(request.state,"user"):
+            print(request.state.user)
         log = {
-            "Requester":request.state.user,
+            
             "token":request.headers['authorization'],
             "body":body,
-            "timeStamp":datetime.datetime.now(tz=datetime.timezone.utc)
+            "timeStamp":str(datetime.datetime.now(tz=datetime.timezone.utc))
         }
         self.Mq.send(Qname = "analytics", task="log", msg = log)
         response: Response = await call_next(request)

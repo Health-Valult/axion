@@ -61,14 +61,6 @@ class Query:
         start:Optional[str] = strawberry.UNSET,
         end:Optional[str] = strawberry.UNSET
         )-> ObservationStack:
-            auth_header = info.context["request"].headers.get("authorization")
-            if not auth_header:
-                raise HTTPException(status_code=401, detail="Missing authorization token")
-            
-            rq = MQ.send_and_await("security","sessionAuth",{"token":auth_header})
-
-            if rq["task"] != "verifiedToken":
-                raise HTTPException(status_code=401, detail="invalid token")
             
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             observationAggregate = Collection.aggregate([
