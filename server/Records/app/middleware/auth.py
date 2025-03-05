@@ -1,28 +1,22 @@
-from fastapi import Request
+from fastapi import HTTPException, Request
 from ..utils.sender import sendMQ
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
-import json
-import datetime
 
-class Logging(BaseHTTPMiddleware):
+
+class Auth(BaseHTTPMiddleware):
     def __init__(self,app,Mq:sendMQ):
         super().__init__(app)
         self.Mq = Mq
 
     async def dispatch(self,request: Request, call_next):
 
-        
+        token = request.headers['authorization']
 
-        print(request.headers['authorization'])
-        body = await request.body()
-        body = json.loads(body)
+        sessionResponse = self.Mq.send_and_await("security","sessionAuth",{"token":token})
+        Request.state.user = sessionResponse["user"]
+        if sessionResponse["task"] != "verifiedToken":
+                raise HTTPException(status_code=401, detail="invalid token")
         
-        log = {
-            "token":request.headers['authorization'],
-            "body":body,
-            "timeStamp":datetime.datetime.now(tz=datetime.timezone.utc)
-        }
-        self.Mq.send(Qname = "analytics", task="log", msg = )
         response: Response = await call_next(request)
         return response
