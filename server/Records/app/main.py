@@ -10,7 +10,7 @@ from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
 from .ax_types.observation import *
 from typing import Optional,List
-
+from app.middleware.auth import Logging
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -106,6 +106,8 @@ class Query:
     def immunization(self, id:str,patientId:str) -> str:
         return "immun"
 
+
+
 schema = strawberry.Schema(Query)
 
 graphql_app = GraphQLRouter(schema)
@@ -114,7 +116,7 @@ graphql_app = GraphQLRouter(schema)
 
 app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
-
+app.add_middleware(Logging,Mq=MQ)
 
 
 @app.on_event("startup")
