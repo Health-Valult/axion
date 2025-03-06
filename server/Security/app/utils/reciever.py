@@ -14,4 +14,3 @@ async def recieveMQ(host:str,Qname:str):
             await queue.consume(callback_security, no_ack=True)
             print(f"server now consuming on que : {Qname}")
             await Future()
-        

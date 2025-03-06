@@ -1,6 +1,7 @@
 import redis
 from datetime import datetime,timezone,timedelta
 from typing import Literal
+import uuid
 
 class redis_AX:
     def __init__(self,host:str,connection:int):
@@ -13,18 +14,18 @@ class redis_AX:
     def get_token(self, token, ):
         pass
 
-    def set_token(self, token, id, ttl:int, token_type:Literal["session","refresh"]):
-        
+    def set_token(self, token:str, id:bytes, ttl:int, token_type:Literal["session","refresh"]):
+        name = f"{token_type}::{str(uuid.UUID(bytes=id))}"
         tokenLog = {
             "type":token_type,
-            "timeStamp":datetime.now(tz=timezone.utc),
+            "timeStamp":datetime.now(tz=timezone.utc).isoformat(),
             "token":token
         }
         self.r.hset(
-            name=id,
+            name=name,
             mapping=tokenLog
         )
-        self.r.expire(name=id, time=timedelta(min=ttl))
+        self.r.expire(name=name, time=ttl*60)
 
     def validate_token(self,user):
         return bool(self.r.exists(name=user) and self.r.ttl(user) > 0)

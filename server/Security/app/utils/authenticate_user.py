@@ -27,4 +27,7 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
     
     session_token = generateTokens(type="session",endpoint=endpoint,payload=emailExists["UserID"],key=private_key,exp=60)
     refresh_token = generateTokens(type="session",endpoint=endpoint,payload=emailExists["UserID"],key=refresh_private_key,exp=10080)
+
+    Red.set_token(token = refresh_token,id = emailExists["UserID"],ttl=10080,token_type="refresh")
+
     return JSONResponse(status_code=200, content={"session_token":session_token, "refresh_token":refresh_token})

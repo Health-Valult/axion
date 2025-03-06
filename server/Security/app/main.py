@@ -13,6 +13,7 @@ from app.utils.sender import sendMQ
 from app.utils.authenticate_user import authenticate
 from app.utils.redis import redis_AX
 from app.consumer_proceses_callback.authenticate_session import authenticate_session
+from app.utils.gen_tokens import generateTokens
 
 with open('./app/data/keys/refresh_private.pem', 'r') as file:
         refresh_private_key = file.read()
@@ -57,7 +58,7 @@ def user_signup(cred:User):
 
 @app.post("/axion/auth/login/patient")
 def user_login(cred:Userlg):
-    return authenticate(collection=PatientsCollection,cred=cred,endpoint="patient")
+    return authenticate(collection=PatientsCollection,cred=cred,endpoint="patient",Red=REDIS)
     
 @app.post("/axion/auth/login/doc")
 def doctor_login(cred:Userlg):
@@ -68,17 +69,21 @@ def staff_login(cred:Userlg):
     return authenticate(collection=HospitalCollection,cred=cred,endpoint="hospital")
     
 @app.post("/axion/auth/refresh")
-def refresh(request:Request,cred:Token):
+def refresh(cred:Token):
 
     refresh_token = cred.Token
-    user = authenticate_session(refresh_token,refresh_token=True)["user"]
-    
-    
+    response = authenticate_session(refresh_token,refresh_token=True,Red=REDIS)["return"]
+    print(response)
+    new_session = generateTokens(type="session",endpoint="patient",payload=bytes(response))
+    return JSONResponse(status_code=200, content={"token":new_session})
     
 
 @app.post("/axion/auth/logout")
-def logout(cred:Token):
-    pass
+def logout(request:Request):
+    token = request.headers.get('authorization')
+    response = authenticate_session(token,Red=REDIS)["return"]
+    print(response)
+    REDIS.set_token(token = token,id = bytes(response),ttl=60,token_type="session")
 
 @app.post("/axion/auth/reset-password")
 def reset_password(cred:Password):

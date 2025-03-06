@@ -23,9 +23,12 @@ def authenticate_session(bearerToken:str,Red:redis_AX=None,refresh_token:bool=Fa
 
         if refresh_token and Red is not None:
             if not Red.validate_token(user):
-                raise ExpiredTokenError
+                return {
+                    "status":"err",
+                    "description":"refresh token is invalid"
+                }
             
-        return {"user":user}
+        return {"return":user}
 
     except FileNotFoundError:
         print("File not found.")
