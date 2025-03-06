@@ -25,7 +25,10 @@ class Userlg(BaseModel):
     Email:EmailStr
     Password:Annotated[str,AfterValidator(PasswordValidator)]
 
-class Refresh(BaseModel):
+class Token(BaseModel):
     Token:str
 
+class Password(BaseModel):
+    Old:Annotated[str,AfterValidator(PasswordValidator)]
+    New:Annotated[str,AfterValidator(PasswordValidator)]
 
