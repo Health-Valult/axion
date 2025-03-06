@@ -3,12 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   const CustomButton({
     Key? key,
     required this.text,
     required this.onPressed,
+    this.isLoading = false,
   }) : super(key: key);
 
   @override
@@ -36,17 +38,26 @@ class CustomButton extends StatelessWidget {
               width: 350,
               height: 60,
               child: TextButton(
-                onPressed: onPressed,
-                child: Text(
-                  text,
-                  style: GoogleFonts.montserrat(
-                    textStyle: const TextStyle(
-                      color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                onPressed: isLoading ? null : onPressed,
+                child: isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        text,
+                        style: GoogleFonts.montserrat(
+                          textStyle: const TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
               ),
             ),
           ],

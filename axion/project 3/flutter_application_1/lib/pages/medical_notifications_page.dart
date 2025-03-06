@@ -1,55 +1,122 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 
-class MedicalNotificationsPage extends StatelessWidget {
-  /// Declare a static list of reminders:
-  static final List<Map<String, dynamic>> reminders = [
-    {
-      'time': '07:00 AM',
-      'title': 'Amlodipine 5 mg',
-
-    },
-    {
-      'time': '09:00 AM',
-      'title': 'Metformin 500 mg',
-
-    },
-    {
-      'time': '12:00 PM',
-      'title': 'Ibuprofen 200 mg',
-
-    },
-  ];
-
+class MedicalNotificationsPage extends StatefulWidget {
   const MedicalNotificationsPage({super.key});
+
+  @override
+  State<MedicalNotificationsPage> createState() => _MedicalNotificationsPageState();
+}
+
+class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
+  final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      final notifications = await _apiService.getMedicalNotifications();
+      setState(() {
+        _notifications = notifications;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load notifications: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _addNotification() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => const AddNotificationDialog(),
+    );
+
+    if (result != null) {
+      try {
+        await _apiService.addMedicalNotification(result);
+        _loadNotifications(); // Reload the list
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to add notification: ${e.toString()}')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _deleteNotification(String id) async {
+    try {
+      await _apiService.deleteMedicalNotification(id);
+      _loadNotifications(); // Reload the list
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete notification: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(loc.medicalNotifications),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.medicalNotifications), // 🔹 Translated title
+        title: Text(loc.medicalNotifications),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _addNotification,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: reminders.isEmpty
+        child: _notifications.isEmpty
             ? Center(
                 child: Text(
-                  loc.noReports, // 🔹 Translated "No upcoming medication alerts."
+                  loc.noReports,
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16),
                 ),
               )
             : ListView.builder(
-                itemCount: reminders.length,
+                itemCount: _notifications.length,
                 itemBuilder: (context, index) {
-                  final reminder = reminders[index];
-                  final time = reminder['time'] ?? 'N/A';
-                  final title = reminder['title'] ?? 'Untitled' ?? '';
+                  final notification = _notifications[index];
+                  final time = notification['time'] ?? 'N/A';
+                  final title = notification['title'] ?? 'Untitled';
+                  final id = notification['id'] ?? '';
 
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 016),
+                    margin: const EdgeInsets.only(bottom: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -69,15 +136,220 @@ class MedicalNotificationsPage extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
-                      
-                      onTap: () {
-                        // Placeholder for tapping a reminder
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _deleteNotification(id),
+                      ),
+                      onTap: () async {
+                        final result = await showDialog<Map<String, dynamic>>(
+                          context: context,
+                          builder: (context) => EditNotificationDialog(
+                            notification: notification,
+                          ),
+                        );
+
+                        if (result != null) {
+                          try {
+                            await _apiService.updateMedicalNotification(id, result);
+                            _loadNotifications(); // Reload the list
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to update notification: ${e.toString()}'),
+                                ),
+                              );
+                            }
+                          }
+                        }
                       },
                     ),
                   );
                 },
               ),
       ),
+    );
+  }
+}
+
+class AddNotificationDialog extends StatefulWidget {
+  const AddNotificationDialog({super.key});
+
+  @override
+  State<AddNotificationDialog> createState() => _AddNotificationDialogState();
+}
+
+class _AddNotificationDialogState extends State<AddNotificationDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  TimeOfDay _selectedTime = TimeOfDay.now();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(loc.addMedication),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(labelText: loc.medicationName),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return loc.medicationNameRequired;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: Text(loc.time),
+              subtitle: Text(_selectedTime.format(context)),
+              trailing: const Icon(Icons.access_time),
+              onTap: () async {
+                final TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: _selectedTime,
+                );
+                if (time != null) {
+                  setState(() {
+                    _selectedTime = time;
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(loc.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, {
+                'title': _titleController.text,
+                'time': _selectedTime.format(context),
+              });
+            }
+          },
+          child: Text(loc.add),
+        ),
+      ],
+    );
+  }
+}
+
+class EditNotificationDialog extends StatefulWidget {
+  final Map<String, dynamic> notification;
+
+  const EditNotificationDialog({
+    super.key,
+    required this.notification,
+  });
+
+  @override
+  State<EditNotificationDialog> createState() => _EditNotificationDialogState();
+}
+
+class _EditNotificationDialogState extends State<EditNotificationDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _titleController;
+  late TimeOfDay _selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.notification['title']);
+    
+    // Parse the time string to TimeOfDay
+    final timeStr = widget.notification['time'];
+    final timeParts = timeStr.split(':');
+    if (timeParts.length == 2) {
+      final hour = int.tryParse(timeParts[0]) ?? TimeOfDay.now().hour;
+      final minute = int.tryParse(timeParts[1].split(' ')[0]) ?? TimeOfDay.now().minute;
+      _selectedTime = TimeOfDay(hour: hour, minute: minute);
+    } else {
+      _selectedTime = TimeOfDay.now();
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(loc.editMedication),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _titleController,
+              decoration: InputDecoration(labelText: loc.medicationName),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return loc.medicationNameRequired;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              title: Text(loc.time),
+              subtitle: Text(_selectedTime.format(context)),
+              trailing: const Icon(Icons.access_time),
+              onTap: () async {
+                final TimeOfDay? time = await showTimePicker(
+                  context: context,
+                  initialTime: _selectedTime,
+                );
+                if (time != null) {
+                  setState(() {
+                    _selectedTime = time;
+                  });
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(loc.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, {
+                'title': _titleController.text,
+                'time': _selectedTime.format(context),
+              });
+            }
+          },
+          child: Text(loc.save),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
-import 'package:go_router/go_router.dart'; // Import go_router package
+import 'package:flutter_application_1/models/signup_data.dart';
+import 'package:flutter_application_1/services/api_service.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupStep3 extends StatefulWidget {
-  const SignupStep3({Key? key}) : super(key: key);
+  final SignupData signupData;
+
+  const SignupStep3({
+    Key? key,
+    required this.signupData,
+  }) : super(key: key);
 
   @override
   _SignupStep3State createState() => _SignupStep3State();
@@ -15,28 +22,124 @@ class _SignupStep3State extends State<SignupStep3>
       List.generate(6, (index) => TextEditingController());
   final List<FocusNode> _focusNodes =
       List.generate(6, (index) => FocusNode());
+  final _apiService = ApiService();
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    for (var controller in _otpControllers) {
+      controller.dispose();
+    }
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   bool get wantKeepAlive => true;
 
-  void _validateAndSubmitOTP() {
-    bool isAllFilled =
-        _otpControllers.every((controller) => controller.text.isNotEmpty);
+  Future<void> _resendOTP() async {
+    try {
+      setState(() => _isLoading = true);
+      
+      // Call resend OTP API
+      final result = await _apiService.sendOTP(widget.signupData.telephone!);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['success'] ? 'OTP resent successfully' : result['error'])),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to resend OTP')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
-    if (isAllFilled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OTP Verified! Signup Complete!')),
-      );
-      // Delay to allow the SnackBar to show before navigating
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          context.go('/login');
-        }
-      });
-    } else {
+  Future<void> _validateAndSubmitOTP() async {
+    final otp = _otpControllers.map((c) => c.text).join();
+    if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all OTP boxes')),
       );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // First validate the OTP
+      final otpValidation = await _apiService.validateOTP(
+        widget.signupData.telephone!,
+        otp,
+      );
+
+      if (!otpValidation['success']) {
+        setState(() {
+          _error = otpValidation['error'] ?? 'Invalid OTP';
+        });
+        return;
+      }
+
+      // If OTP is valid, proceed with signup
+      final result = await _apiService.signupUser({
+        'nic': widget.signupData.nic,
+        'password': widget.signupData.password,
+        'firstName': widget.signupData.firstName,
+        'lastName': widget.signupData.lastName,
+        'email': widget.signupData.email,
+        'phoneNumber': widget.signupData.telephone,
+        'address': widget.signupData.address,
+        'otp': otp,
+      });
+
+      if (mounted) {
+        if (result['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Signup successful!')),
+          );
+          // Delay to allow the SnackBar to show before navigating
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) {
+              context.go('/login');
+            }
+          });
+        } else {
+          setState(() {
+            _error = result['error'];
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_error ?? 'Signup failed')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_error!)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -48,13 +151,23 @@ class _SignupStep3State extends State<SignupStep3>
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // OTP explanation text in white.
             const Text(
               'We have sent an OTP to your registered phone number. Please enter it below.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.white),
             ),
             const SizedBox(height: 20),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Text(
+                  _error!,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
@@ -68,6 +181,7 @@ class _SignupStep3State extends State<SignupStep3>
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     maxLength: 1,
+                    enabled: !_isLoading,
                     decoration: InputDecoration(
                       counterText: '',
                       border: OutlineInputBorder(
@@ -89,23 +203,20 @@ class _SignupStep3State extends State<SignupStep3>
             ),
             const SizedBox(height: 20),
             GestureDetector(
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Resending OTP...')),
-                );
-              },
-              child: const Text(
+              onTap: _isLoading ? null : _resendOTP,
+              child: Text(
                 'Resend OTP',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: _isLoading ? Colors.grey : Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             const SizedBox(height: 40),
             CustomButton(
-              text: 'Finish',
-              onPressed: _validateAndSubmitOTP,
+              text: 'Verify & Sign Up',
+              onPressed: _isLoading ? null : _validateAndSubmitOTP,
+              isLoading: _isLoading,
             ),
           ],
         ),

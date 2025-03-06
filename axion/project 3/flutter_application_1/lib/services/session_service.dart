@@ -1,0 +1,121 @@
+import 'dart:async';
+import 'dart:convert';
+import 'package:flutter_application_1/services/auth_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_application_1/services/secure_storage_service.dart';
+import 'package:flutter_application_1/services/graphql_config.dart';
+
+class SessionService {
+  static final SessionService _instance = SessionService._internal();
+  factory SessionService() => _instance;
+  SessionService._internal();
+
+  final _storage = SecureStorageService();
+  Timer? _refreshTimer;
+  bool _isRefreshing = false;
+
+  // Session management
+  Future<bool> isSessionValid() async {
+    final expiryStr = await _storage.readSecure(SecureStorageService.sessionExpiryKey);
+    if (expiryStr == null) return false;
+    
+    final expiry = DateTime.parse(expiryStr);
+    return DateTime.now().isBefore(expiry);
+  }
+
+  Future<void> setSession({
+    required String token,
+    required String refreshToken,
+    required DateTime expiry,
+    required Map<String, dynamic> userData,
+  }) async {
+    await Future.wait([
+      _storage.writeSecure(SecureStorageService.sessionTokenKey, token),
+      _storage.writeSecure(SecureStorageService.refreshTokenKey, refreshToken),
+      _storage.writeSecure(SecureStorageService.sessionExpiryKey, expiry.toIso8601String()),
+      _storage.writeSecure(SecureStorageService.userDataKey, json.encode(userData)),
+    ]);
+
+    // Update GraphQL client token
+    GraphQLConfig.updateToken(token);
+
+    // Schedule token refresh
+    _scheduleTokenRefresh(expiry);
+  }
+
+  Future<void> clearSession() async {
+    _refreshTimer?.cancel();
+    await _storage.clearAll();
+    GraphQLConfig.updateToken('');
+  }
+
+  // Token refresh management
+  void _scheduleTokenRefresh(DateTime expiry) {
+    _refreshTimer?.cancel();
+    
+    // Schedule refresh 5 minutes before expiry
+    final refreshTime = expiry.subtract(const Duration(minutes: 5));
+    final now = DateTime.now();
+    
+    if (refreshTime.isAfter(now)) {
+      _refreshTimer = Timer(refreshTime.difference(now), _refreshToken);
+    } else {
+      // Token is already close to expiry or expired, refresh immediately
+      _refreshToken();
+    }
+  }
+
+  Future<void> _refreshToken() async {
+    if (_isRefreshing) return;
+    _isRefreshing = true;
+
+    try {
+      final refreshToken = await _storage.readSecure(SecureStorageService.refreshTokenKey);
+      if (refreshToken == null || AuthService.baseUrl.isEmpty) {
+        await clearSession();
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/auth/refresh'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $refreshToken',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final newToken = data['token'];
+        final newRefreshToken = data['refreshToken'];
+        final expiry = DateTime.now().add(const Duration(hours: 1)); // Adjust based on your token expiry time
+
+        await setSession(
+          token: newToken,
+          refreshToken: newRefreshToken,
+          expiry: expiry,
+          userData: data['userData'] ?? {},
+        );
+      } else {
+        // Refresh token is invalid or expired
+        await clearSession();
+      }
+    } catch (e) {
+      // Handle network errors
+      print('Error refreshing token: $e');
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  // User data management
+  Future<Map<String, dynamic>?> getUserData() async {
+    final userDataStr = await _storage.readSecure(SecureStorageService.userDataKey);
+    if (userDataStr == null) return null;
+    return json.decode(userDataStr);
+  }
+
+  Future<String?> getSessionToken() async {
+    return _storage.readSecure(SecureStorageService.sessionTokenKey);
+  }
+}

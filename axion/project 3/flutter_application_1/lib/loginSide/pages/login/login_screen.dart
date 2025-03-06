@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/components/button.dart';
 import 'package:flutter_application_1/loginSide/components/text_fieald.dart';
 import 'package:flutter_application_1/main.dart';
+import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,16 +18,62 @@ class _LoginScreenState extends State<LoginScreen> {
   final _loginForm = GlobalKey<FormState>();
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Hard-coded credentials.
-  final String correctNIC = "1111111111";
-  final String correctPassword = "Rivindu123";
+  final _authService = AuthService();
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void dispose() {
     _nicController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_loginForm.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final result = await _authService.login(
+        _nicController.text,
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        if (result['success']) {
+          isLoggedIn = true;
+          context.go('/home');
+        } else {
+          setState(() {
+            _error = result['error'];
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(_error ?? 'Login failed')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Network error occurred';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_error!)),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -40,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo and welcome message.
+            // Logo and welcome message
             Padding(
               padding: const EdgeInsets.only(bottom: 60.0),
               child: Column(
@@ -70,11 +117,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
-            // Login form.
+            // Login form
             Form(
               key: _loginForm,
               child: Column(
                 children: [
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(
+                          color: theme.colorScheme.error,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 30.0),
                     child: LoginTextFieald(
@@ -82,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: "NIC",
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter some text';
+                          return 'Please enter your NIC';
                         }
                         if (!(value.length == 10 || value.length == 12)) {
                           return 'Incorrect NIC format';
@@ -96,12 +154,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: LoginTextFieald(
                       controller: _passwordController,
                       label: "Password",
+                      isPassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter some text';
+                          return 'Please enter your password';
                         }
                         if (value.length < 8) {
-                          return 'Password is too short';
+                          return 'Password must be at least 8 characters';
                         }
                         return null;
                       },
@@ -109,37 +168,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 40.0),
-                    child: LoginButton(
-                      onPressed: (context) {
-                        if (_loginForm.currentState!.validate()) {
-                          // Check hard-coded credentials.
-                          if (_nicController.text == correctNIC &&
-                              _passwordController.text == correctPassword) {
-                            // Set global authentication flag to true.
-                            isLoggedIn = true;
-                            // Redirect to the home page (make sure your router maps '/home' to HomePage).
-                            context.go('/home');
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Invalid credentials"),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : LoginButton(
+                            onPressed: (BuildContext context) async {
+                              await _handleLogin();
+                            },
+                          ),
                   ),
                   SizedBox(
                     width: 100,
                     height: 100,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: _isLoading ? null : () {
+                        // TODO: Implement biometric authentication
+                      },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
-                            const Color.fromRGBO(21, 23, 28, 1)),
+                          const Color.fromRGBO(21, 23, 28, 1),
+                        ),
                         foregroundColor: MaterialStateProperty.all(
-                            const Color.fromRGBO(21, 23, 28, 1)),
+                          const Color.fromRGBO(21, 23, 28, 1),
+                        ),
                       ),
                       child: SvgPicture.asset("assets/img/biometricAuth.svg"),
                     ),

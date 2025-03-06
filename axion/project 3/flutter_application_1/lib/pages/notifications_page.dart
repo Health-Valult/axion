@@ -1,75 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
-
-/// ==========================
-/// NotificationService
-/// ==========================
-///
-/// This class simulates backend endpoints for notifications.
-class NotificationService {
-  static const String baseUrl = 'https://api.example.com';
-
-  // Simulated HTTP client.
-  static final http.Client client = MockClient((http.Request request) async {
-    final String url = request.url.toString();
-    // Simulate a short network delay.
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    // Simulate GET /notifications.
-    if (request.method == 'GET' && url == '$baseUrl/notifications') {
-      return http.Response(
-        json.encode([
-          {
-            "title": "Medication Reminder",
-            "description": "Don't forget to take your medication at 8 AM.",
-            "read": false
-          },
-          {
-            "title": "Appointment",
-            "description": "You have an appointment scheduled for tomorrow at 3 PM.",
-            "read": false
-          }
-        ]),
-        200,
-      );
-    }
-    // Simulate POST /delete-all-notifications.
-    else if (request.method == 'POST' && url == '$baseUrl/delete-all-notifications') {
-      return http.Response(json.encode({"success": true}), 200);
-    }
-    return http.Response('Not Found', 404);
-  });
-
-  /// Fetch the list of notifications.
-  static Future<List<Map<String, dynamic>>> getNotifications() async {
-    final response = await client.get(Uri.parse('$baseUrl/notifications'));
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((n) => Map<String, dynamic>.from(n)).toList();
-    }
-    throw Exception("Failed to load notifications");
-  }
-
-  /// Delete all notifications.
-  static Future<bool> deleteAllNotifications() async {
-    final response = await client.post(
-      Uri.parse('$baseUrl/delete-all-notifications'),
-      headers: {"Content-Type": "application/json"},
-    );
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data["success"] == true;
-    }
-    return false;
-  }
-}
-
-/// ==========================
-/// NotificationsPage
-/// ==========================
+import 'package:flutter_application_1/models/notification.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -79,7 +12,10 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
-  List<Map<String, dynamic>>? _notifications;
+  final _apiService = ApiService();
+  List<AppNotification>? _notifications;
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -87,170 +23,226 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _loadNotifications();
   }
 
-  /// Load notifications from the simulated endpoint.
   Future<void> _loadNotifications() async {
     try {
-      final notifications = await NotificationService.getNotifications();
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final notifications = await _apiService.getNotifications();
       setState(() {
         _notifications = notifications;
+        _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error loading notifications: $e");
       setState(() {
-        _notifications = [];
+        _error = e.toString();
+        _isLoading = false;
       });
     }
   }
 
-  /// Mark a single notification as read.
-  void _markAsRead(int index) {
-    setState(() {
-      _notifications![index]['read'] = true;
-    });
-  }
-
-  /// Mark all notifications as read.
-  void _markAllAsRead() {
-    setState(() {
-      for (int i = 0; i < _notifications!.length; i++) {
-        _notifications![i]['read'] = true;
+  Future<void> _markAsRead(String id) async {
+    try {
+      await _apiService.markNotificationRead(id);
+      setState(() {
+        final index = _notifications?.indexWhere((n) => n.id == id) ?? -1;
+        if (index != -1) {
+          _notifications![index] = AppNotification(
+            id: _notifications![index].id,
+            title: _notifications![index].title,
+            description: _notifications![index].description,
+            timestamp: _notifications![index].timestamp,
+            type: _notifications![index].type,
+            read: true,
+            action: _notifications![index].action,
+            data: _notifications![index].data,
+          );
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to mark notification as read: ${e.toString()}')),
+        );
       }
-    });
+    }
   }
 
-  /// Delete all notifications via the simulated endpoint.
+  Future<void> _markAllAsRead() async {
+    try {
+      await _apiService.markAllNotificationsRead();
+      setState(() {
+        _notifications = _notifications?.map((notification) => AppNotification(
+          id: notification.id,
+          title: notification.title,
+          description: notification.description,
+          timestamp: notification.timestamp,
+          type: notification.type,
+          read: true,
+          action: notification.action,
+          data: notification.data,
+        )).toList();
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to mark all notifications as read: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
   Future<void> _deleteAllNotifications() async {
+    final loc = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Confirm Deletion"),
-        content: const Text("Are you sure you want to delete all notifications?"),
+        title: Text(loc.deleteAllNotifications),
+        content: Text(loc.deleteAllNotificationsConfirm),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(loc.cancel),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Delete"),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(loc.delete),
           ),
         ],
       ),
     );
+
     if (confirm == true) {
-      final success = await NotificationService.deleteAllNotifications();
-      if (success) {
-        await _loadNotifications();
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Deletion Successful"),
-            content: const Text("All notifications have been deleted."),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("OK"),
-              ),
-            ],
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to delete notifications")),
-        );
+      try {
+        await _apiService.deleteAllNotifications();
+        setState(() {
+          _notifications = [];
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to delete notifications: ${e.toString()}')),
+          );
+        }
       }
     }
-  }
-
-  /// Compute the count of unread notifications.
-  int _unreadCount() {
-    if (_notifications == null) return 0;
-    return _notifications!.where((n) => n['read'] != true).length;
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
-    // Using Flutter 3's text theme keys.
-    final unreadTitleStyle = theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)
-        ?? const TextStyle(fontWeight: FontWeight.bold);
-    final readTitleStyle = theme.textTheme.titleMedium;
-    final unreadSubtitleStyle = theme.textTheme.bodyMedium?.copyWith(
-          color: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black87,
-        ) ?? const TextStyle();
-    final readSubtitleStyle = theme.textTheme.bodyMedium;
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.notifications)),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(loc.notifications)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadNotifications,
+                child: Text(loc.retry),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.notifications),
         actions: [
-          // Mark all as read.
-          IconButton(
-            icon: const Icon(Icons.mark_email_read),
-            onPressed: _markAllAsRead,
-            tooltip: "Mark all as read",
-          ),
-          // Delete all notifications.
-          IconButton(
-            icon: const Icon(Icons.delete_forever),
-            onPressed: _deleteAllNotifications,
-            tooltip: "Delete all notifications",
-          ),
-          // Unread notifications badge.
-          if (_unreadCount() > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: CircleAvatar(
-                radius: 10,
-                backgroundColor: Colors.red,
-                child: Text(
-                  _unreadCount().toString(),
-                  style: const TextStyle(fontSize: 12, color: Colors.white),
-                ),
-              ),
+          if (_notifications?.isNotEmpty == true) ...[
+            IconButton(
+              icon: const Icon(Icons.done_all),
+              onPressed: _markAllAsRead,
+              tooltip: loc.markAllAsRead,
             ),
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: _deleteAllNotifications,
+              tooltip: loc.deleteAllNotifications,
+            ),
+          ],
         ],
       ),
-      body: _notifications == null
-          ? const Center(child: CircularProgressIndicator())
-          : _notifications!.isEmpty
-              ? Center(child: Text(loc.noNewNotifications, textAlign: TextAlign.center))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _notifications!.length,
-                  itemBuilder: (context, index) {
-                    final notification = _notifications![index];
-                    final title = notification['title'] ?? 'No Title';
-                    final description = notification['description'] ?? 'No Description';
-                    final bool isRead = notification['read'] == true;
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        onTap: () {
-                          if (!isRead) _markAsRead(index);
-                        },
-                        title: Text(
-                          title,
-                          style: isRead ? readTitleStyle : unreadTitleStyle,
-                        ),
-                        subtitle: Text(
-                          description,
-                          style: isRead ? readSubtitleStyle : unreadSubtitleStyle,
-                        ),
-                        trailing: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: Icon(
-                            isRead ? Icons.mark_email_read : Icons.mark_email_unread,
-                            color: isRead ? Colors.green : Colors.red,
-                          ),
+      body: _notifications?.isEmpty == true
+          ? Center(
+              child: Text(
+                loc.noNotifications,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadNotifications,
+              child: ListView.builder(
+                itemCount: _notifications?.length ?? 0,
+                itemBuilder: (context, index) {
+                  final notification = _notifications![index];
+                  return Dismissible(
+                    key: Key(notification.id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 16),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    onDismissed: (_) async {
+                      try {
+                        await _apiService.deleteNotification(notification.id);
+                        setState(() {
+                          _notifications!.removeAt(index);
+                        });
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to delete notification: ${e.toString()}')),
+                          );
+                        }
+                      }
+                    },
+                    child: ListTile(
+                      title: Text(
+                        notification.title,
+                        style: TextStyle(
+                          fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
                         ),
                       ),
-                    );
-                  },
-                ),
+                      subtitle: Text(notification.description),
+                      trailing: notification.read
+                          ? null
+                          : IconButton(
+                              icon: const Icon(Icons.done),
+                              onPressed: () => _markAsRead(notification.id),
+                              tooltip: loc.markAsRead,
+                            ),
+                      onTap: () {
+                        if (!notification.read) {
+                          _markAsRead(notification.id);
+                        }
+                        // Handle notification tap (e.g., navigate to relevant screen)
+                        if (notification.action != null) {
+                          // Handle action based on notification type
+                        }
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
     );
   }
 }

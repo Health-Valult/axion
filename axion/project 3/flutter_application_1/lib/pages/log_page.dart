@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/models/log_entry.dart';
+import 'package:flutter_application_1/models/log.dart';
 import 'package:flutter_application_1/pages/log_detail_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -74,8 +75,11 @@ class LogPage extends StatefulWidget {
 }
 
 class _LogPageState extends State<LogPage> {
-  List<Map<String, dynamic>>? _logs;
-  Map<String, List<Map<String, dynamic>>> _groupedLogs = {};
+  final _apiService = ApiService();
+  List<Log>? _logs;
+  Map<String, List<Log>> _groupedLogs = {};
+  bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -85,127 +89,172 @@ class _LogPageState extends State<LogPage> {
 
   Future<void> _loadLogs() async {
     try {
-      final logs = await LogService.getLogs();
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      final logs = await _apiService.getLogs();
       setState(() {
         _logs = logs;
         _groupedLogs = _groupByDate(logs);
+        _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error loading logs: $e");
       setState(() {
-        _logs = [];
-        _groupedLogs = {};
+        _error = e.toString();
+        _isLoading = false;
       });
     }
   }
 
-  /// Group logs by the 'date' field.
-  Map<String, List<Map<String, dynamic>>> _groupByDate(List<Map<String, dynamic>> logs) {
-    final Map<String, List<Map<String, dynamic>>> grouped = {};
+  Map<String, List<Log>> _groupByDate(List<Log> logs) {
+    final Map<String, List<Log>> grouped = {};
     for (var log in logs) {
-      final date = log['date'] ?? 'Unknown Date';
+      final date = log.date;
       grouped.putIfAbsent(date, () => []).add(log);
     }
-    return grouped;
+    return Map.fromEntries(
+      grouped.entries.toList()
+        ..sort((a, b) => b.key.compareTo(a.key))
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
 
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(loc.log),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(loc.log),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Error: $_error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadLogs,
+                child: Text(loc.retry),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_logs == null || _logs!.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(loc.log),
+        ),
+        body: Center(
+          child: Text(loc.noNewNotifications),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.log), // Or "Access & Change Logs" if localized
+        title: Text(loc.log),
       ),
-      body: _logs == null
-          ? const Center(child: CircularProgressIndicator())
-          : _logs!.isEmpty
-              ? Center(child: Text(loc.noNewNotifications))
-              : RefreshIndicator(
-                  onRefresh: _loadLogs,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: _groupedLogs.keys.map((date) {
-                      final logsForDate = _groupedLogs[date]!;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: Text(
-                              date,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          ...logsForDate.map((logMap) {
-                            // Convert the map to a LogEntry. If logMap is null, LogEntry.fromJson returns a default.
-                            final logEntry = LogEntry.fromJson(logMap);
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => LogDetailPage(log: logEntry),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        margin: const EdgeInsets.only(right: 12),
-                                        width: 12,
-                                        height: 12,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.blue,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              logEntry.title,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              logEntry.timestamp,
-                                              style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'Location: ${logEntry.location}',
-                                              style: const TextStyle(fontSize: 14),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ],
-                      );
-                    }).toList(),
+      body: RefreshIndicator(
+        onRefresh: _loadLogs,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: _groupedLogs.entries.map((entry) {
+            final date = entry.key;
+            final logsForDate = entry.value;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    date,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
+                ...logsForDate.map((log) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LogDetailPage(log: log),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              width: 12,
+                              height: 12,
+                              decoration: const BoxDecoration(
+                                color: Colors.blue,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    log.title,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    log.formattedTimestamp,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Location: ${log.location}',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
     );
   }
 }

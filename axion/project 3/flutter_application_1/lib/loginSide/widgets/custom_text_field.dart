@@ -5,16 +5,22 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final TextEditingController? controller;
   final TextInputType keyboardType;
-  final bool isPassword;
+  final bool obscureText;
   final String? Function(String?)? validator;
+  final bool enabled;
+  final Widget? suffixIcon;
+  final int? maxLines;
 
   const CustomTextField({
     Key? key,
     required this.hintText,
     this.controller,
     this.keyboardType = TextInputType.text,
-    this.isPassword = false,
+    this.obscureText = false,
     this.validator,
+    this.enabled = true,
+    this.suffixIcon,
+    this.maxLines = 1,
   }) : super(key: key);
 
   @override
@@ -25,14 +31,17 @@ class CustomTextField extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
-        obscureText: isPassword,
+        obscureText: obscureText,
         validator: validator,
+        enabled: enabled,
+        maxLines: maxLines,
         cursorColor: const Color.fromRGBO(255, 255, 255, 1),
         style: const TextStyle(
           color: Color.fromRGBO(255, 255, 255, 1),
         ),
         decoration: InputDecoration(
           labelText: hintText,
+          suffixIcon: suffixIcon,
           focusColor: const Color.fromRGBO(255, 255, 255, 1),
           errorStyle: GoogleFonts.montserrat(
             textStyle: const TextStyle(

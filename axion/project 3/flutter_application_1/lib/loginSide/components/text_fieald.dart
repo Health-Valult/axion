@@ -5,12 +5,14 @@ class LoginTextFieald extends StatelessWidget {
   final String label;
   final String? Function(String?) validator;
   final TextEditingController? controller;
+  final bool isPassword;
 
   const LoginTextFieald({
     super.key, 
     required this.label,
     required this.validator,
     this.controller,
+    this.isPassword = false,
   });
 
   @override
@@ -32,6 +34,7 @@ class LoginTextFieald extends StatelessWidget {
       child: TextFormField(
         controller: controller,
         validator: validator,
+        obscureText: isPassword,
         cursorColor: focusedBorderColor,
         style: theme.textTheme.bodyLarge,
         decoration: InputDecoration(

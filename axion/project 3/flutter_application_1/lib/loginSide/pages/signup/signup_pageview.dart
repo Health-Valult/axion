@@ -3,6 +3,7 @@ import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step1.
 import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step2.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step3.dart';
 import 'package:flutter_application_1/loginSide/widgets/progress_bar.dart';
+import 'package:flutter_application_1/models/signup_data.dart';
 
 class SignupPageView extends StatefulWidget {
   const SignupPageView({Key? key}) : super(key: key);
@@ -14,6 +15,7 @@ class SignupPageView extends StatefulWidget {
 class _SignupPageViewState extends State<SignupPageView> {
   final PageController _pageController = PageController();
   final _formKeys = List.generate(2, (index) => GlobalKey<FormState>());
+  final _signupData = SignupData();
 
   int _currentPage = 0;
 
@@ -30,10 +32,6 @@ class _SignupPageViewState extends State<SignupPageView> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signup Complete!')),
-      );
     }
   }
 
@@ -46,7 +44,6 @@ class _SignupPageViewState extends State<SignupPageView> {
         curve: Curves.easeInOut,
       );
     } else {
-      // If on Page 1, go back to the previous screen (Home)
       Navigator.pop(context);
     }
   }
@@ -59,8 +56,8 @@ class _SignupPageViewState extends State<SignupPageView> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white), // White arrow
-          onPressed: _previousPage, // If on Page 1, it goes back to Home
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: _previousPage,
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -74,7 +71,7 @@ class _SignupPageViewState extends State<SignupPageView> {
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.white, // Ensure text is white
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 20),
@@ -93,12 +90,16 @@ class _SignupPageViewState extends State<SignupPageView> {
                   SignupStep1(
                     formKey: _formKeys[0],
                     onNext: _nextPage,
+                    signupData: _signupData,
                   ),
                   SignupStep2(
                     formKey: _formKeys[1],
                     onNext: _nextPage,
+                    signupData: _signupData,
                   ),
-                  const SignupStep3(),
+                  SignupStep3(
+                    signupData: _signupData,
+                  ),
                 ],
               ),
             ),

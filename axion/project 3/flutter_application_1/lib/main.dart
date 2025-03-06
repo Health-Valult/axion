@@ -21,6 +21,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:flutter_application_1/services/graphql_config.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
@@ -95,8 +97,23 @@ final GoRouter _router = GoRouter(
   ],
 );
 
+class SecureStorageService {
+  final _storage = const FlutterSecureStorage();
+
+  Future<void> init() async {
+    await _storage.readAll();
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize secure storage
+  final secureStorage = SecureStorageService();
+  await secureStorage.init();
+
+  // Initialize GraphQL Client
+  final client = GraphQLConfig.initializeClient();
 
   // Initialize Hive and register adapters.
   await Hive.initFlutter();
@@ -176,21 +193,24 @@ class _MyAppState extends State<MyApp> {
       first: MyApp.themeNotifier,
       second: MyApp.localeNotifier,
       builder: (context, themeMode, locale, _) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          title: 'Axion App',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeMode,
-          routerConfig: _router,
-          supportedLocales: const [Locale('en'), Locale('si'), Locale('ta')],
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          locale: locale,
+        return GraphQLProvider(
+          client: GraphQLConfig.initializeClient(),
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'Axion App',
+            theme: lightTheme,
+            darkTheme: darkTheme,
+            themeMode: themeMode,
+            routerConfig: _router,
+            supportedLocales: const [Locale('en'), Locale('si'), Locale('ta')],
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            locale: locale,
+          ),
         );
       },
     );
