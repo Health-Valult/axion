@@ -1,4 +1,5 @@
 import asyncio
+import random
 from pymongo import errors, MongoClient
 import uuid
 import uvicorn
@@ -8,12 +9,17 @@ from fastapi.responses import JSONResponse
 from .models.user import *
 from argon2 import PasswordHasher
 import bson
+import hmac
+from app.utils.reset_pw import _password_reset
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
 from app.utils.authenticate_user import authenticate
 from app.utils.redis import redis_AX
 from app.consumer_proceses_callback.authenticate_session import authenticate_session
 from app.utils.gen_tokens import generateTokens
+from app.utils.get_profile import _get_profile
+from app.utils.delete_profile import _delete_profile
+
 
 with open('./app/data/keys/refresh_private.pem', 'r') as file:
         refresh_private_key = file.read()
@@ -32,6 +38,8 @@ PatientsCollection = Database.get_collection("patients")
 DoctorsCollection = Database.get_collection("doctors")
 HospitalCollection = Database.get_collection("hospital")
 
+def generate_otp(length=6):
+    return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
 @app.post("/axion/auth/signup/user")
 def user_signup(cred:User):
@@ -72,43 +80,137 @@ def staff_login(cred:Userlg):
 def refresh(cred:Token):
 
     refresh_token = cred.Token
-    response = authenticate_session(refresh_token,refresh_token=True,Red=REDIS)["return"]
-    print(response)
-    new_session = generateTokens(type="session",endpoint="patient",payload=bytes(response))
+    print(refresh_token)
+    response = authenticate_session(refresh_token,refresh_token=True,Red=REDIS).get("uuid")
+    new_session = generateTokens(type="session",endpoint="patient",payload=response,key=refresh_private_key,exp=60)
     return JSONResponse(status_code=200, content={"token":new_session})
     
 
 @app.post("/axion/auth/logout")
 def logout(request:Request):
     token = request.headers.get('authorization')
-    response = authenticate_session(token,Red=REDIS)["return"]
+    print(token)
+    response = authenticate_session(token,Red=REDIS)["uuid"]
     print(response)
-    REDIS.set_token(token = token,id = bytes(response),ttl=60,token_type="session")
+    REDIS.set_token(token = token,key = response,ttl=60,token_type="session")
+    REDIS.delete_token(key = response,token_type="refresh")
+    return JSONResponse(status_code=200, content={"msg":"logout sucessful"})
+
+
 
 @app.post("/axion/auth/reset-password")
-def reset_password(cred:Password):
-    pass
+def reset_password(request:Request,cred:Password):
 
-@app.post("/axion/user/profile")
-def get_profile():
-    pass
+    new_pw = cred.New
+    old_pw = cred.Old
+    print(new_pw)
+    print(old_pw)
+    token = token = request.headers.get('authorization')
+    session = authenticate_session(token,Red=REDIS)
+    c_uuid,role = session.get("uuid"),session.get("role")
+    if new_pw == old_pw:
+        return JSONResponse(status_code=406,content={"msg":"Old password cannot be the same as new password"})
 
+    if role == "patient":
+        return _password_reset(collection=PatientsCollection,c_uuid=uuid.UUID(c_uuid),old_pw=old_pw,new_pw=new_pw)
+    
+    if role == "doctor":
+        return _password_reset(collection=DoctorsCollection,c_uuid=uuid.UUID(c_uuid),old_pw=old_pw,new_pw=new_pw,)
+
+    if role == "hospital":
+        return _password_reset(collection=HospitalCollection,c_uuid=uuid.UUID(c_uuid),old_pw=old_pw,new_pw=new_pw)
+    
+
+
+
+@app.get("/axion/user/profile")
+def get_profile(request:Request):
+    token = token = request.headers.get('authorization')
+    session = authenticate_session(token,Red=REDIS)
+    c_uuid,role = session.get("uuid"),session.get("role")
+
+    if role == "patient":
+        return _get_profile(collection=PatientsCollection,c_uuid=uuid.UUID(c_uuid),)
+    
+    if role == "doctor":
+        return _get_profile(collection=DoctorsCollection,c_uuid=uuid.UUID(c_uuid),)
+
+    if role == "hospital":
+        return _get_profile(collection=HospitalCollection,c_uuid=uuid.UUID(c_uuid),)
+    
+
+@app.post("/axion/user/profile/delete")
+def delete_profile(request:Request,cred:Delete):
+
+    password = cred.Password
+    nic = cred.NIC
+
+    token = token = request.headers.get('authorization')
+    session = authenticate_session(token,Red=REDIS)
+    c_uuid,role = session.get("uuid"),session.get("role")
+
+    if role == "patient":
+        return _delete_profile(collection=PatientsCollection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+    
+    if role == "doctor":
+        return _delete_profile(collection=DoctorsCollection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+
+    if role == "hospital":
+        return _delete_profile(collection=HospitalCollection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+
+@app.post("/axion/auth/send/otp")
+def send_otp(request:Request):
+    token = token = request.headers.get('authorization')
+    session = authenticate_session(token,Red=REDIS)
+    c_uuid,role = session.get("uuid"),session.get("role")
+    name = f"otp::{role}::{c_uuid}"
+    otp = generate_otp()
+    payload = {
+        "uuid":c_uuid,
+        "role":role,
+        "otp":otp
+    }
+    REDIS.set_item(name=name,payload=payload,ttl=2)
+
+    return JSONResponse(status_code=200,content={"msg":"otp sent"})
+
+@app.post("/axion/auth/send/otp")
+def verify_otp(request:Request,cred:OTP):
+    c_otp = cred.otp
+
+    token = token = request.headers.get('authorization')
+    session = authenticate_session(token,Red=REDIS)
+    c_uuid,role = session.get("uuid"),session.get("role")
+
+    name = f"otp::{role}::{c_uuid}"
+    otp_payload = REDIS.get_item(name=name)
+
+    if otp_payload is None:
+        return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
+
+    otp = otp_payload.get("otp")
+
+    if not hmac.compare_digest(otp,c_otp):
+        return JSONResponse(status_code=200,content={"msg":"otp invalid"})
+
+    return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
 """
 Authentication Endpoints
 signupUser → /axion/auth/signup/user - done
 validateEmail → /axion/auth/validate/email
 validateOTP → /axion/auth/validate/otp
-sendOTP → /axion/auth/send/otp
+sendOTP → /axion/auth/send/otp - done
 loginUser → /axion/auth/login/user - done
-refreshToken → /axion/auth/refresh
-logout → /axion/auth/logout
-userProfile → /axion/user/profile
-deleteAccount → /axion/user/profile/delete
+refreshToken → /axion/auth/refresh - done
+logout → /axion/auth/logout - done
+
+userProfile → /axion/user/profile - done
+deleteAccount → /axion/user/profile/delete - done
 
 Profile Endpoints
-updateProfile → /axion/user/profile/update
-changePassword → /axion/user/profile/change-password
+updateProfile → /axion/user/profile/update-
+changePassword → /axion/user/profile/change-password - done
 """
 
 @app.on_event("startup")

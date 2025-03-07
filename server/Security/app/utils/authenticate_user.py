@@ -5,6 +5,7 @@ from app.models.user import Userlg
 from app.utils.gen_tokens import generateTokens
 from app.utils.redis import redis_AX
 from typing import Literal
+import uuid
 
 hasher = PasswordHasher()
 
@@ -24,10 +25,10 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
 
     if not password_is_valid:
         return JSONResponse(status_code=401, content={"details":"password is invalid"})
-    
-    session_token = generateTokens(type="session",endpoint=endpoint,payload=emailExists["UserID"],key=private_key,exp=60)
-    refresh_token = generateTokens(type="session",endpoint=endpoint,payload=emailExists["UserID"],key=refresh_private_key,exp=10080)
+    uuid_str = str(uuid.UUID(bytes = emailExists["UserID"]))
+    session_token = generateTokens(type="session",endpoint=endpoint,payload=uuid_str,key=private_key,exp=60)
+    refresh_token = generateTokens(type="session",endpoint=endpoint,payload=uuid_str,key=refresh_private_key,exp=10080)
 
-    Red.set_token(token = refresh_token,id = emailExists["UserID"],ttl=10080,token_type="refresh")
+    Red.set_token(token = refresh_token,key = uuid_str,ttl=10080,token_type="refresh")
 
     return JSONResponse(status_code=200, content={"session_token":session_token, "refresh_token":refresh_token})

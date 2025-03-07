@@ -32,3 +32,6 @@ class Password(BaseModel):
     Old:Annotated[str,AfterValidator(PasswordValidator)]
     New:Annotated[str,AfterValidator(PasswordValidator)]
 
+class Delete(BaseModel):
+    NIC:str
+    Password:Annotated[str,AfterValidator(PasswordValidator)]

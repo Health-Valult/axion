@@ -14,8 +14,8 @@ class redis_AX:
     def get_token(self, token, ):
         pass
 
-    def set_token(self, token:str, id:bytes, ttl:int, token_type:Literal["session","refresh"]):
-        name = f"{token_type}::{str(uuid.UUID(bytes=id))}"
+    def set_token(self, token:str, key:str, ttl:int, token_type:Literal["session","refresh","invalid"]):
+        name = f"{token_type}::{key}"
         tokenLog = {
             "type":token_type,
             "timeStamp":datetime.now(tz=timezone.utc).isoformat(),
@@ -27,8 +27,25 @@ class redis_AX:
         )
         self.r.expire(name=name, time=ttl*60)
 
-    def validate_token(self,user):
-        return bool(self.r.exists(name=user) and self.r.ttl(user) > 0)
+    def validate_token(self,key:str, token_type:Literal["session","refresh"]):
+        name = f"{token_type}::{key}"
+        return bool(self.r.exists(name))
+    
+    def delete_token(self,key:str, token_type:Literal["session","refresh","invalid"]):
+        name = f"{token_type}::{key}"
+        self.r.delete(name)
+
+    def set_item(self,name:str,payload:dict,ttl:int=None,):
+        self.r.hset(
+            name=name,
+            mapping=payload
+        )
+        if ttl != None:
+            self.r.expire(name=name, time=ttl*60)
+
+    def get_item(self,name:str,):
+        return self.r.hgetall(name=name)
+
 
     def disconnect(self):
         self.r.close()
