@@ -35,3 +35,6 @@ class Password(BaseModel):
 class Delete(BaseModel):
     NIC:str
     Password:Annotated[str,AfterValidator(PasswordValidator)]
+
+class OTP(BaseModel):
+    otp:int = Field(min_length=6,max_length=6)

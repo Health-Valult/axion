@@ -174,7 +174,7 @@ def send_otp(request:Request):
 
     return JSONResponse(status_code=200,content={"msg":"otp sent"})
 
-@app.post("/axion/auth/send/otp")
+@app.post("/axion/auth/verify/otp")
 def verify_otp(request:Request,cred:OTP):
     c_otp = cred.otp
 
@@ -195,11 +195,13 @@ def verify_otp(request:Request,cred:OTP):
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
+
+
 """
 Authentication Endpoints
 signupUser → /axion/auth/signup/user - done
-validateEmail → /axion/auth/validate/email
-validateOTP → /axion/auth/validate/otp
+validateEmail → /axion/auth/validate/email - use the same as phone number 
+validateOTP → /axion/auth/validate/otp - done
 sendOTP → /axion/auth/send/otp - done
 loginUser → /axion/auth/login/user - done
 refreshToken → /axion/auth/refresh - done
