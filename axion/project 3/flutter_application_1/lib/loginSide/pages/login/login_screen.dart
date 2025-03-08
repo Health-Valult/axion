@@ -3,6 +3,7 @@ import 'package:flutter_application_1/loginSide/components/button.dart';
 import 'package:flutter_application_1/loginSide/components/text_fieald.dart';
 import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
+import 'package:flutter_application_1/services/connectivity_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _authService = AuthService();
+  final _connectivityService = ConnectivityService();
   bool _isLoading = false;
   String? _error;
 
@@ -40,32 +42,39 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      // Check internet connectivity first
+      final hasInternet = await _connectivityService.checkInternetConnection();
+      if (!hasInternet) {
+        setState(() {
+          _error = 'No internet connection. Please check your network and try again.';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Modified to only support user login
       final result = await _authService.login(
         _nicController.text,
         _passwordController.text,
       );
 
       if (mounted) {
-        if (result['success']) {
+        if (result['success'] && result['data']['role'] == 'user') {
           isLoggedIn = true;
           context.go('/home');
         } else {
           setState(() {
-            _error = result['error'];
+            _error = result['data']['role'] != 'user' 
+                ? 'Only patient login is allowed'
+                : (result['error'] ?? 'Login failed');
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_error ?? 'Login failed')),
-          );
         }
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Network error occurred';
+          _error = 'Network error occurred. Please check your connection and try again.';
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_error!)),
-        );
       }
     } finally {
       if (mounted) {
@@ -125,11 +134,29 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (_error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Text(
-                        _error!,
-                        style: TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 14,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

@@ -102,5 +102,9 @@
   "signUp": "Sign Up",
   "medications": "Medications",
   "noMedications": "No Medications",
-  "noAllergies": "No Allergies"
+  "noAllergies": "No Allergies",
+  "deleteAccountDescription": "Deleting your account will remove all your personal data permanently.",
+  "deleteAccountConfirmation": "Please confirm that you want to delete your account.",
+  "nic": "NIC",
+  "password": "Password"
 }

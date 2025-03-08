@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_application_1/models/settings.dart';
 import 'package:flutter_application_1/services/api_service.dart';
+import 'package:flutter_application_1/services/auth_service.dart';
 
 /// ==========================
 /// Helper methods to persist settings
@@ -188,7 +189,9 @@ class _SettingsPageState extends State<SettingsPage> {
           } catch (e) {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Failed to update theme: ${e.toString()}')),
+                SnackBar(
+                  content: Text('Failed to update theme: ${e.toString()}'),
+                ),
               );
             }
           }
@@ -213,14 +216,18 @@ class _SettingsPageState extends State<SettingsPage> {
             if (value != null) {
               try {
                 final newLocale = _languageMap[value]!;
-                await _apiService.updateSettings({'language': newLocale.languageCode});
+                await _apiService
+                    .updateSettings({'language': newLocale.languageCode});
                 setState(() => _selectedLanguage = value);
                 MyApp.setLocale(newLocale);
                 await saveLocale(newLocale);
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to update language: ${e.toString()}')),
+                    SnackBar(
+                      content:
+                          Text('Failed to update language: ${e.toString()}'),
+                    ),
                   );
                 }
               }
@@ -246,14 +253,19 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Future<void> _showDeleteAccountDialog(AppLocalizations loc) async {
+    await showDialog(
+      context: context,
+      builder: (context) => const DeleteAccountDialog(),
+    );
+  }
+
   Widget _buildDeleteAccountCard(AppLocalizations loc) {
     return Card(
       child: ListTile(
-        title: Text(
-          loc.deleteAccount,
-          style: const TextStyle(color: Colors.red),
-        ),
-        trailing: const Icon(Icons.delete_forever, color: Colors.red),
+        title: Text(loc.deleteAccount),
+        subtitle: Text(loc.deleteAccountDescription),
+        trailing: const Icon(Icons.warning, color: Colors.red),
         onTap: () => _showDeleteAccountDialog(loc),
       ),
     );
@@ -285,12 +297,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: _settings!.preferences['notifications']?[notification] ?? false,
                 onChanged: (bool value) async {
                   try {
-                    await _apiService.updateNotificationPreferences({notification: value});
+                    await _apiService
+                        .updateNotificationPreferences({notification: value});
                     await _loadSettings();
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to update notification preference: ${e.toString()}')),
+                        SnackBar(
+                          content: Text(
+                              'Failed to update notification preference: ${e.toString()}'),
+                        ),
                       );
                     }
                   }
@@ -334,7 +350,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   } catch (e) {
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to update privacy setting: ${e.toString()}')),
+                        SnackBar(
+                          content: Text(
+                              'Failed to update privacy setting: ${e.toString()}'),
+                        ),
                       );
                     }
                   }
@@ -346,41 +365,166 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+}
 
-  Future<void> _showDeleteAccountDialog(AppLocalizations loc) async {
-    final confirm = await showDialog<bool>(
+/// ==========================
+/// DeleteAccountDialog
+/// ==========================
+
+class DeleteAccountDialog extends StatefulWidget {
+  const DeleteAccountDialog({super.key});
+
+  @override
+  State<DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
+  final _nicController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+  bool _isLoading = false;
+  final _authService = AuthService();
+
+  @override
+  void dispose() {
+    _nicController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _attemptDeleteAccount() async {
+    final loc = AppLocalizations.of(context)!;
+
+    if (_nicController.text.isEmpty || _passwordController.text.isEmpty) {
+      await _showErrorDialog(loc.allFieldsRequired);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final result = await _authService.deleteAccount(
+        _nicController.text,
+        _passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (result['success']) {
+        // Account deleted successfully, navigate to login screen
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
+      } else {
+        await _showErrorDialog(result['error']);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      await _showErrorDialog(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _showErrorDialog(String message) async {
+    return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(loc.confirmDeletion),
-        content: Text(loc.deleteAccountWarning),
+        title: Text(AppLocalizations.of(context)!.error),
+        content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showConfirmationDialog() async {
+    final loc = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(loc.deleteAccountConfirmation),
+        content: Text(loc.deleteConfirmationMsg),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
             child: Text(loc.cancel),
           ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.pop(context, true),
             child: Text(loc.delete),
           ),
         ],
       ),
     );
 
-    if (confirm == true && mounted) {
-      try {
-        await _apiService.deleteAccount();
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/login');
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete account: ${e.toString()}')),
-          );
-        }
-      }
+    if (confirmed == true) {
+      await _attemptDeleteAccount();
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+
+    return AlertDialog(
+      title: Text(loc.deleteAccount),
+      content: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(loc.deleteAccountWarning),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _nicController,
+                  decoration: InputDecoration(
+                    labelText: loc.nic,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: !_isPasswordVisible,
+                  decoration: InputDecoration(
+                    labelText: loc.password,
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
+                      onPressed: () {
+                        setState(
+                            () => _isPasswordVisible = !_isPasswordVisible);
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+      actions: _isLoading
+          ? null
+          : [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(loc.cancel),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                onPressed: _showConfirmationDialog,
+                child: Text(loc.delete),
+              ),
+            ],
+    );
   }
 }
 
@@ -415,7 +559,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
 
   Future<void> _attemptChangePassword() async {
     final loc = AppLocalizations.of(context)!;
-    
+
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -516,7 +660,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               loc.currentPassword,
               _currentPasswordController,
               _currentPasswordVisible,
-              () => setState(() => _currentPasswordVisible = !_currentPasswordVisible),
+              () => setState(
+                  () => _currentPasswordVisible = !_currentPasswordVisible),
             ),
             const SizedBox(height: 16),
             _buildPasswordField(
@@ -530,7 +675,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               loc.confirmNewPassword,
               _confirmPasswordController,
               _confirmPasswordVisible,
-              () => setState(() => _confirmPasswordVisible = !_confirmPasswordVisible),
+              () => setState(
+                  () => _confirmPasswordVisible = !_confirmPasswordVisible),
             ),
           ],
         ),

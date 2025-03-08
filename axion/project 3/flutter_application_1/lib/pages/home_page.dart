@@ -74,12 +74,13 @@ class _HomePageState extends State<HomePage> {
       });
 
       final profile = await _apiService.getUserProfile();
-      final records = await _apiService.getMedicalRecords();
+      final medications = await _apiService.getMedications();
+      final allergies = await _apiService.getAllergies();
       final notifications = await _apiService.getNotifications();
 
       setState(() {
         _userProfile = profile;
-        _medicalRecords = records;
+        _medicalRecords = [...medications, ...allergies];
         _notifications = notifications;
         _isLoading = false;
       });

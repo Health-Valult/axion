@@ -1,54 +1,120 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/services/session_service.dart';
 import 'package:flutter_application_1/services/graphql_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
 class AuthService {
   static const String baseUrl = 'http://localhost:3000/api';
   final _sessionService = SessionService();
 
+  Future<Position> _getCurrentLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw Exception('Location services are disabled.');
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Location permissions are denied.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Location permissions are permanently denied.');
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
+
   Future<Map<String, dynamic>> login(String nic, String password) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'nic': nic,
-          'password': password,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        
-        // Set session with token, refresh token, and expiry
-        final expiry = DateTime.now().add(const Duration(hours: 1)); // Adjust based on your token expiry time
-        await _sessionService.setSession(
-          token: data['token'],
-          refreshToken: data['refreshToken'],
-          expiry: expiry,
-          userData: data['userData'] ?? {},
-        );
-
-        // Update GraphQL client token
-        GraphQLConfig.updateToken(data['token']);
-
-        return {
-          'success': true,
-          'data': data,
-        };
-      } else {
-        final error = json.decode(response.body);
+      // Validate input
+      if (nic.isEmpty || password.isEmpty) {
         return {
           'success': false,
-          'error': error['message'] ?? 'Invalid credentials',
+          'error': 'NIC and password are required',
+        };
+      }
+
+      // Get current location
+      Position? position;
+      try {
+        position = await _getCurrentLocation();
+      } catch (e) {
+        // Continue with login even if location fails
+        print('Location error: $e');
+      }
+
+      // Try to connect to server
+      try {
+        final response = await http.post(
+          Uri.parse('$baseUrl/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'nic': nic,
+            'password': password,
+            'location': position != null ? {
+              'latitude': position.latitude,
+              'longitude': position.longitude,
+            } : null,
+          }),
+        ).timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          
+          // Set session with token, refresh token, and expiry
+          final expiry = DateTime.now().add(const Duration(hours: 1)); 
+          await _sessionService.setSession(
+            token: data['token'],
+            refreshToken: data['refreshToken'],
+            expiry: expiry,
+            userData: data['userData'] ?? {},
+          );
+
+          // Update GraphQL client token
+          GraphQLConfig.updateToken(data['token']);
+
+          return {
+            'success': true,
+            'data': data,
+          };
+        } else {
+          final error = json.decode(response.body);
+          String errorMessage = error['message'] ?? 'Invalid credentials';
+          
+          // Handle specific error cases
+          if (response.statusCode == 401) {
+            errorMessage = 'Invalid NIC or password';
+          } else if (response.statusCode == 403) {
+            errorMessage = 'Account is locked. Please contact support';
+          }
+          
+          return {
+            'success': false,
+            'error': errorMessage,
+          };
+        }
+      } on http.ClientException {
+        return {
+          'success': false,
+          'error': 'Unable to connect to server. Please check your internet connection.',
+        };
+      } on TimeoutException {
+        return {
+          'success': false,
+          'error': 'Connection timed out. Please try again.',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'error': 'Network error occurred',
+        'error': 'An unexpected error occurred. Please try again.',
       };
     }
   }
@@ -173,6 +239,60 @@ class AuthService {
       return {
         'success': false,
         'error': 'Network error occurred',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteAccount(String nic, String password) async {
+    try {
+      final token = await _sessionService.getSessionToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/delete-account'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'nic': nic,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        await _sessionService.clearSession();
+        return {
+          'success': true,
+          'message': 'Account deleted successfully',
+        };
+      } else {
+        final error = json.decode(response.body);
+        String errorMessage = error['message'] ?? 'Failed to delete account';
+        
+        if (response.statusCode == 401) {
+          errorMessage = 'Invalid NIC or password';
+        }
+        
+        return {
+          'success': false,
+          'error': errorMessage,
+        };
+      }
+    } on TimeoutException {
+      return {
+        'success': false,
+        'error': 'Connection timed out. Please try again.',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'An unexpected error occurred. Please try again.',
       };
     }
   }

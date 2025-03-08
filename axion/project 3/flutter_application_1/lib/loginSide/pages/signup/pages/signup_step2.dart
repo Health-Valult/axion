@@ -3,6 +3,7 @@ import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart'; // <-- New import
 
 class SignupStep2 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -27,6 +28,15 @@ class _SignupStep2State extends State<SignupStep2>
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _nicController = TextEditingController();
+  final _dobController = TextEditingController(); // <-- New controller for DOB
+
+  // New date mask formatter for Date of Birth (MM/DD/YYYY)
+  final dateMaskFormatter = MaskTextInputFormatter(
+    mask: '##/##/####',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+
   final _apiService = ApiService();
   bool _showPassword = false;
   bool _showConfirmPassword = false;
@@ -42,6 +52,7 @@ class _SignupStep2State extends State<SignupStep2>
     _phoneController.text = widget.signupData.telephone ?? '';
     _addressController.text = widget.signupData.address ?? '';
     _nicController.text = widget.signupData.nic ?? '';
+    _dobController.text = widget.signupData.dateOfBirth ?? ''; // <-- Initialize DOB if available
   }
 
   @override
@@ -51,6 +62,7 @@ class _SignupStep2State extends State<SignupStep2>
     _phoneController.dispose();
     _addressController.dispose();
     _nicController.dispose();
+    _dobController.dispose(); // <-- Dispose DOB controller
     super.dispose();
   }
 
@@ -73,6 +85,7 @@ class _SignupStep2State extends State<SignupStep2>
         widget.signupData.telephone = _phoneController.text.trim();
         widget.signupData.address = _addressController.text.trim();
         widget.signupData.nic = _nicController.text.trim();
+        widget.signupData.dateOfBirth = _dobController.text.trim(); // <-- Save DOB value
         widget.onNext();
       } else {
         setState(() {
@@ -114,6 +127,21 @@ class _SignupStep2State extends State<SignupStep2>
                     ),
                   ),
                 ),
+              // New Date of Birth Field with automatic slash insertion
+              CustomTextField(
+                controller: _dobController,
+                hintText: 'Date of Birth (MM/DD/YYYY)',
+                enabled: !_isLoading,
+                keyboardType: TextInputType.number,
+                inputFormatters: [dateMaskFormatter],
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Date of Birth is required';
+                  }
+                  // You can add further validation if needed
+                  return null;
+                },
+              ),
               CustomTextField(
                 controller: _nicController,
                 hintText: 'NIC Number',

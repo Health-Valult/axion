@@ -38,9 +38,6 @@
   "noMedicalAlerts": "ඉදිරි වෛද්‍ය දැනුම්දීම් නොමැත.",
   "noNewNotifications": "ඔබට නව දැනුම්දීම් නොමැත.",
   "notifications": "දැනුම්දීම්",
-  "status": "තත්ත්වය",
-  "date": "දිනය",
-  "time": "වේලාව",
   "medicationReminder": "ඖෂධ මතක් කිරීම",
   "medicationReminderDescription": "ඔබගේ ඇමොක්සිලිනය ගැනීමට කාලය නුදුරේයි.",
   "appointment": "වෙන්කිරීම",
@@ -102,5 +99,9 @@
   "signUp": "ලියාපදිංචි වන්න",
   "medications": "ඖෂධ",
   "noMedications": "ඖෂධ නොමැත",
-  "noAllergies": "ආතතතා නොමැත"
+  "noAllergies": "ආතතතා නොමැත",
+  "deleteAccountDescription": "ඔබගේ ගිණුම මකා දැමීමෙන් ඔබගේ සියලු පුද්ගලික දත්ත ස්ථිරව මකනු ලැබේ.",
+  "deleteAccountConfirmation": "කරුණාකර ඔබගේ ගිණුම මකා දැමීමට ඔබ විශ්වාස කරනවාදැයි තහවුරු කරන්න.",
+  "nic": "ජාතික හැදුනුම්පත",
+  "password": "මුරපදය"
 }

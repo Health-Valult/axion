@@ -125,30 +125,4 @@ class GraphQLQueries {
     }
   ''';
 
-  static String getReportMedications = '''
-    query GetReportMedications(\$reportId: ID!) {
-      reportMedications(reportId: \$reportId) {
-        id
-        name
-        dosage
-        frequency
-        startDate
-        endDate
-        instructions
-      }
-    }
-  ''';
-
-  static String getReportAllergies = '''
-    query GetReportAllergies(\$reportId: ID!) {
-      reportAllergies(reportId: \$reportId) {
-        id
-        name
-        severity
-        reaction
-        diagnosedDate
-        notes
-      }
-    }
-  ''';
 }

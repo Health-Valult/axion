@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_application_1/services/graphql_config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_application_1/services/permission_service.dart';
 
 /// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
@@ -107,6 +108,9 @@ class SecureStorageService {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Request all required permissions
+  await PermissionService.requestAllPermissions();
 
   // Initialize secure storage
   final secureStorage = SecureStorageService();
@@ -201,15 +205,19 @@ class _MyAppState extends State<MyApp> {
             theme: lightTheme,
             darkTheme: darkTheme,
             themeMode: themeMode,
-            routerConfig: _router,
-            supportedLocales: const [Locale('en'), Locale('si'), Locale('ta')],
+            locale: locale,
+            supportedLocales: const [
+              Locale('en'),
+              Locale('si'),
+              Locale('ta'),
+            ],
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            locale: locale,
+            routerConfig: _router,
           ),
         );
       },

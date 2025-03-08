@@ -32,7 +32,16 @@ class _LinkPageState extends State<LinkPage> {
         _error = null;
       });
 
+      // Only load links, no editing functionality
       final links = await _apiService.getLinks();
+      if (links.isEmpty) {
+        setState(() {
+          _error = 'No active links available';
+          _isLoading = false;
+        });
+        return;
+      }
+      
       setState(() {
         _links = links;
         _isLoading = false;
@@ -133,7 +142,7 @@ class _LinkPageState extends State<LinkPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        localizations.scanToConnect,
+                        activeLink.title,
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall
@@ -159,7 +168,7 @@ class _LinkPageState extends State<LinkPage> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        activeLink.description ?? localizations.instructionText,
+                        activeLink.description ?? '',
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 30),

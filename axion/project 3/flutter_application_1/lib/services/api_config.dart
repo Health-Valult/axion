@@ -7,8 +7,6 @@ class ApiConfig {
   static const String validateOTP = '/axion/auth/validate/otp';
   static const String sendOTP = '/axion/auth/send/otp';
   static const String loginUser = '/axion/auth/login/user';
-  static const String loginDoctor = '/axion/auth/login/doc';
-  static const String loginStaff = '/axion/auth/login/stf';
   static const String refreshToken = '/axion/auth/refresh';
   static const String logout = '/axion/auth/logout';
   static const String resetPassword = '/axion/auth/reset-password';
@@ -24,7 +22,6 @@ class ApiConfig {
   static const String getSettings = '/axion/user/settings';
   static const String updateSettings = '/axion/user/settings/update';
   static const String updateNotificationPreferences = '/axion/user/settings/notifications';
-  static const String updatePrivacySettings = '/axion/user/settings/privacy';
   
   // Notifications endpoints
   static const String getNotifications = '/axion/notifications';
@@ -38,19 +35,12 @@ class ApiConfig {
   // Log endpoints
   static const String getLogs = '/axion/logs';
   static const String getLogDetails = '/axion/logs/{id}';
-  static const String createLog = '/axion/logs';
-  static const String updateLog = '/axion/logs/{id}';
-  static const String deleteLog = '/axion/logs/{id}';
   
   // Link endpoints
   static const String getLinks = '/axion/links';
-  static const String createLink = '/axion/links';
-  static const String updateLink = '/axion/links/{id}';
-  static const String deleteLink = '/axion/links/{id}';
   static const String validateLink = '/axion/links/validate';
   
   // Medical Records endpoints (GraphQL)
-  static const String getMedicalRecords = '/axion/medical-records';
   static const String getMedications = '/graphql';
   static const String getAllergies = '/graphql';
   static const String getReports = '/graphql';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <-- For inputFormatters
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -10,6 +11,7 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final Widget? suffixIcon;
   final int? maxLines;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     Key? key,
@@ -21,10 +23,22 @@ class CustomTextField extends StatelessWidget {
     this.enabled = true,
     this.suffixIcon,
     this.maxLines = 1,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // Determine border colors based on brightness.
+    final enabledBorderColor = theme.brightness == Brightness.dark 
+        ? Colors.white.withOpacity(0.5) 
+        : Colors.black.withOpacity(0.5);
+    final focusedBorderColor = theme.brightness == Brightness.dark 
+        ? Colors.white 
+        : Colors.black;
+    final errorBorderColor = Colors.red.withOpacity(0.5);
+    final focusedErrorBorderColor = Colors.redAccent.withOpacity(0.5);
+
     return SizedBox(
       width: 350,
       height: 80,
@@ -35,46 +49,45 @@ class CustomTextField extends StatelessWidget {
         validator: validator,
         enabled: enabled,
         maxLines: maxLines,
-        cursorColor: const Color.fromRGBO(255, 255, 255, 1),
-        style: const TextStyle(
-          color: Color.fromRGBO(255, 255, 255, 1),
-        ),
+        cursorColor: focusedBorderColor,
+        style: theme.textTheme.bodyLarge,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: hintText,
           suffixIcon: suffixIcon,
-          focusColor: const Color.fromRGBO(255, 255, 255, 1),
+          focusColor: focusedBorderColor,
           errorStyle: GoogleFonts.montserrat(
-            textStyle: const TextStyle(
-              color: Color.fromRGBO(255, 0, 0, 0.75),
+            textStyle: TextStyle(
+              color: Colors.red.withOpacity(0.75),
             ),
           ),
-          floatingLabelStyle: Theme.of(context).textTheme.labelSmall,
-          labelStyle: Theme.of(context).textTheme.labelMedium,
+          floatingLabelStyle: theme.textTheme.labelSmall,
+          labelStyle: theme.textTheme.labelMedium,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: Color.fromRGBO(255, 255, 255, 0.5),
+            borderSide: BorderSide(
+              color: enabledBorderColor,
               width: 2.0,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: Color.fromRGBO(255, 255, 255, 1),
+            borderSide: BorderSide(
+              color: focusedBorderColor,
               width: 2.0,
             ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: Color.fromRGBO(255, 0, 0, 0.5),
+            borderSide: BorderSide(
+              color: errorBorderColor,
               width: 2.0,
             ),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(
-              color: Color.fromRGBO(255, 72, 72, 0.5),
+            borderSide: BorderSide(
+              color: focusedErrorBorderColor,
               width: 2.0,
             ),
           ),

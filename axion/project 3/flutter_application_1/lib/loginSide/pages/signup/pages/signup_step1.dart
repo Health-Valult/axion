@@ -4,6 +4,7 @@ import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
+import 'package:flutter_application_1/services/connectivity_service.dart';
 
 class SignupStep1 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -27,6 +28,7 @@ class _SignupStep1State extends State<SignupStep1>
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _apiService = ApiService();
+  final _connectivityService = ConnectivityService();
   String? _error;
   bool _isLoading = false;
 
@@ -58,22 +60,32 @@ class _SignupStep1State extends State<SignupStep1>
     });
 
     try {
+      // Check internet connectivity first
+      final hasInternet = await _connectivityService.checkInternetConnection();
+      if (!hasInternet) {
+        setState(() {
+          _error = 'No internet connection. Please check your network and try again.';
+          _isLoading = false;
+        });
+        return;
+      }
+
       // Validate email with API
       final response = await _apiService.validateEmail(_emailController.text.trim());
       
-      if (response['available'] == true) {
+      if (response['success'] == true) {
         widget.signupData.firstName = _firstNameController.text.trim();
         widget.signupData.lastName = _lastNameController.text.trim();
         widget.signupData.email = _emailController.text.trim();
         widget.onNext();
       } else {
         setState(() {
-          _error = 'Email is already registered';
+          _error = response['error'] ?? 'Email validation failed';
         });
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _error = 'Network error occurred. Please try again.';
       });
     } finally {
       setState(() {
@@ -98,11 +110,29 @@ class _SignupStep1State extends State<SignupStep1>
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    _error!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 14,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

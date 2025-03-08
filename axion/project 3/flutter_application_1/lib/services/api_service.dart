@@ -213,11 +213,37 @@ class ApiService {
       };
     }
 
-    return await _makeApiCall(() => http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.validateEmail),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email}),
-    ));
+    try {
+      final result = await _makeApiCall(() => http.post(
+        Uri.parse(ApiConfig.baseUrl + ApiConfig.validateEmail),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      ));
+
+      if (result['success'] == false && result['error'].toString().contains('Network error')) {
+        return {
+          'success': false,
+          'error': 'Unable to validate email. Please check your internet connection.',
+        };
+      }
+
+      if (result['success'] == false) {
+        return {
+          'success': false,
+          'error': result['error'] ?? 'Email is already registered',
+        };
+      }
+
+      return {
+        'success': true,
+        'data': result['data'],
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error occurred. Please try again.',
+      };
+    }
   }
 
   Future<Map<String, dynamic>> sendOTP(String phoneNumber) async {
@@ -444,143 +470,112 @@ class ApiService {
 
   // Log methods
   Future<List<Log>> getLogs() async {
-    final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogs),
-      headers: await _getHeaders(),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return List<Log>.from(
-        data['data'].map((json) => Log.fromJson(json))
+    final result = await _makeApiCall(() async {
+      final headers = await _getHeaders();
+      return http.get(
+        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogs),
+        headers: headers,
       );
+    });
+
+    if (result['success']) {
+      final List<dynamic> logs = result['data'];
+      return logs.map((log) => Log.fromJson(log)).toList();
     }
-    return [];
+    throw Exception(result['error']);
   }
 
   Future<Log> getLogDetails(String id) async {
-    final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogDetails.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return Log.fromJson(data['data']);
+    final result = await _makeApiCall(() async {
+      final headers = await _getHeaders();
+      return http.get(
+        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogDetails.replaceAll('{id}', id)),
+        headers: headers,
+      );
+    });
+
+    if (result['success']) {
+      return Log.fromJson(result['data']);
     }
-    throw Exception('Failed to get log details');
-  }
-
-  Future<Log> createLog(Map<String, dynamic> logData) async {
-    final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.createLog),
-      headers: await _getHeaders(),
-      body: jsonEncode(logData),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return Log.fromJson(data['data']);
-    }
-    throw Exception('Failed to create log');
-  }
-
-  Future<Log> updateLog(String id, Map<String, dynamic> logData) async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.updateLog.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-      body: jsonEncode(logData),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return Log.fromJson(data['data']);
-    }
-    throw Exception('Failed to update log');
-  }
-
-  Future<void> deleteLog(String id) async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteLog.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
-
-  // Account deletion method
-  Future<void> deleteAccount() async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteAccount),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    throw Exception(result['error']);
   }
 
   // Link methods
   Future<List<Link>> getLinks() async {
+    final result = await _makeApiCall(() async {
+      final headers = await _getHeaders();
+      return http.get(
+        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLinks),
+        headers: headers,
+      );
+    });
+
+    if (result['success']) {
+      final List<dynamic> links = result['data'];
+      return links.map((link) => Link.fromJson(link)).toList();
+    }
+    throw Exception(result['error']);
+  }
+
+  Future<bool> validateLink(String url) async {
+    final result = await _makeApiCall(() async {
+      final headers = await _getHeaders();
+      return http.post(
+        Uri.parse(ApiConfig.baseUrl + ApiConfig.validateLink),
+        headers: headers,
+        body: jsonEncode({'url': url}),
+      );
+    });
+
+    return result['success'];
+  }
+
+  Future<List<dynamic>> getMedications() async {
     final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getLinks),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.getMedications),
       headers: await _getHeaders(),
     );
     final data = await _handleResponse(response);
     if (data.containsKey('data')) {
-      return List<Link>.from(
-        data['data'].map((json) => Link.fromJson(json))
-      );
+      return data['data'];
     }
     return [];
   }
 
-  Future<Link> createLink(Map<String, dynamic> linkData) async {
-    final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.createLink),
-      headers: await _getHeaders(),
-      body: jsonEncode(linkData),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return Link.fromJson(data['data']);
-    }
-    throw Exception('Failed to create link');
-  }
-
-  Future<Link> updateLink(String id, Map<String, dynamic> linkData) async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.updateLink.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-      body: jsonEncode(linkData),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return Link.fromJson(data['data']);
-    }
-    throw Exception('Failed to update link');
-  }
-
-  Future<void> deleteLink(String id) async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteLink.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
-
-  Future<bool> validateLink(String url) async {
-    final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.validateLink),
-      headers: await _getHeaders(),
-      body: jsonEncode({'url': url}),
-    );
-    final data = await _handleResponse(response);
-    return data.containsKey('data') && data['data'].containsKey('valid') ? data['data']['valid'] : false;
-  }
-
-  // Medical Records methods
-  Future<List<dynamic>> getMedicalRecords() async {
+  Future<List<dynamic>> getAllergies() async {
     final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getMedicalRecords),
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.getAllergies),
       headers: await _getHeaders(),
     );
     final data = await _handleResponse(response);
-    return data.containsKey('data') ? data['data'] : [];
+    if (data.containsKey('data')) {
+      return data['data'];
+    }
+    return [];
+  }
+
+  Future<List<dynamic>> getReports() async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.getReports),
+      headers: await _getHeaders(),
+    );
+    final data = await _handleResponse(response);
+    if (data.containsKey('data')) {
+      return data['data'];
+    }
+    return [];
+  }
+
+  Future<dynamic> getReportDetails(String id) async {
+    final response = await http.get(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.getReportDetails),
+      headers: await _getHeaders(),
+    );
+    final data = await _handleResponse(response);
+    if (data.containsKey('data')) {
+      return data['data'];
+    }
+    throw Exception('Failed to get report details');
   }
 
   // Medical Notifications methods
@@ -620,5 +615,35 @@ class ApiService {
       headers: await _getHeaders(),
     );
     await _handleResponse(response);
+  }
+
+  // Account deletion method
+  Future<void> deleteAccount() async {
+    final response = await http.delete(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteAccount),
+      headers: await _getHeaders(),
+    );
+    await _handleResponse(response);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  Future<Map<String, dynamic>> verifyAndDeleteAccount(String nic, String password) async {
+    if (nic.isEmpty || password.isEmpty) {
+      return {
+        'success': false,
+        'error': 'NIC and password are required',
+      };
+    }
+
+    final headers = await _getHeaders();
+    return await _makeApiCall(() => http.post(
+      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteAccount),
+      headers: headers,
+      body: jsonEncode({
+        'nic': nic,
+        'password': password,
+      }),
+    ));
   }
 }
