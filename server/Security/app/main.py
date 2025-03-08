@@ -46,7 +46,7 @@ def user_signup(cred:User):
     try:
         dictifiedUser = dict(cred)
 
-        dictifiedUser["UserID"] = bson.Binary.from_uuid(uuid.uuid5(uuid.NAMESPACE_DNS,dictifiedUser["FirstName"]))
+        dictifiedUser["UserID"] = bson.Binary.from_uuid(uuid.uuid5(uuid.NAMESPACE_DNS,dictifiedUser["Email"]))
 
         NICExists = PatientsCollection.find_one({"NIC":dictifiedUser["NIC"]}) is not None
         emailExists = PatientsCollection.find_one({"Email":dictifiedUser["Email"]}) is not None
@@ -61,7 +61,14 @@ def user_signup(cred:User):
         return JSONResponse(status_code=201, content={"details":"user created successfuly"})
     
     except errors.OperationFailure:
-        print("error")
+        return JSONResponse(status_code=500, content={"details":"internal server error"})
+
+@app.post("/axion/auth/signup/user")
+def doctor_signup():
+    pass
+
+def staff_signup():
+    pass
 
 
 @app.post("/axion/auth/login/patient")

@@ -6,19 +6,16 @@ from app.ax_types.util import Json_type
 
 
 @strawberry.type
-class Observation:
+class Procedure:
     encounter:Optional[str] = None
     patient:Optional[str] = None
+    id:Optional[str] = None
     code:Optional[str] = None
     display:Optional[str] = None
-    unit:Optional[str] = None
-    value:Optional[str] = None
-    timestamp:Optional[str] = None
+    Date:Optional[str] = None
     meta:Optional[Json_type]= None # type: ignore
 
 
 @strawberry.type
-class ObservationStack:
-    Observations :List[Observation] # type: ignore
-
-
+class ProcedureStack:
+    Procedures :List[Procedure] # type: ignore

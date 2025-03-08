@@ -6,10 +6,17 @@ from strawberry.fastapi import GraphQLRouter
 import strawberry
 import asyncio
 from strawberry import Info
+from typing import Optional
+
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
-from .ax_types.observation import *
-from typing import Optional
+
+from app.ax_types.observation import *
+from app.ax_types.allergyIntolerance import *
+from app.ax_types.medications import *
+from app.ax_types.immunization import *
+from app.ax_types.procedure import *
+
 from app.middleware.auth import Auth
 from app.middleware.logging import Logging
 
@@ -18,14 +25,18 @@ warnings.filterwarnings("ignore", message="You appear to be connected to a Cosmo
 
 DBClient = pymongo.MongoClient(URL)
 Database = DBClient.get_database("records_db")
-Collection = Database.get_collection("observations")
 
-observation_type = strawberry.union(name="obs_u", types=(Observation,ObservationStack))
+ObsCollection = Database.get_collection("observations")
+AllCollection = Database.get_collection("allergyIntolerance")
+MedCollection = Database.get_collection("medications")
+ImmCollection = Database.get_collection("immunizations")
+ProCollection = Database.get_collection("procedures")
 
-MQ = sendMQ("localhost","record")
+#MQ = sendMQ("localhost","record")
 
 @strawberry.type
 class Query:
+
     @strawberry.field
     def observations(
             self,
@@ -36,7 +47,7 @@ class Query:
         ) -> Observation:
         
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        observationAggregate = Collection.aggregate([
+        observationAggregate = ObsCollection.aggregate([
                 {"$match": {
                     "patient": patient, 
                     "code": code, 
@@ -63,7 +74,7 @@ class Query:
         )-> ObservationStack:
             
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            observationAggregate = Collection.aggregate([
+            observationAggregate = ObsCollection.aggregate([
                     {"$match": {
                         "patient": patient, 
                         "code": code, 
@@ -75,31 +86,118 @@ class Query:
                 Observations=[Observation(**obs) for obs in observationAggregate]
             )
         
+
+    @strawberry.field
+    def allergys(
+        self,
+        info:Info,
+        patient:str
+        ) -> AllergyIntoleranceStack:
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        print(query)
+        allergyAggregate = AllCollection.aggregate([
+                    {"$match": {
+                        "patient": patient,  
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
+
+        return AllergyIntoleranceStack(
+                allergyIntolerances=[AllergyIntolerance(**obs) for obs in allergyAggregate]
+            )
+
+
+    @strawberry.field
+    def medications(
+        self, 
+        info:Info,
+        patient:str,
+        start:Optional[str] = strawberry.UNSET,
+        end:Optional[str] = strawberry.UNSET
+        ) -> MedicationStack:
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        print(query)
+        medicationAggregate = MedCollection.aggregate([
+                    {"$match": {
+                        "patient": patient,  
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
+
+        return MedicationStack(
+                medications=[Medication(**obs) for obs in medicationAggregate]
+            )
+
+
+    @strawberry.field
+    def immunization(
+        self,
+        info:Info,
+        patient:str,
+        start:Optional[str] = strawberry.UNSET,
+        end:Optional[str] = strawberry.UNSET
+        ) -> ImmunizationStack:
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        print(query)
+        immunizationAggregate = ImmCollection.aggregate([
+                    {"$match": {
+                        "patient": patient,  
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
         
-
-    @strawberry.field
-    def medications(self, id:str,patientId:str) -> str:
-        return "med"
-    @strawberry.field
-    def hospitals(self, id:str,patientId:str) -> str:
-        return "hos"
-    @strawberry.field
-    def encounters(self, id:str,patientId:str) -> str:
-        return "enc"
-    @strawberry.field
-    def patient(self, id:str,patientId:str) -> str:
-        return "pat"
-    @strawberry.field
-    def practioner(self, id:str,patientId:str) -> str:
-        return "prac"
-    @strawberry.field
-    def allergys(self, id:str,patientId:str) -> str:
-        return "alle"
-    @strawberry.field
-    def immunization(self, id:str,patientId:str) -> str:
-        return "immun"
+        return ImmunizationStack(
+                immunizations=[Immunization(**obs) for obs in immunizationAggregate]
+            )
 
 
+    @strawberry.field
+    def procedures(
+        self, 
+        info:Info,
+        patient:str,
+        start:Optional[str] = strawberry.UNSET,
+        end:Optional[str] = strawberry.UNSET
+        ) -> ProcedureStack:
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        print(query)
+        procedureAggregate = ProCollection.aggregate([
+                    {"$match": {
+                        "patient": patient,  
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
+        
+        return ProcedureStack(
+                Procedures=[Procedure(**obs) for obs in procedureAggregate]
+            )
+
+
+    @strawberry.field
+    def procedures(
+        self, 
+        info:Info,
+        patient:str,
+        start:Optional[str] = strawberry.UNSET,
+        end:Optional[str] = strawberry.UNSET
+        ) -> ProcedureStack:
+
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        print(query)
+        procedureAggregate = ProCollection.aggregate([
+                    {"$match": {
+                        "patient": patient,  
+                        }},
+                    {"$project": query|{"_id":0}} 
+                ])
+        
+        return ProcedureStack(
+                Procedures=[Procedure(**obs) for obs in procedureAggregate]
+            )
 
 schema = strawberry.Schema(Query)
 
@@ -110,48 +208,17 @@ graphql_app = GraphQLRouter(schema)
 app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
 
-app.add_middleware(Auth,Mq=MQ)
-app.add_middleware(Logging,Mq=MQ)
+#app.add_middleware(Auth,Mq=MQ)
+#app.add_middleware(Logging,Mq=MQ)
 
 
-@app.on_event("startup")
+"""@app.on_event("startup")
 async def startup_event():
-    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/","record"))
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/","record"))"""
 
 
 if __name__ == '__main__':
     uvicorn.run("app.main:app",port=8080,reload=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
