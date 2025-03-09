@@ -15,7 +15,7 @@ class sendMQ:
 
     def send(self,Qname:str,task:str,body:dict,type:Literal["request","response"],status:Literal["success","error"] = None):
 
-        msg_obj
+       
 
         if type == "request":
             msg_obj = {

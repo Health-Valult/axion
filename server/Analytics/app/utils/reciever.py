@@ -2,11 +2,8 @@ from asyncio import Future
 from aio_pika import connect
 from aio_pika.abc import AbstractIncomingMessage
 from json import loads
+from app.callback.callback import callback
 
-async def callback(message:AbstractIncomingMessage) -> None:
-            msg = loads(message.body)
-            print("Message body is:")
-            print(msg)
 
 
 async def recieveMQ(host:str,Qname:str,):

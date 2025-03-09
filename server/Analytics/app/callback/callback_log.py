@@ -20,31 +20,32 @@ async def log_event(event:dict)->None:
             type=data.get("type"),
             description=data.get("description")
         )
-        jsonLog = log.model_dump_json()
-        GeneralCollection.insert_one(jsonLog)
+        jsonLog = log.model_dump()
+        ErrorCollection.insert_one(jsonLog)
 
     if event_type == "login":
         log = LoginLog(
             user=data.get("user"),
             ip=data.get("ip")
         )
-        jsonLog = log.model_dump_json()
-        GeneralCollection.insert_one(jsonLog)
+        jsonLog = log.model_dump()
+        LoginCollection.insert_one(jsonLog)
 
     if event_type == "signup":
         log = SignupLog(
             user=data.get("user"),
         )
-        jsonLog = log.model_dump_json()
-        GeneralCollection.insert_one(jsonLog)
+        jsonLog = log.model_dump()
+        SiginupCollection.insert_one(jsonLog)
 
     if event_type == "general":
+        print("general")
         log = GeneralLog(
             service=data.get("service"),
             endpoint=data.get("endpoint"),
             requester=data.get("requester"),
             type=data.get("type"),
-            responseCode=data.get("code")
+            responseCode=data.get("responseCode")
         )
-        jsonLog = log.model_dump_json()
+        jsonLog = log.model_dump()
         GeneralCollection.insert_one(jsonLog)

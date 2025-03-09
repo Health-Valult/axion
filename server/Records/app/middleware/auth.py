@@ -13,10 +13,10 @@ class Auth(BaseHTTPMiddleware):
 
         token = request.headers['authorization']
         sessionResponse = self.Mq.send_and_await("security","sessionAuth",{"token":token})
-        
-        if sessionResponse["task"] != "verifiedToken":
+    
+        if sessionResponse[0]["response"]["task"] != "verifiedToken":
             raise HTTPException(status_code=401, detail="invalid token")
         
-        request.state.user = sessionResponse["data"]
+        request.state.user = sessionResponse[0]["response"]["body"]
         response: Response = await call_next(request)
         return response
