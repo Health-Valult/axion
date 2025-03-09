@@ -9,7 +9,8 @@ def authenticate_session(bearerToken:str,Red:redis_AX=None,refresh_token:bool=Fa
     try:    
 
         key = os.path.join("app","data","keys","refresh_public.pem") if refresh_token else os.path.join("app","data","keys","public.pem")
-        print(key)
+
+
         with open(key,"r") as file:
             key = file.read()
 
@@ -22,7 +23,7 @@ def authenticate_session(bearerToken:str,Red:redis_AX=None,refresh_token:bool=Fa
         uuid = decoded_token.get("sub")
         role = decoded_token.get("role")
         if refresh_token and Red is not None:
-            print(uuid)
+
             if not Red.validate_token(uuid,"refresh"):
                 return {
                     "status":"err",

@@ -1,0 +1,25 @@
+{
+"Response": 
+{
+    "sender":"service-name",
+    "reciver":"service-name",
+    "id":"{self.service}-{uuid.uuid4()}",
+    "status":"success/error",
+    "body":{
+        "task":"task",
+        "response":""
+    }
+},
+
+"Request":
+{
+    "sender":"service-name",
+    "reciver":"service-name",
+    "id":"{self.service}-{uuid.uuid4()}",
+    "body":{
+        "task":"task",
+        "response":""
+    }
+}
+
+}

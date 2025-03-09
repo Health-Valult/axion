@@ -166,19 +166,27 @@ def delete_profile(request:Request,cred:Delete):
         return _delete_profile(collection=HospitalCollection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
 
 @app.post("/axion/auth/send/otp")
-def send_otp(request:Request):
-    token = token = request.headers.get('authorization')
-    session = authenticate_session(token,Red=REDIS)
-    c_uuid,role = session.get("uuid"),session.get("role")
+def send_otp(request:Request,cred:SendOtp):
+    type = cred.type
+    data = cred.data
+    
+    c_uuid,role = 35726845687,"patient"
     name = f"otp::{role}::{c_uuid}"
     otp = generate_otp()
     payload = {
         "uuid":c_uuid,
+        "type":type,
         "role":role,
         "otp":otp
     }
     REDIS.set_item(name=name,payload=payload,ttl=2)
-
+    body = {
+        "email":data,
+        "subject":"Axion Verification OTP",
+        "body":f"your otp is {otp}"
+    }
+    response = MQ.send_and_await("notification","send-email",body=body)
+    print(response)
     return JSONResponse(status_code=200,content={"msg":"otp sent"})
 
 @app.post("/axion/auth/verify/otp")
@@ -204,23 +212,6 @@ def verify_otp(request:Request,cred:OTP):
 
 
 
-"""
-Authentication Endpoints
-signupUser → /axion/auth/signup/user - done
-validateEmail → /axion/auth/validate/email - use the same as phone number 
-validateOTP → /axion/auth/validate/otp - done
-sendOTP → /axion/auth/send/otp - done
-loginUser → /axion/auth/login/user - done
-refreshToken → /axion/auth/refresh - done
-logout → /axion/auth/logout - done
-
-userProfile → /axion/user/profile - done
-deleteAccount → /axion/user/profile/delete - done
-
-Profile Endpoints
-updateProfile → /axion/user/profile/update-
-changePassword → /axion/user/profile/change-password - done
-"""
 
 @app.on_event("startup")
 async def startup_event():

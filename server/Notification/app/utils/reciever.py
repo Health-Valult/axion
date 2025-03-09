@@ -1,17 +1,13 @@
 from asyncio import Future
-from aio_pika import connect_robust
+from aio_pika import connect
 from aio_pika.abc import AbstractIncomingMessage
 from json import loads
 
-async def callback(message:AbstractIncomingMessage) -> None:
-            msg = loads(message.body)
-            print("Message body is:")
-            print(msg)
 
 
-async def recieveMQ(host:str,Qname:str,):
+async def recieveMQ(host:str,Qname:str,callback):
         print("reciever active")
-        connection = await connect_robust(host,heartbeat=0)
+        connection = await connect(host,heartbeat=30)
         async with connection:
             channel = await connection.channel()
             queue = await channel.declare_queue(Qname)

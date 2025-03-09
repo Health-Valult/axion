@@ -1,8 +1,28 @@
-from pydantic import BaseModel
+import uuid
+from pydantic import BaseModel, Field
 import datetime
 
-class LogMessage(BaseModel):
-    Requester: str
-    token: str
-    body: str
-    timeStamp: datetime.datetime
+class ErrorLog(BaseModel):
+    timeStamp: datetime.datetime = Field(default_factory=datetime.datetime.now(tz=datetime.timezone.utc))
+    sender: str
+    type: str
+    description: str
+    
+
+class LoginLog(BaseModel):
+    user:uuid.UUID
+    timeStamp: datetime.datetime = Field(default_factory=datetime.datetime.now(tz=datetime.timezone.utc))
+    ip:str
+
+class SignupLog(BaseModel):
+    user:uuid.UUID
+    timeStamp: datetime.datetime = Field(default_factory=datetime.datetime.now(tz=datetime.timezone.utc))
+
+
+class GeneralLog(BaseModel):
+    service:str
+    endpoint:str
+    requester:str
+    type:str
+    timestamp:datetime.datetime = Field(default_factory=datetime.datetime.now(tz=datetime.timezone.utc))
+    responseCode:int

@@ -1,5 +1,5 @@
 from fastapi import APIRouter 
-from models.logs import LogMessage
+
 from routes.logs_routes import post_log
 
 router = APIRouter()

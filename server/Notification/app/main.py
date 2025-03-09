@@ -8,11 +8,13 @@ import uuid
 import datetime
 import asyncio
 from typing import List
+import uvicorn
+from app.utils.reciever import recieveMQ
 from .db import notifications_collection, otp_collection
-from .otp import generate_otp
 from bson import ObjectId
 from dotenv import load_dotenv
 import os
+from app.callback.callback import callback
 
 load_dotenv()
 
@@ -29,7 +31,7 @@ MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
 MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET")
 MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL")
 
-def get_rabbitmq_connection():
+"""def get_rabbitmq_connection():
     connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
     channel = connection.channel()
 
@@ -41,7 +43,7 @@ def get_rabbitmq_connection():
     except pika.exceptions.PreconditionFailed:
         print("Queue already exists with different parameters")
 
-    return connection, channel
+    return connection, channel"""
 
 
 @app.websocket("/ws")
@@ -71,9 +73,7 @@ async def process_queue():
         for ws in disconnected_clients:
             connected_clients.remove(ws)
 
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(process_queue()) 
+
 
 class Notification(BaseModel):
     user_id: str | None = None # If None, it's a global notification
@@ -83,9 +83,9 @@ class Notification(BaseModel):
     phone_number: str | None = None
     email: str | None = None
 
-@app.post("/send-notification/")
+"""@app.post("/send-notification/")
 async def send_notification(notification: Notification):
-    """Handle sending a notification"""
+    Handle sending a notification
     notification_data = {
         "_id": str(uuid.uuid4()),
         "user_id": notification.user_id if notification.user_id else None,
@@ -113,7 +113,7 @@ async def send_notification(notification: Notification):
     if notification.email:
         await send_email(notification.email, "New Notification", notification.message)
 
-    return {"status": "Notification sent!", "notification_id": notification_data["_id"]}
+    return {"status": "Notification sent!", "notification_id": notification_data["_id"]}"""
 
 @app.get("/notifications/{user_id}", response_model=List[dict])
 async def get_notifications(
@@ -152,7 +152,7 @@ async def process_notification(notification: dict):
     await notification_queue.put(notification)
     return {"status": "Notification queued"}
 
-@app.post("/generate-otp/{patient_nic}")
+"""@app.post("/generate-otp/{patient_nic}")
 async def generate_otp_api(patient_nic: str):
     otp_code, otp_secret = generate_otp()
     expiry_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=30)
@@ -167,7 +167,7 @@ async def generate_otp_api(patient_nic: str):
     })
 
     return {"status": "OTP generated", "otp": otp_code, "expires_at": 30}
-
+"""
 class OTPVerificationRequest(BaseModel):
     otp_input: str
 
@@ -236,3 +236,20 @@ async def send_email(to_email: str, subject: str, message: str):
         print(f"Email sent to {to_email}: {subject}")
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+
+
+
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(process_queue()) 
+
+@app.on_event("startup")
+async def startup_event():
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/","notification",callback=callback))
+
+
+
+if __name__ == '__main__':
+    uvicorn.run("app.main:app",port=8080,reload=True)

@@ -4,7 +4,6 @@ from pika import BlockingConnection,ConnectionParameters
 from pika import BasicProperties
 from json import dumps
 import uuid
-from typing import Literal
 class sendMQ:
 
     def __init__(self,host:str,service:str):
@@ -13,60 +12,33 @@ class sendMQ:
             ConnectionParameters(host=host,heartbeat=0))
         self.channel = self.connection.channel()
 
-    def send(self,Qname:str,task:str,body:dict,type:Literal["request","response"],status:Literal["success","error"] = None,declare:bool = True):
-
-        msg_obj
-
-        if type == "request":
-            msg_obj = {
-                "sender":self.service,
-                "reciver":Qname,
-                "id":f"{self.service}-{uuid.uuid4()}",
-                "request":{
-                    "task":task,
-                    "body":body
-                }
-            }
-
-        if type == "response" and status != None:
-            msg_obj = {
-                "sender":self.service,
-                "reciver":Qname,
-                "id":f"{self.service}-{uuid.uuid4()}",
-                "status":status,
-                "response":{
-                    "task":task,
-                    "body":body
-                }
-            },
-
-
+    def send(self,Qname:str,task:str,msg:dict):
+        
+        msg_obj = {
+            "service":self.service,
+            "id":f"{self.service}-{uuid.uuid4()}",
+            "task":task,
+            "data":msg
+        }
         msg = dumps(msg_obj).encode("utf-8")
-        if declare:
-            self.channel.queue_declare(queue=Qname)
+        self.channel.queue_declare(queue=Qname)
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
 
-    def send_and_await(self,Qname:str,task:str,body:dict):
+    def send_and_await(self,Qname:str,task:str,msg:dict):
         print("it works ur the problem")
         return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
         print(return_q)
-
         msg_obj = {
-            "sender":self.service,
-            "reciver":Qname,
+            "service":self.service,
             "id":f"{self.service}-{uuid.uuid4()}",
-            "request":{
-                "task":task,
-                "body":body
-            }
+            "task":task,
+            "data":msg
         }
-
         msg = dumps(msg_obj).encode("utf-8")
         self.channel.queue_declare(queue=Qname)
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg, properties=BasicProperties(
             reply_to=return_q
         ))
-
         timeout = 5
         start_time = time.time()
         while time.time() - start_time < timeout:
@@ -78,4 +50,3 @@ class sendMQ:
 
     def terminate_session(self):
         self.connection.close()
-
