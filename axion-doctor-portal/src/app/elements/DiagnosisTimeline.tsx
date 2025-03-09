@@ -1,5 +1,5 @@
 import React from 'react';
-import { DiagnosedAilment } from '../models/types/Patient';
+import { DiagnosedAilment } from '../models/Patient';
 
 interface DiagnosisTimelineProps {
 	illness: DiagnosedAilment;

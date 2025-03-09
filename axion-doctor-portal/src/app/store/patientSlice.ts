@@ -1,4 +1,4 @@
-import { Patient } from './../models/types/Patient';
+import { Patient } from '../models/Patient';
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define the Patient type

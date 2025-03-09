@@ -22,6 +22,7 @@ import {
 } from '@nextui-org/react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { signOut } from '../../../auth';
 
 export const AxionLogo = ({
 	width,
@@ -207,6 +208,12 @@ const SideBar: React.FC<Component> = ({ children }) => {
 	];
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
+
+	const handleSignOut = async () => {
+		await signOut();
+		router.push('/');
+	};
+
 	return (
 		<div
 			className={cn(
@@ -272,7 +279,11 @@ const SideBar: React.FC<Component> = ({ children }) => {
 								<DropdownItem key="help_and_feedback">
 									Contact Support
 								</DropdownItem>
-								<DropdownItem key="logout" color="danger">
+								<DropdownItem
+									key="logout"
+									color="danger"
+									onPress={() => handleSignOut()}
+								>
 									Log Out
 								</DropdownItem>
 							</DropdownMenu>

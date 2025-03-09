@@ -102,7 +102,7 @@ export function Notes({
 				console.log('Notes saved successfully to API');
 			} catch (error) {
 				toast('Error', {
-					description: 'There was a problem saving the note.',
+					description: 'There was a problem connecting to database.',
 				});
 			}
 		};

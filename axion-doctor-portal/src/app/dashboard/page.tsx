@@ -1,203 +1,406 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
-import { useQuery, gql } from '@apollo/client';
-import FastingBloodGlucoseChart from '../elements/FastingBloodGlucose';
-import LiverFunctionTest from '../elements/LiverFunctionChart';
-import CRPChart from '../elements/CRPChart';
-import SerumElectrolytesChart from '../elements/SerumElectrolytes';
-import ESRChart from '../elements/ESRChart';
-import GlycatedHemoglobinChart from '../elements/GlycatedHemoglobinChart';
+import FastingBloodGlucoseChart from '../charts/FastingBloodGlucose';
+import LiverFunctionTest from '../charts/LiverFunctionChart';
+import CRPChart from '../charts/CRPChart';
+import SerumElectrolytesChart from '../charts/SerumElectrolytes';
+import ESRChart from '../charts/ESRChart';
+import GlycatedHemoglobinChart from '../charts/GlycatedHemoglobinChart';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
+import {
+	GET_ESR_OBSERVATIONS,
+	GET_HEMOGLOBIN_OBSERVATIONS,
+	GET_TLC_OBSERVATIONS,
+	GET_NEUTROPHILS_OBSERVATIONS,
+	GET_LYMPHOCYTES_OBSERVATIONS,
+	GET_MONOCYTES_OBSERVATIONS,
+	GET_EOSINOPHILS_OBSERVATIONS,
+	GET_BASOPHILS_OBSERVATIONS,
+	GET_PLATELET_OBSERVATIONS,
+	GET_RBC_OBSERVATIONS,
+	GET_HBA1C_OBSERVATIONS,
+	GET_SERUM_ELECTROLYTES,
+	GET_LIPID_PROFILE,
+} from '../graphql/queries';
+import { useQuery } from '@apollo/client';
 
 const HematologyTrendsChart = dynamic(
-	() => import('../elements/HematologyTrendChart'),
+	() => import('../charts/HematologyTrendChart'),
 	{
 		ssr: false,
 	}
 );
 const BloodPressureChart = dynamic(
-	() => import('../elements/BloodPressureChart'),
+	() => import('../charts/BloodPressureChart'),
 	{ ssr: false }
 );
-const LipidProfileChart = dynamic(
-	() => import('../elements/LipidProfileChart'),
-	{ ssr: false }
-);
+const LipidProfileChart = dynamic(() => import('../charts/LipidProfileChart'), {
+	ssr: false,
+});
 const Summary = dynamic(() => import('../elements/Summary'), { ssr: false });
 
-const KidneyChart = dynamic(() => import('../elements/KidneyChart'), {
+const KidneyChart = dynamic(() => import('../charts/KidneyChart'), {
 	ssr: false,
 });
 
-const GET_OBSERVATIONS = gql`
-	query GetObservations($patient: String!) {
-		observations(patient: $patient) {
-			id
-			date
-			type
-			value
-			unit
-		}
-	}
-`;
+interface ESRValue {
+	wintrobe: number;
+	westergren: number;
+}
+
+interface SimpleValue {
+	number: number;
+}
+
+interface LipidValue {
+	totalCholesterol: number;
+	LDL: number;
+	HDL: number;
+	triglycerides: number;
+	nonHDL: number;
+	VLDL: number;
+}
+
+interface ESRObservation {
+	date: string;
+	value: ESRValue;
+}
+
+interface SimpleObservation {
+	date: string;
+	value: SimpleValue;
+}
+
+interface ElectrolyteObservation {
+	date: string;
+	subType: string;
+	value: SimpleValue;
+}
+
+interface LipidObservation {
+	date: string;
+	value: LipidValue;
+}
+
+interface LipidProfileDataPoint {
+	month: string;
+	totalCholesterol: number;
+	LDL: number;
+	HDL: number;
+	triglycerides: number;
+	nonHDL: number;
+	VLDL: number;
+	LDL_HDL: number;
+	TC_HDL: number;
+	TG_HDL: number;
+}
 
 const Dashboard: React.FC = () => {
-	const { loading, error, data } = useQuery(GET_OBSERVATIONS, {
-		variables: { patient: '123' },
+	const patientId = '12345';
+	const {
+		loading: esrLoading,
+		error: esrError,
+		data: esrQueryData,
+	} = useQuery(GET_ESR_OBSERVATIONS, { variables: { patient: patientId } });
+
+	// Hemoglobin Query
+	const {
+		loading: hbLoading,
+		error: hbError,
+		data: hbData,
+	} = useQuery(GET_HEMOGLOBIN_OBSERVATIONS, {
+		variables: { patient: patientId },
 	});
 
-	if (loading) return <p>Loading...</p>;
-	if (error) return <p>Error: {error.message}</p>;
+	// TLC Query
+	const {
+		loading: tlcLoading,
+		error: tlcError,
+		data: tlcData,
+	} = useQuery(GET_TLC_OBSERVATIONS, { variables: { patient: patientId } });
 
-	// Transform data for different charts
-	const esrData = data.observations
-		.filter((obs: { type: string }) => obs.type === 'ESR')
-		.map(
-			(obs: {
-				date: string;
-				value: { wintrobe: number; westergren: number };
-			}) => ({
-				date: obs.date,
-				wintrobe: obs.value.wintrobe,
-				westergren: obs.value.westergren,
-			})
-		);
+	// Neutrophils Query
+	const {
+		loading: neutrophilsLoading,
+		error: neutrophilsError,
+		data: neutrophilsData,
+	} = useQuery(GET_NEUTROPHILS_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
 
-	const hematologyData = [
-		{
-			name: 'Haemoglobin',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Haemoglobin')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Total Leukocyte Count',
-			results: data.observations
-				.filter(
-					(obs: { type: string }) =>
-						obs.type === 'Total Leukocyte Count'
-				)
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Neutrophils',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Neutrophils')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Lymphocytes',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Lymphocytes')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Monocytes',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Monocytes')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Eosinophils',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Eosinophils')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Basophils',
-			results: data.observations
-				.filter((obs: { type: string }) => obs.type === 'Basophils')
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Platelet Count',
-			results: data.observations
-				.filter(
-					(obs: { type: string }) => obs.type === 'Platelet Count'
-				)
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-		{
-			name: 'Total RBC Count',
-			results: data.observations
-				.filter(
-					(obs: { type: string }) => obs.type === 'Total RBC Count'
-				)
-				.map((obs: { date: string; value: number }) => ({
-					month: obs.date,
-					value: obs.value,
-				})),
-		},
-	];
+	// Lymphocytes Query
+	const {
+		loading: lymphocytesLoading,
+		error: lymphocytesError,
+		data: lymphocytesData,
+	} = useQuery(GET_LYMPHOCYTES_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
 
-	const hba1cData = data.observations
-		.filter((obs: { type: string }) => obs.type === 'HbA1c')
-		.map((obs: { date: string; value: number }) => ({
-			month: obs.date,
-			hba1c: obs.value,
-		}));
+	// Monocytes Query
+	const {
+		loading: monocytesLoading,
+		error: monocytesError,
+		data: monocytesData,
+	} = useQuery(GET_MONOCYTES_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
 
-	const serumElectrolytesData = data.observations
-		.filter((obs: { type: string }) => obs.type === 'Serum Electrolytes')
-		.map((obs: { subType: string; value: number }) => ({
-			electrolyte: obs.subType, // Example: sodium, chloride, etc.
-			electrolytes: obs.value,
-			fill: `var(--color-${obs.subType.toLowerCase()})`,
-		}));
+	// Eosinophils Query
+	const {
+		loading: eosinophilsLoading,
+		error: eosinophilsError,
+		data: eosinophilsData,
+	} = useQuery(GET_EOSINOPHILS_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
 
-	const lipidProfileData = data.observations
-		.filter((obs: { type: string }) => obs.type === 'Lipid Profile')
-		.map(
-			(obs: {
-				date: string;
-				value: {
-					totalCholesterol: number;
-					LDL: number;
-					HDL: number;
-					triglycerides: number;
-					nonHDL: number;
-					VLDL: number;
-				};
-			}) => ({
-				month: obs.date,
-				totalCholesterol: obs.value.totalCholesterol,
-				LDL: obs.value.LDL,
-				HDL: obs.value.HDL,
-				triglycerides: obs.value.triglycerides,
-				nonHDL: obs.value.nonHDL,
-				VLDL: obs.value.VLDL,
-				LDL_HDL: obs.value.LDL / obs.value.HDL,
-				TC_HDL: obs.value.totalCholesterol / obs.value.HDL,
-				TG_HDL: obs.value.triglycerides / obs.value.HDL,
-			})
-		);
+	// Basophils Query
+	const {
+		loading: basophilsLoading,
+		error: basophilsError,
+		data: basophilsData,
+	} = useQuery(GET_BASOPHILS_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
+
+	// Platelet Query
+	const {
+		loading: plateletLoading,
+		error: plateletError,
+		data: plateletData,
+	} = useQuery(GET_PLATELET_OBSERVATIONS, {
+		variables: { patient: patientId },
+	});
+
+	// RBC Query
+	const {
+		loading: rbcLoading,
+		error: rbcError,
+		data: rbcData,
+	} = useQuery(GET_RBC_OBSERVATIONS, { variables: { patient: patientId } });
+
+	// HbA1c Query
+	const {
+		loading: hba1cLoading,
+		error: hba1cError,
+		data: hba1cData,
+	} = useQuery(GET_HBA1C_OBSERVATIONS, { variables: { patient: patientId } });
+
+	// Serum Electrolytes Query
+	const {
+		loading: serumLoading,
+		error: serumError,
+		data: serumData,
+	} = useQuery(GET_SERUM_ELECTROLYTES, { variables: { patient: patientId } });
+
+	// Lipid Profile Query
+	const {
+		loading: lipidLoading,
+		error: lipidError,
+		data: lipidData,
+	} = useQuery(GET_LIPID_PROFILE, { variables: { patient: patientId } });
+
+	// Check if any queries are still loading
+	const isLoading =
+		esrLoading ||
+		hbLoading ||
+		tlcLoading ||
+		neutrophilsLoading ||
+		lymphocytesLoading ||
+		monocytesLoading ||
+		eosinophilsLoading ||
+		basophilsLoading ||
+		plateletLoading ||
+		rbcLoading ||
+		hba1cLoading ||
+		serumLoading ||
+		lipidLoading;
+
+	// Check for errors
+	const hasError =
+		esrError ||
+		hbError ||
+		tlcError ||
+		neutrophilsError ||
+		lymphocytesError ||
+		monocytesError ||
+		eosinophilsError ||
+		basophilsError ||
+		plateletError ||
+		rbcError ||
+		hba1cError ||
+		serumError ||
+		lipidError;
+
+	// If loading, show loading indicator
+	if (isLoading) return <p>Loading...</p>;
+
+	// If there's an error, show error message
+	if (hasError) return <p>Error loading data</p>;
+
+	// Transform the data for your charts
+	const transformData = () => {
+		// Transform ESR data - fixed variable name clash
+		const esrTransformedData =
+			esrQueryData?.observationStack?.observations.map(
+				(obs: ESRObservation) => ({
+					date: obs.date,
+					wintrobe: obs.value.wintrobe,
+					westergren: obs.value.westergren,
+				})
+			) || [];
+
+		const hematologyData = [
+			{
+				name: 'Haemoglobin',
+				results:
+					hbData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Total Leukocyte Count',
+				results:
+					tlcData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Neutrophils',
+				results:
+					neutrophilsData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Lymphocytes',
+				results:
+					lymphocytesData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Monocytes',
+				results:
+					monocytesData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Eosinophils',
+				results:
+					eosinophilsData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Basophils',
+				results:
+					basophilsData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Platelet Count',
+				results:
+					plateletData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+			{
+				name: 'Total RBC Count',
+				results:
+					rbcData?.observationStack?.observations.map(
+						(obs: SimpleObservation) => ({
+							month: obs.date,
+							value: obs.value.number,
+						})
+					) || [],
+			},
+		];
+
+		// Transform HbA1c data - fixed to use hba1cData instead of hbData
+		const hba1cTransformedData =
+			hba1cData?.observationStack?.observations.map(
+				(obs: SimpleObservation) => ({
+					month: obs.date,
+					hba1c: obs.value.number,
+				})
+			) || [];
+
+		// Transform serum electrolytes data - fixed type for subType
+		const serumElectrolytesData =
+			serumData?.observationStack?.observations.map(
+				(obs: ElectrolyteObservation) => ({
+					electrolyte: obs.subType,
+					electrolytes: obs.value.number,
+					fill: `var(--color-${obs.subType.toLowerCase()})`,
+				})
+			) || [];
+
+		// Transform lipid profile data - fixed type issues
+		const lipidProfileData =
+			lipidData?.observationStack?.observations.map(
+				(obs: LipidObservation): LipidProfileDataPoint => {
+					const result: LipidProfileDataPoint = {
+						month: obs.date,
+						totalCholesterol: obs.value.totalCholesterol,
+						LDL: obs.value.LDL,
+						HDL: obs.value.HDL,
+						triglycerides: obs.value.triglycerides,
+						nonHDL: obs.value.nonHDL,
+						VLDL: obs.value.VLDL,
+						LDL_HDL: 0,
+						TC_HDL: 0,
+						TG_HDL: 0,
+					};
+
+					// Calculate ratios
+					result.LDL_HDL = result.LDL / result.HDL;
+					result.TC_HDL = result.totalCholesterol / result.HDL;
+					result.TG_HDL = result.triglycerides / result.HDL;
+
+					return result;
+				}
+			) || [];
+
+		return {
+			esrData: esrTransformedData,
+			hematologyData,
+			hba1cData: hba1cTransformedData,
+			serumElectrolytesData,
+			lipidProfileData,
+		};
+	};
+
+	const chartData = transformData();
 
 	const patient = useSelector((state: RootState) => state.patient.state);
 	const age = patient

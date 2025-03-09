@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "../models/types/User";
+import { User } from "../models/User";
 
 // Define the User type with state wrapper
 type UserState = { state: null } | { state: User };
