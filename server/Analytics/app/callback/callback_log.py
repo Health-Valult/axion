@@ -36,7 +36,7 @@ async def log_event(event:dict)->None:
             user=data.get("user"),
         )
         jsonLog = log.model_dump()
-        SiginupCollection.insert_one(jsonLog)
+        SiginupCollection   .insert_one(jsonLog)
 
     if event_type == "general":
         print("general")
