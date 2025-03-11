@@ -38,28 +38,35 @@ const CustomSelectContent = React.forwardRef<HTMLDivElement, React.ComponentProp
 );
 CustomSelectContent.displayName = "CustomSelectContent";
 
-// Select Item Component
-const CustomSelectItem = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<'div'>>(
-  ({ className, children, ...props }, ref) => (
+// Custom Select Item Component
+interface CustomSelectItemProps extends React.ComponentPropsWithoutRef<'div'> {
+  value: string;
+}
+
+const CustomSelectItem = React.forwardRef<HTMLDivElement, CustomSelectItemProps>(
+  ({ className, children, value, ...props }, ref) => (
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
+      data-value={value} // Ensures proper selection tracking
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground",
+        "relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground",
         className
       )}
       {...props}
     >
-      <Check className="absolute left-2 h-4 w-4" />
+      <Check className="absolute left-2 h-4 w-4 opacity-0 group-hover:opacity-100" />
       {children}
     </div>
   )
 );
 CustomSelectItem.displayName = "CustomSelectItem";
 
+// Export Components
 export {
   Select,
   CustomSelectTrigger as SelectTrigger,
   CustomSelectContent as SelectContent,
-  CustomSelectItem as SelectItem,
+  CustomSelectItem, // Our custom select item
+  SelectItem, // NextUI's SelectItem
   SelectSection,
 };

@@ -6,14 +6,14 @@ import { Label } from "@/components/ui/Label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/Select";
 import  Switch  from "@/components/ui/Switch";
-import { useToast } from "@nextui-org/react";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { useDropzone } from "react-dropzone";
 import { Calendar, Clock, UploadCloud, FileText, FileType2, User, UserCircle, Stethoscope, AlertCircle, FileCheck, Upload } from "lucide-react";
 import { Progress } from "@/components/ui/Progress";
-import  {AutocompletePatient}  from "@/app/upload_file/AutoCompletePatient";
+import  {AutocompletePatient}  from "@/app/components/AutoCompletePatient";
 
-// Define report types
+// // Define report types
 type ReportType = "observation" | "medication" | "condition" | "procedure" | "immunization" | "lab" | "imaging" | "prescription";
 
 // Patient interface
@@ -72,8 +72,7 @@ const parseNDJSON = (file: File): Promise<any> => {
   });
 };
 
-const PatientReportUpload = () => {
-  const { toast } = useToast();
+const PatientReportUpload:React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("file-upload");
   
   // File upload state
@@ -98,183 +97,141 @@ const PatientReportUpload = () => {
   const [attachPdf, setAttachPdf] = useState<boolean>(false);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   
-  // Dropzone for NDJSON files
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const validFiles = acceptedFiles.filter(file => 
-      file.name.endsWith('.ndjson') || file.name.endsWith('.json')
-    );
-    
-    if (validFiles.length !== acceptedFiles.length) {
-      toast({
-        title: "Invalid File Format",
-        description: "Some files were rejected. Please upload only NDJSON or JSON files.",
-        variant: "destructive"
-      });
-    }
-    
-    if (validFiles.length > 0) {
-      setSelectedFiles(validFiles);
-      toast({
-        title: "Files Selected",
-        description: `${validFiles.length} file(s) ready for upload`,
-      });
-    }
-  }, [toast]);
+    // Dropzone for NDJSON files
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+      const validFiles = acceptedFiles.filter(file =>
+        file.name.endsWith(".ndjson") || file.name.endsWith(".json")
+      );
   
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/x-ndjson': ['.ndjson'],
-      'application/json': ['.json']
-    },
-    multiple: true
-  });
-  
-  // Handle file upload with progress
-  const handleUploadFiles = async () => {
-    if (selectedFiles.length === 0) {
-      toast({
-        title: "No Files Selected",
-        description: "Please select files to upload",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    // Simulate upload progress
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 95) {
-          clearInterval(progressInterval);
-          return 95;
-        }
-        return prev + 5;
-      });
-    }, 200);
-    
-    // Simulate network delay
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      
-      setTimeout(() => {
-        setIsUploading(false);
-        setIsExtracting(true);
-        
-        // Process the first file for demo purposes
-        parseNDJSON(selectedFiles[0])
-          .then(extractedData => {
-            // Populate form with extracted data
-            if (extractedData.patientName !== "Unknown Patient") {
-              const patient = mockPatients.find(p => p.name.includes(extractedData.patientName)) || {
-                id: "new",
-                name: extractedData.patientName
-              };
-              setSelectedPatient(patient);
-            }
-            
-            setReportType(extractedData.reportType as ReportType);
-            setReportDate(extractedData.reportDate);
-            setReportTime(extractedData.reportTime);
-            setReportSummary(extractedData.diagnosis || extractedData.notes || "");
-            setPractitionerName(extractedData.practitioner);
-            setPractitionerRole(extractedData.practitionerRole);
-            setHospitalName(extractedData.hospital);
-            setDiagnosis(extractedData.diagnosis);
-            setMedications(extractedData.medications);
-            setProcedures(extractedData.procedures);
-            setNotes(extractedData.notes);
-            
-            setIsExtracting(false);
-            setActiveTab("manual-entry");
-            
-            toast({
-              title: "Data Extracted",
-              description: "File data has been extracted and populated in the form. Please review before submission.",
-            });
-          })
-          .catch(error => {
-            setIsExtracting(false);
-            toast({
-              title: "Extraction Failed",
-              description: "Failed to extract data from the file. Please check file format or enter data manually.",
-              variant: "destructive"
-            });
-          });
-      }, 500);
-    }, 2000);
-  };
-  
-  // Handle PDF file selection
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (!file.name.endsWith('.pdf')) {
-        toast({
-          title: "Invalid File Format",
-          description: "Please upload a PDF file",
-          variant: "destructive"
-        });
-        return;
+      if (validFiles.length !== acceptedFiles.length) {
+        toast.error("Some files were rejected. Please upload only NDJSON or JSON files.");
       }
-      
-      setPdfFile(file);
-      toast({
-        title: "PDF Selected",
-        description: `${file.name} (${(file.size / 1024).toFixed(2)} KB)`,
-      });
-    }
-  };
   
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate required fields
-    if (!selectedPatient) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a patient",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!reportType) {
-      toast({
-        title: "Missing Information",
-        description: "Please select a report type",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!reportDate) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter a report date",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Simulate form submission
-    toast({
-      title: "Submitting Report",
-      description: "Please wait...",
+      if (validFiles.length > 0) {
+        setSelectedFiles(validFiles);
+        toast.success(`${validFiles.length} file(s) ready for upload`);
+      }
+    }, []);
+  
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+      onDrop,
+      accept: {
+        "application/x-ndjson": [".ndjson"],
+        "application/json": [".json"],
+      },
+      multiple: true,
     });
     
+    // Handle file upload with progress
+    const handleUploadFiles = async () => {
+      if (selectedFiles.length === 0) {
+        toast.error("No Files Selected. Please select files to upload.");
+        return;
+      }
+    
+      setIsUploading(true);
+      setUploadProgress(0);
+    }
+    //   // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 95) {
+            clearInterval(progressInterval);
+            return 95;
+          }
+          return prev + 5;
+        });
+      }, 200);
+    
+      setTimeout(() => {
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+    
+        setTimeout(() => {
+          setIsUploading(false);
+          setIsExtracting(true);
+        
+    //     // Process the first file for demo purposes
+        parseNDJSON(selectedFiles[0])
+        .then((extractedData) => {
+    //       // Populate form with extracted data
+          if (extractedData.patientName !== "Unknown Patient") {
+            const patient =
+              mockPatients.find((p) => p.name.includes(extractedData.patientName)) || {
+                id: "new",
+                name: extractedData.patientName,
+              };
+            setSelectedPatient(patient);
+          }
+
+          setReportType(extractedData.reportType as ReportType);
+          setReportDate(extractedData.reportDate);
+          setReportTime(extractedData.reportTime);
+          setReportSummary(extractedData.diagnosis || extractedData.notes || "");
+          setPractitionerName(extractedData.practitioner);
+          setPractitionerRole(extractedData.practitionerRole);
+          setHospitalName(extractedData.hospital);
+          setDiagnosis(extractedData.diagnosis);
+          setMedications(extractedData.medications);
+          setProcedures(extractedData.procedures);
+          setNotes(extractedData.notes);
+
+          setIsExtracting(false);
+          setActiveTab("manual-entry");
+
+          toast.success("Data Extracted. File data has been populated in the form.");
+        })
+        .catch((error) => {
+          setIsExtracting(false);
+          toast.error("Extraction Failed. Check the file format or enter data manually.");
+        });
+      }, 500);
+      }, 2000);
+
+      // Handle PDF file selection
+      const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        const file = files[0];
+        if (!file.name.endsWith(".pdf")) {
+          toast.error("Invalid File Format. Please upload a PDF file.");
+          return;
+        }
+
+        // setPdfFile(file);
+        toast.info(`PDF Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+      }
+    };
+
+    // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate required fields
+    if (!selectedPatient) {
+      toast.error("Missing Information. Please select a patient.");
+      return;
+    }
+
+    if (!reportType) {
+      toast.error("Missing Information. Please select a report type.");
+      return;
+    }
+
+    if (!reportDate) {
+      toast.error("Missing Information. Please enter a report date.");
+      return;
+    }
+
+    // Simulate form submission
+    toast.info("Submitting Report. Please wait...");
+
     setTimeout(() => {
       // Show success message
-      toast({
-        title: "Report Submitted",
-        description: `${reportType} report for ${selectedPatient.name} has been successfully uploaded`,
-      });
-      
+      toast.success(
+        `${reportType} report for ${selectedPatient.name} has been successfully uploaded.`
+      );
+
       // Reset form
       setSelectedPatient(null);
       setReportType("");
@@ -293,9 +250,9 @@ const PatientReportUpload = () => {
       setSelectedFiles([]);
       setUploadProgress(0);
       setActiveTab("file-upload");
-    }, 1500);
+    }, 1500); 
   };
-  
+    
   return (
     <div className="space-y-8">
       <header>
@@ -430,6 +387,7 @@ const PatientReportUpload = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+
                 {/* Patient Details Section */}
                 <div className="space-y-4">
                   <h3 className="font-semibold flex items-center gap-2 text-md">
@@ -473,21 +431,20 @@ const PatientReportUpload = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="report-type">Report Type</Label>
-                      <Select value={reportType} onChange={(event: React.ChangeEvent<HTMLSelectElement>) => setReportType(event.target.value as ReportType)}>
-                        <SelectTrigger>
-                          {reportType || "Select report type"}
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem key="observation">Observation</SelectItem>
-                          <SelectItem key="medication">Medication</SelectItem>
-                          <SelectItem key="condition">Condition</SelectItem>
-                          <SelectItem key="procedure">Procedure</SelectItem>
-                          <SelectItem key="immunization">Immunization</SelectItem>
-                          <SelectItem key="lab">Lab Report</SelectItem>
-                          <SelectItem key="imaging">Imaging</SelectItem>
-                          <SelectItem key="prescription">Prescription</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <select 
+                        value={reportType} 
+                        onChange={(event) => setReportType(event.target.value as ReportType)}
+                      >
+                        <option value="" disabled>Select report type</option>
+                        <option value="observation">Observation</option>
+                        <option value="medication">Medication</option>
+                        <option value="condition">Condition</option>
+                        <option value="procedure">Procedure</option>
+                        <option value="immunization">Immunization</option>
+                        <option value="lab">Lab Report</option>
+                        <option value="imaging">Imaging</option>
+                        <option value="prescription">Prescription</option>
+                      </select>
                     </div>
                     
                     <div className="space-y-2">
