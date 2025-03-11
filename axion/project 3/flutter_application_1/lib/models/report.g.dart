@@ -19,29 +19,37 @@ class ReportAdapter extends TypeAdapter<Report> {
     return Report(
       id: fields[0] as String,
       dateTime: fields[1] as DateTime,
-      status: fields[2] as String,
-      title: fields[3] as String,
-      placeholderImageUrl: fields[4] as String,
-      details: fields[5] as String,
+      code: fields[2] as String,
+      display: fields[3] as String,
+      encounter: fields[4] as String?,
+      patient: fields[5] as String?,
+      meta: (fields[6] as Map?)?.cast<String, dynamic>(),
+      observations: (fields[7] as List?)
+          ?.map((dynamic e) => (e as Map).cast<String, dynamic>())
+          ?.toList(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Report obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.dateTime)
       ..writeByte(2)
-      ..write(obj.status)
+      ..write(obj.code)
       ..writeByte(3)
-      ..write(obj.title)
+      ..write(obj.display)
       ..writeByte(4)
-      ..write(obj.placeholderImageUrl)
+      ..write(obj.encounter)
       ..writeByte(5)
-      ..write(obj.details);
+      ..write(obj.patient)
+      ..writeByte(6)
+      ..write(obj.meta)
+      ..writeByte(7)
+      ..write(obj.observations);
   }
 
   @override
@@ -54,3 +62,31 @@ class ReportAdapter extends TypeAdapter<Report> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+Report _$ReportFromJson(Map<String, dynamic> json) => Report(
+      id: json['id'] as String,
+      dateTime: DateTime.parse(json['dateTime'] as String),
+      code: json['code'] as String,
+      display: json['display'] as String,
+      encounter: json['encounter'] as String?,
+      patient: json['patient'] as String?,
+      meta: json['meta'] as Map<String, dynamic>?,
+      observations: (json['observations'] as List<dynamic>?)
+          ?.map((e) => e as Map<String, dynamic>)
+          .toList(),
+    );
+
+Map<String, dynamic> _$ReportToJson(Report instance) => <String, dynamic>{
+      'id': instance.id,
+      'dateTime': instance.dateTime.toIso8601String(),
+      'code': instance.code,
+      'display': instance.display,
+      'encounter': instance.encounter,
+      'patient': instance.patient,
+      'meta': instance.meta,
+      'observations': instance.observations,
+    };

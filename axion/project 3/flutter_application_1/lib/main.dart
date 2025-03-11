@@ -3,20 +3,10 @@ import 'package:flutter_application_1/loginSide/pages/login/login_screen.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/signup_pageview.dart';
 import 'package:flutter_application_1/loginSide/pages/splash/splash_screen.dart';
 import 'package:flutter_application_1/models/base_report.dart';
+import 'package:flutter_application_1/models/report.dart';
 import 'package:flutter_application_1/pages/main_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_application_1/models/report.dart';
-import 'package:flutter_application_1/models/cbc_report.dart';
-import 'package:flutter_application_1/models/serum_chloride_report.dart';
-import 'package:flutter_application_1/models/serum_sodium_report.dart';
-import 'package:flutter_application_1/models/hba1c_report.dart';
-import 'package:flutter_application_1/models/serum_potassium_report.dart';
-import 'package:flutter_application_1/models/lipid_profile_report.dart';
-import 'package:flutter_application_1/models/liver_function_test_report.dart';
-import 'package:flutter_application_1/models/thyroid_function_test_report.dart';
-import 'package:flutter_application_1/models/crp_report.dart';
-import 'package:flutter_application_1/models/serum_creatinine_report.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,6 +14,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_application_1/services/graphql_config.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_application_1/services/permission_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
@@ -108,6 +99,7 @@ class SecureStorageService {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   // Request all required permissions
   await PermissionService.requestAllPermissions();
@@ -122,16 +114,6 @@ Future<void> main() async {
   // Initialize Hive and register adapters.
   await Hive.initFlutter();
   Hive.registerAdapter(ReportAdapter());
-  Hive.registerAdapter(CBCReportAdapter());
-  Hive.registerAdapter(SerumChlorideReportAdapter());
-  Hive.registerAdapter(SerumSodiumReportAdapter());
-  Hive.registerAdapter(HBA1cReportAdapter());
-  Hive.registerAdapter(SerumPotassiumReportAdapter());
-  Hive.registerAdapter(LipidProfileReportAdapter());
-  Hive.registerAdapter(LiverFunctionTestReportAdapter());
-  Hive.registerAdapter(ThyroidFunctionTestReportAdapter());
-  Hive.registerAdapter(CRPReportAdapter());
-  Hive.registerAdapter(SerumCreatinineReportAdapter());
   // Open the box once.
   await Hive.openBox<BaseReport>('downloadedReports');
 

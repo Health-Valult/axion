@@ -47,12 +47,16 @@ dependencies:
   permission_handler: ^11.3.0
   connectivity_plus: ^5.0.2
   mask_text_input_formatter: ^2.2.0
+  get_ip_address: ^0.0.7  # Updated to correct version
+  device_info_plus: ^9.1.2  # Added for getting Android ID
+  json_annotation: ^4.9.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_localizations:
     sdk: flutter
   share_plus: ^10.1.4
+  flutter_dotenv: ^5.2.1
 
 flutter_icons:
   android: true
@@ -66,10 +70,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   hive_generator: ^2.0.0
   build_runner: ^2.3.3
-
-
-
-  
+  json_serializable: ^6.7.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

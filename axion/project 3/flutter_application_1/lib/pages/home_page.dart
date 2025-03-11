@@ -30,23 +30,71 @@ class _HomePageState extends State<HomePage> {
       _isRefreshing = true;
     });
     
-    // Refetch both queries
+    // Fetch all patient data in a single query
     final client = GraphQLProvider.of(context).value;
-    await Future.wait([
-      client.query(QueryOptions(
-        document: gql(GraphQLQueries.getMedications),
-        fetchPolicy: FetchPolicy.networkOnly,
-      )),
-      client.query(QueryOptions(
-        document: gql(GraphQLQueries.getAllergies),
-        fetchPolicy: FetchPolicy.networkOnly,
-      )),
-    ]);
+    await client.query(QueryOptions(
+      document: gql(GraphQLQueries.getPatientData),
+      variables: {
+        'patient': _userProfile?.id,  // Use the current user's ID
+      },
+      fetchPolicy: FetchPolicy.networkOnly,
+    ));
 
     if (mounted) {
       setState(() {
         _isRefreshing = false;
       });
+    }
+  }
+
+  Future<void> _loadData() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      // First get user profile from REST API
+      final profile = await _apiService.getUserProfile();
+      
+      // Then get all medical data using GraphQL
+      final client = GraphQLProvider.of(context).value;
+      final result = await client.query(QueryOptions(
+        document: gql(GraphQLQueries.getPatientData),
+        variables: {
+          'patient': profile.id,  // Use the user's ID
+        },
+      ));
+
+      if (result.hasException) {
+        throw result.exception!;
+      }
+
+      final data = result.data!;
+      setState(() {
+        _userProfile = profile;
+        _medicalRecords = [
+          ...data['medications']['medications'] ?? [],
+          ...data['allergies']['allergyIntolerances'] ?? [],
+          ...data['procedures']['procedures'] ?? [],
+        ];
+        _isLoading = false;
+      });
+
+      // Get notifications separately as they're still using REST
+      final notifications = await _apiService.getNotifications();
+      if (mounted) {
+        setState(() {
+          _notifications = notifications;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -64,32 +112,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
-  }
-
-  Future<void> _loadData() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
-
-      final profile = await _apiService.getUserProfile();
-      final medications = await _apiService.getMedications();
-      final allergies = await _apiService.getAllergies();
-      final notifications = await _apiService.getNotifications();
-
-      setState(() {
-        _userProfile = profile;
-        _medicalRecords = [...medications, ...allergies];
-        _notifications = notifications;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -301,7 +323,10 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     Query(
                       options: QueryOptions(
-                        document: gql(GraphQLQueries.getMedications),
+                        document: gql(GraphQLQueries.getPatientData),
+                        variables: {
+                          'patient': _userProfile?.id,  // Use the current user's ID
+                        },
                         fetchPolicy: FetchPolicy.networkOnly,
                       ),
                       builder: (QueryResult result, {fetchMore, refetch}) {
@@ -317,7 +342,7 @@ class _HomePageState extends State<HomePage> {
                           return const Center(child: CircularProgressIndicator());
                         }
 
-                        final medications = result.data?['medications'] as List?;
+                        final medications = result.data?['medications']['medications'] as List?;
                         if (medications == null || medications.isEmpty) {
                           return Center(
                             child: Text(loc.noMedications),
@@ -364,7 +389,10 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 16),
                     Query(
                       options: QueryOptions(
-                        document: gql(GraphQLQueries.getAllergies),
+                        document: gql(GraphQLQueries.getPatientData),
+                        variables: {
+                          'patient': _userProfile?.id,  // Use the current user's ID
+                        },
                         fetchPolicy: FetchPolicy.networkOnly,
                       ),
                       builder: (QueryResult result, {fetchMore, refetch}) {
@@ -380,7 +408,7 @@ class _HomePageState extends State<HomePage> {
                           return const Center(child: CircularProgressIndicator());
                         }
 
-                        final allergies = result.data?['allergies'] as List?;
+                        final allergies = result.data?['allergies']['allergyIntolerances'] as List?;
                         if (allergies == null || allergies.isEmpty) {
                           return Center(
                             child: Text(loc.noAllergies),

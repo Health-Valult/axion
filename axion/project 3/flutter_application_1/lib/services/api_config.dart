@@ -1,53 +1,59 @@
+import 'package:flutter_application_1/services/env_config.dart';
+
+/// Deprecated: Use EnvConfig instead.
+/// This class is kept for backward compatibility and will be removed in a future version.
+@Deprecated('Use EnvConfig instead')
 class ApiConfig {
-  static const String baseUrl = 'https://api.example.com'; // Replace with your actual base URL
+  static String get baseUrl => EnvConfig.apiBaseUrl;
+  static String get graphqlUrl => EnvConfig.graphqlUrl;
   
   // Auth endpoints
-  static const String signupUser = '/axion/auth/signup/user';
-  static const String validateEmail = '/axion/auth/validate/email';
-  static const String validateOTP = '/axion/auth/validate/otp';
-  static const String sendOTP = '/axion/auth/send/otp';
-  static const String loginUser = '/axion/auth/login/user';
-  static const String refreshToken = '/axion/auth/refresh';
-  static const String logout = '/axion/auth/logout';
-  static const String resetPassword = '/axion/auth/reset-password';
-  static const String userProfile = '/axion/user/profile';
-  static const String deleteAccount = '/axion/user/profile/delete';
+  static String get signupUser => EnvConfig.auth.signupUser;
+  static String get validateEmail => EnvConfig.auth.validateEmail;
+  static String get validateOTP => EnvConfig.auth.validateOTP;
+  static String get sendOTP => EnvConfig.auth.sendOTP;
+  static String get loginUser => EnvConfig.auth.loginUser;
+  static String get refreshToken => EnvConfig.auth.refreshToken;
+  static String get logout => EnvConfig.auth.logout;
+  static String get resetPassword => EnvConfig.auth.resetPassword;
+  static String get userProfile => EnvConfig.profile.profile;
+  static String get deleteAccount => EnvConfig.profile.delete;
   
   // Profile endpoints
-  static const String updateProfile = '/axion/user/profile/update';
-  static const String changePassword = '/axion/user/profile/change-password';
-  static const String uploadProfilePicture = '/axion/user/profile/picture';
+  static String get updateProfile => EnvConfig.profile.update;
+  static String get changePassword => EnvConfig.profile.changePassword;
+  static String get uploadProfilePicture => EnvConfig.profile.uploadPicture;
   
   // Settings endpoints
-  static const String getSettings = '/axion/user/settings';
-  static const String updateSettings = '/axion/user/settings/update';
-  static const String updateNotificationPreferences = '/axion/user/settings/notifications';
+  static String get getSettings => EnvConfig.settings.get;
+  static String get updateSettings => EnvConfig.settings.update;
+  static String get updateNotificationPreferences => EnvConfig.settings.notifications;
   
   // Notifications endpoints
-  static const String getNotifications = '/axion/notifications';
-  static const String markNotificationRead = '/axion/notifications/{id}/read';
-  static const String markAllNotificationsRead = '/axion/notifications/read-all';
-  static const String deleteAllNotifications = '/axion/notifications/delete-all';
-  static const String deleteNotification = '/axion/notifications/{id}';
-  static const String getMedicalNotifications = '/axion/notifications/medical';
-  static const String getNotificationPreferences = '/axion/notifications/preferences';
+  static String get getNotifications => EnvConfig.notifications.get;
+  static String get markNotificationRead => EnvConfig.notifications.markRead;
+  static String get markAllNotificationsRead => EnvConfig.notifications.markAllRead;
+  static String get deleteAllNotifications => EnvConfig.notifications.deleteAll;
+  static String get deleteNotification => EnvConfig.notifications.delete;
+  static String get getMedicalNotifications => EnvConfig.notifications.medical;
+  static String get getNotificationPreferences => EnvConfig.notifications.preferences;
   
   // Log endpoints
-  static const String getLogs = '/axion/logs';
-  static const String getLogDetails = '/axion/logs/{id}';
+  static String get getLogs => EnvConfig.logs.get;
+  static String get getLogDetails => EnvConfig.logs.details;
   
   // Link endpoints
-  static const String getLinks = '/axion/links';
-  static const String validateLink = '/axion/links/validate';
+  static String get getLinks => EnvConfig.links.get;
+  static String get validateLink => EnvConfig.links.validate;
   
   // Medical Records endpoints (GraphQL)
-  static const String getMedications = '/graphql';
-  static const String getAllergies = '/graphql';
-  static const String getReports = '/graphql';
-  static const String getReportDetails = '/graphql';
+  static String get getMedications => EnvConfig.medical.endpoint;
+  static String get getAllergies => EnvConfig.medical.endpoint;
+  static String get getReports => EnvConfig.medical.endpoint;
+  static String get getReportDetails => EnvConfig.medical.endpoint;
   
   // Medical Notifications endpoints
-  static const String addMedicalNotification = '/axion/notifications/medical';
-  static const String updateMedicalNotification = '/axion/notifications/medical/{id}';
-  static const String deleteMedicalNotification = '/axion/notifications/medical/{id}';
+  static String get addMedicalNotification => EnvConfig.notifications.medical;
+  static String get updateMedicalNotification => EnvConfig.notifications.medical;
+  static String get deleteMedicalNotification => EnvConfig.notifications.medical;
 }

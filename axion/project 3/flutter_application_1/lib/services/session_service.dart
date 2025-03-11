@@ -4,6 +4,7 @@ import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/services/secure_storage_service.dart';
 import 'package:flutter_application_1/services/graphql_config.dart';
+import 'package:flutter_application_1/services/env_config.dart';
 
 class SessionService {
   static final SessionService _instance = SessionService._internal();
@@ -88,7 +89,7 @@ class SessionService {
         final data = json.decode(response.body);
         final newToken = data['token'];
         final newRefreshToken = data['refreshToken'];
-        final expiry = DateTime.now().add(const Duration(hours: 1)); // Adjust based on your token expiry time
+        final expiry = DateTime.now().add(Duration(seconds: EnvConfig.accessTokenDuration));
 
         await setSession(
           token: newToken,

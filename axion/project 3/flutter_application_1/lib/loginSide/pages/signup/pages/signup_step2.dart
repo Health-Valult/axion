@@ -3,7 +3,9 @@ import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart'; // <-- New import
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart'; 
+import 'package:flutter_application_1/loginSide/widgets/terms_conditions_dialog.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupStep2 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -28,9 +30,8 @@ class _SignupStep2State extends State<SignupStep2>
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _nicController = TextEditingController();
-  final _dobController = TextEditingController(); // <-- New controller for DOB
+  final _dobController = TextEditingController(); 
 
-  // New date mask formatter for Date of Birth (MM/DD/YYYY)
   final dateMaskFormatter = MaskTextInputFormatter(
     mask: '##/##/####',
     filter: {"#": RegExp(r'[0-9]')},
@@ -46,13 +47,12 @@ class _SignupStep2State extends State<SignupStep2>
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing data
     _passwordController.text = widget.signupData.password;
     _confirmPasswordController.text = widget.signupData.password;
     _phoneController.text = widget.signupData.telephone ?? '';
     _addressController.text = widget.signupData.address ?? '';
     _nicController.text = widget.signupData.nic ?? '';
-    _dobController.text = widget.signupData.dateOfBirth ?? ''; // <-- Initialize DOB if available
+    _dobController.text = widget.signupData.dateOfBirth ?? ''; 
   }
 
   @override
@@ -62,12 +62,25 @@ class _SignupStep2State extends State<SignupStep2>
     _phoneController.dispose();
     _addressController.dispose();
     _nicController.dispose();
-    _dobController.dispose(); // <-- Dispose DOB controller
+    _dobController.dispose(); 
     super.dispose();
   }
 
   Future<void> _validateAndSaveData() async {
     if (!widget.formKey.currentState!.validate()) {
+      return;
+    }
+
+    final bool? accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => const TermsAndConditionsDialog(),
+    );
+
+    if (accepted != true) {
+      if (mounted) {
+        context.go('/login');
+      }
       return;
     }
 
@@ -77,15 +90,17 @@ class _SignupStep2State extends State<SignupStep2>
     });
 
     try {
-      // Send OTP to the phone number
-      final response = await _apiService.sendOTP(_phoneController.text.trim());
+      final response = await _apiService.sendOTP(
+        widget.signupData.email!,
+        otpType: 'email'
+      );
       
       if (response['success'] == true) {
         widget.signupData.password = _passwordController.text;
         widget.signupData.telephone = _phoneController.text.trim();
         widget.signupData.address = _addressController.text.trim();
         widget.signupData.nic = _nicController.text.trim();
-        widget.signupData.dateOfBirth = _dobController.text.trim(); // <-- Save DOB value
+        widget.signupData.dateOfBirth = _dobController.text.trim();
         widget.onNext();
       } else {
         setState(() {
@@ -127,7 +142,6 @@ class _SignupStep2State extends State<SignupStep2>
                     ),
                   ),
                 ),
-              // New Date of Birth Field with automatic slash insertion
               CustomTextField(
                 controller: _dobController,
                 hintText: 'Date of Birth (MM/DD/YYYY)',
@@ -138,7 +152,6 @@ class _SignupStep2State extends State<SignupStep2>
                   if (value == null || value.trim().isEmpty) {
                     return 'Date of Birth is required';
                   }
-                  // You can add further validation if needed
                   return null;
                 },
               ),
@@ -150,7 +163,6 @@ class _SignupStep2State extends State<SignupStep2>
                   if (value == null || value.trim().isEmpty) {
                     return 'NIC number is required';
                   }
-                  // Add NIC validation pattern if needed
                   return null;
                 },
               ),

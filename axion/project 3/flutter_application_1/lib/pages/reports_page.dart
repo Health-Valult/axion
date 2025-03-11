@@ -1,8 +1,7 @@
-// lib/pages/reports_page.dart
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_application_1/models/base_report.dart';
-import 'package:flutter_application_1/models/report_parser.dart';
+import 'package:flutter_application_1/models/report.dart';
 import 'package:flutter_application_1/pages/downloaded_reports_page.dart';
 import 'package:flutter_application_1/widgets/report_card.dart';
 import 'package:flutter_application_1/services/graphql_queries.dart';
@@ -18,7 +17,7 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   int _selectedYear = DateTime.now().year;
   DateTime? _selectedDate;
-  List<BaseReport>? _reports;
+  List<Report>? _reports;
   bool _isLoading = false;
   String? _error;
 
@@ -39,9 +38,9 @@ class _ReportsPageState extends State<ReportsPage> {
 
       final result = await client.query(
         QueryOptions(
-          document: gql(GraphQLQueries.getReports),
+          document: gql(GraphQLQueries.getPatientData),
           variables: {
-            'year': _selectedYear,
+            'patient': null,  // Fetch all reports
           },
           fetchPolicy: FetchPolicy.noCache,
         ),
@@ -51,10 +50,42 @@ class _ReportsPageState extends State<ReportsPage> {
         throw result.exception!;
       }
 
-      final reports = (result.data?['reports'] as List?)
-          ?.map((report) => parseReportFromJson(report))
-          .whereType<BaseReport>()
-          .toList();
+      // Process procedures (reports)
+      final procedures = result.data?['procedures']['Procedures'] as List?;
+      if (procedures == null) {
+        throw Exception('No procedures data found');
+      }
+
+      // Convert procedures to Reports using the generic Report model
+      final reports = procedures.map((proc) => Report.fromProcedure(proc)).toList();
+
+      // Fetch observations for each report
+      for (var report in reports) {
+        final obsResult = await client.query(
+          QueryOptions(
+            document: gql(GraphQLQueries.getObservationsByEncounter),
+            variables: {
+              'patient': report.patient,
+              'encounter': report.encounter,
+            },
+          ),
+        );
+
+        if (!obsResult.hasException && obsResult.data != null) {
+          final observations = obsResult.data!['observations'] as List?;
+          if (observations != null) {
+            report.observations = observations.map((obs) => {
+              'id': obs['id'],
+              'code': obs['code'],
+              'display': obs['display'],
+              'value': obs['value'],
+              'unit': obs['unit'],
+              'timestamp': obs['timestamp'],
+              'meta': obs['meta'],
+            }).toList();
+          }
+        }
+      }
 
       setState(() {
         _reports = reports;
@@ -72,26 +103,140 @@ class _ReportsPageState extends State<ReportsPage> {
     final yearReports = _reports?.where((r) => r.dateTime.year == _selectedYear).toList() ?? [];
     final uniqueDates = <DateTime>{};
     for (final r in yearReports) {
-      if (r?.dateTime != null) {
-        uniqueDates.add(DateTime(r.dateTime!.year, r.dateTime!.month, r.dateTime!.day));
-      }
+      uniqueDates.add(DateTime(r.dateTime.year, r.dateTime.month, r.dateTime.day));
     }
     return uniqueDates.toList()..sort((a, b) => a.compareTo(b));
   }
 
-  List<BaseReport> _getDisplayedReports() {
-    final yearReports = _reports?.where((r) => r?.dateTime?.year == _selectedYear).toList();
-    if (_selectedDate == null) return yearReports ?? [];
-    return yearReports?.where((r) =>
-      r?.dateTime?.month == _selectedDate!.month &&
-      r?.dateTime?.day == _selectedDate!.day
-    ).toList() ?? [];
+  List<Report> _getDisplayedReports() {
+    final yearReports = _reports?.where((r) => r.dateTime.year == _selectedYear).toList() ?? [];
+    if (_selectedDate == null) return yearReports;
+    return yearReports.where((r) =>
+      r.dateTime.month == _selectedDate!.month &&
+      r.dateTime.day == _selectedDate!.day
+    ).toList();
   }
 
-  void _handleDateChipTap(DateTime date, bool isSelected) {
-    setState(() {
-      _selectedDate = isSelected ? null : date;
-    });
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.reports),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.download_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
+                );
+              },
+            ),
+          ],
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final displayedReports = _getDisplayedReports();
+    final datesInYear = _getDatesInYear();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.reports),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_today),
+            onPressed: _pickYear,
+          ),
+          IconButton(
+            icon: const Icon(Icons.download_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: _error != null
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Error: $_error'),
+                ElevatedButton(
+                  onPressed: _fetchReports,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          )
+        : Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Text(
+                      '$_selectedYear',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const Spacer(),
+                    if (_selectedDate != null)
+                      TextButton(
+                        onPressed: () => setState(() => _selectedDate = null),
+                        child: const Text('Clear Date Filter'),
+                      ),
+                  ],
+                ),
+              ),
+              if (datesInYear.isNotEmpty)
+                SizedBox(
+                  height: 60,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: datesInYear.length,
+                    itemBuilder: (context, index) {
+                      final date = datesInYear[index];
+                      final isSelected = _selectedDate != null &&
+                          _selectedDate!.month == date.month &&
+                          _selectedDate!.day == date.day;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: FilterChip(
+                          label: Text(DateFormat('MMM d').format(date)),
+                          selected: isSelected,
+                          onSelected: (selected) => setState(() {
+                            _selectedDate = selected ? date : null;
+                          }),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              Expanded(
+                child: displayedReports.isEmpty
+                  ? Center(
+                      child: Text(
+                        _selectedDate != null
+                          ? 'No reports for selected date'
+                          : 'No reports for $_selectedYear',
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: displayedReports.length,
+                      itemBuilder: (context, index) {
+                        final report = displayedReports[index];
+                        return ReportCard(report: report);
+                      },
+                    ),
+              ),
+            ],
+          ),
+    );
   }
 
   Future<void> _pickYear() async {
@@ -103,7 +248,7 @@ class _ReportsPageState extends State<ReportsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Select Year"),
+          title: const Text("Select Year"),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -129,136 +274,5 @@ class _ReportsPageState extends State<ReportsPage> {
       });
       _fetchReports();
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.reports),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.download_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.reports),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.download_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
-                );
-              },
-            ),
-          ],
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Error: $_error'),
-              ElevatedButton(
-                onPressed: _fetchReports,
-                child: Text(AppLocalizations.of(context)!.ok),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    final sortedDates = _getDatesInYear();
-    final displayedReports = _getDisplayedReports();
-    final locale = Localizations.localeOf(context).toString();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.reports),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.download_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _fetchReports,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Year selector
-            Card(
-              child: ListTile(
-                title: Text('${AppLocalizations.of(context)!.yes}: $_selectedYear'),
-                trailing: Icon(Icons.calendar_today),
-                onTap: _pickYear,
-              ),
-            ),
-            SizedBox(height: 16),
-
-            // Date chips
-            if (sortedDates.isNotEmpty)
-              Container(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: sortedDates.length,
-                  itemBuilder: (context, index) {
-                    final date = sortedDates[index];
-                    final isSelected = _selectedDate != null &&
-                        date.month == _selectedDate!.month &&
-                        date.day == _selectedDate!.day;
-                    final monthName = DateFormat.MMM(locale).format(date);
-                    final day = date.day.toString();
-
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: isSelected,
-                        label: Text('$monthName $day'),
-                        onSelected: (bool selected) {
-                          _handleDateChipTap(date, isSelected);
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-            SizedBox(height: 16),
-
-            // Reports list
-            if (displayedReports.isEmpty)
-              Center(
-                child: Text(AppLocalizations.of(context)!.noReportsFound),
-              )
-            else
-              ...displayedReports.map((report) => ReportCard(report: report)),
-          ],
-        ),
-      ),
-    );
   }
 }

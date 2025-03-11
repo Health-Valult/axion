@@ -44,8 +44,11 @@ class _SignupStep3State extends State<SignupStep3>
     try {
       setState(() => _isLoading = true);
       
-      // Call resend OTP API
-      final result = await _apiService.sendOTP(widget.signupData.telephone!);
+      // Call resend OTP API with email
+      final result = await _apiService.sendOTP(
+        widget.signupData.email!,
+        otpType: 'email'
+      );
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -80,10 +83,11 @@ class _SignupStep3State extends State<SignupStep3>
     });
 
     try {
-      // First validate the OTP
+      // First validate the OTP with email
       final otpValidation = await _apiService.validateOTP(
-        widget.signupData.telephone!,
+        widget.signupData.email!,
         otp,
+        otpType: 'email'
       );
 
       if (!otpValidation['success']) {
@@ -152,7 +156,7 @@ class _SignupStep3State extends State<SignupStep3>
         child: Column(
           children: [
             const Text(
-              'We have sent an OTP to your registered phone number. Please enter it below.',
+              'We have sent an OTP to your registered email address. Please enter it below.',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 14, color: Colors.white),
             ),

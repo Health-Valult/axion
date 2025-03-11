@@ -1,15 +1,3 @@
 // lib/models/models.dart
 export 'base_report.dart';
-export 'cbc_report.dart';
-export 'serum_chloride_report.dart';
-export 'serum_sodium_report.dart';
-export 'hba1c_report.dart';
-export 'serum_potassium_report.dart';
-export 'lipid_profile_report.dart';
-export 'liver_function_test_report.dart';
-export 'thyroid_function_test_report.dart';
-export 'crp_report.dart';
-export 'serum_creatinine_report.dart';
-export 'esr_wintrobe_report.dart';
-export 'esr_westergren_report.dart';
-export 'urine_routine_report.dart';
+export 'report.dart';

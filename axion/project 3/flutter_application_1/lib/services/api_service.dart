@@ -246,15 +246,22 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> sendOTP(String phoneNumber) async {
-    if (phoneNumber.isEmpty) {
+  Future<Map<String, dynamic>> sendOTP(String recipient, {required String otpType}) async {
+    if (otpType != 'email' && otpType != 'phone') {
       return {
         'success': false,
-        'error': 'Phone number is required',
+        'error': 'Invalid OTP type. Must be either email or phone',
       };
     }
 
-    if (!RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(phoneNumber)) {
+    if (otpType == 'email' && !RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(recipient)) {
+      return {
+        'success': false,
+        'error': 'Invalid email format',
+      };
+    }
+
+    if (otpType == 'phone' && !RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(recipient)) {
       return {
         'success': false,
         'error': 'Invalid phone number format',
@@ -264,22 +271,32 @@ class ApiService {
     return await _makeApiCall(() => http.post(
       Uri.parse(ApiConfig.baseUrl + ApiConfig.sendOTP),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'phoneNumber': phoneNumber}),
+      body: jsonEncode({
+        'recipient': recipient,
+        'type': otpType,
+      }),
     ));
   }
 
-  Future<Map<String, dynamic>> validateOTP(String phoneNumber, String otp) async {
-    if (phoneNumber.isEmpty) {
+  Future<Map<String, dynamic>> validateOTP(String recipient, String otp, {required String otpType}) async {
+    if (otpType != 'email' && otpType != 'phone') {
       return {
         'success': false,
-        'error': 'Phone number is required',
+        'error': 'Invalid OTP type. Must be either email or phone',
       };
     }
 
-    if (otp.isEmpty) {
+    if (otpType == 'email' && !RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(recipient)) {
       return {
         'success': false,
-        'error': 'OTP is required',
+        'error': 'Invalid email format',
+      };
+    }
+
+    if (otpType == 'phone' && !RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(recipient)) {
+      return {
+        'success': false,
+        'error': 'Invalid phone number format',
       };
     }
 
@@ -294,8 +311,9 @@ class ApiService {
       Uri.parse(ApiConfig.baseUrl + ApiConfig.validateOTP),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'phoneNumber': phoneNumber,
+        'recipient': recipient,
         'otp': otp,
+        'type': otpType,
       }),
     ));
   }

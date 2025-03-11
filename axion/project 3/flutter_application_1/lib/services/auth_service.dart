@@ -2,33 +2,70 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/services/session_service.dart';
-import 'package:flutter_application_1/services/graphql_config.dart';
+import 'package:flutter_application_1/services/env_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_ip_address/get_ip_address.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static String get baseUrl => EnvConfig.apiBaseUrl;
   final _sessionService = SessionService();
+  final _deviceInfoPlugin = DeviceInfoPlugin();
 
-  Future<Position> _getCurrentLocation() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw Exception('Location services are disabled.');
+  Future<String?> _getAndroidId() async {
+    try {
+      final androidInfo = await _deviceInfoPlugin.androidInfo;
+      return androidInfo.id; // Using id instead of androidId
+    } catch (e) {
+      print('Failed to get Android ID: $e');
+      return null;
     }
+  }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permissions are denied.');
+  Future<Position?> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    try {
+      // Check if location services are enabled
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return Future.error('Location services are disabled.');
       }
-    }
 
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permissions are permanently denied.');
-    }
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return Future.error('Location permissions are denied');
+        }
+      }
 
-    return await Geolocator.getCurrentPosition();
+      if (permission == LocationPermission.deniedForever) {
+        return Future.error('Location permissions are permanently denied');
+      }
+
+      // Get location with high accuracy and timeout
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 5),
+      );
+    } catch (e) {
+      print('Error getting location: $e');
+      return null;
+    }
+  }
+
+  Future<String?> _getCurrentIpAddress() async {
+    try {
+      final ipAddress = IpAddress(type: RequestType.json);
+      final dynamic data = await ipAddress.getIpAddress();
+      return data['ip'];
+    } catch (e) {
+      print('Error getting IP address: $e');
+      return null;
+    }
   }
 
   Future<Map<String, dynamic>> login(String nic, String password) async {
@@ -41,80 +78,73 @@ class AuthService {
         };
       }
 
-      // Get current location
-      Position? position;
-      try {
-        position = await _getCurrentLocation();
-      } catch (e) {
-        // Continue with login even if location fails
-        print('Location error: $e');
-      }
+      // Get current location, IP address, and Android ID simultaneously
+      final Future<Position?> locationFuture = _getCurrentLocation();
+      final Future<String?> ipFuture = _getCurrentIpAddress();
+      final Future<String?> androidIdFuture = _getAndroidId();
+      
+      // Wait for all device data to be fetched at login time
+      final results = await Future.wait([locationFuture, ipFuture, androidIdFuture]);
+      final Position? position = results[0] as Position?;
+      final String? ipAddress = results[1] as String?;
+      final String? androidId = results[2] as String?;
 
-      // Try to connect to server
+      // Try to connect to server with data in exact order
       try {
         final response = await http.post(
           Uri.parse('$baseUrl/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
-            'nic': nic,
-            'password': password,
-            'location': position != null ? {
+            'nic': nic,                    // 1st: NIC
+            'password': password,          // 2nd: Password
+            'location': position != null ? {  // 3rd: Geolocation
               'latitude': position.latitude,
               'longitude': position.longitude,
             } : null,
+            'ipAddress': ipAddress,        // 4th: IP Address
+            'androidId': androidId,        // 5th: Android ID
           }),
         ).timeout(const Duration(seconds: 10));
 
         if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          
-          // Set session with token, refresh token, and expiry
-          final expiry = DateTime.now().add(const Duration(hours: 1)); 
-          await _sessionService.setSession(
-            token: data['token'],
-            refreshToken: data['refreshToken'],
-            expiry: expiry,
-            userData: data['userData'] ?? {},
-          );
-
-          // Update GraphQL client token
-          GraphQLConfig.updateToken(data['token']);
-
-          return {
-            'success': true,
-            'data': data,
-          };
-        } else {
-          final error = json.decode(response.body);
-          String errorMessage = error['message'] ?? 'Invalid credentials';
-          
-          // Handle specific error cases
-          if (response.statusCode == 401) {
-            errorMessage = 'Invalid NIC or password';
-          } else if (response.statusCode == 403) {
-            errorMessage = 'Account is locked. Please contact support';
+          final responseData = json.decode(response.body);
+          if (responseData['success']) {
+            // Set session with tokens
+            await _sessionService.setSession(
+              token: responseData['data']['accessToken'],
+              refreshToken: responseData['data']['refreshToken'],
+              expiry: DateTime.now().add(const Duration(hours: 1)),
+              userData: responseData['data']['userData'] ?? {},
+            );
+            return {
+              'success': true,
+              'data': responseData['data'],
+            };
           }
-          
           return {
             'success': false,
-            'error': errorMessage,
+            'error': responseData['error'] ?? 'Login failed',
           };
         }
-      } on http.ClientException {
         return {
           'success': false,
-          'error': 'Unable to connect to server. Please check your internet connection.',
+          'error': 'Server error occurred',
         };
       } on TimeoutException {
         return {
           'success': false,
-          'error': 'Connection timed out. Please try again.',
+          'error': 'Connection timed out',
+        };
+      } catch (e) {
+        return {
+          'success': false,
+          'error': 'Network error occurred',
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'error': 'An unexpected error occurred. Please try again.',
+        'error': e.toString(),
       };
     }
   }

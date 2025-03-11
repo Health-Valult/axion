@@ -27,6 +27,7 @@ class _SignupStep1State extends State<SignupStep1>
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _apiService = ApiService();
   final _connectivityService = ConnectivityService();
   String? _error;
@@ -39,6 +40,7 @@ class _SignupStep1State extends State<SignupStep1>
     _firstNameController.text = widget.signupData.firstName;
     _lastNameController.text = widget.signupData.lastName;
     _emailController.text = widget.signupData.email;
+    _passwordController.text = widget.signupData.password;
   }
 
   @override
@@ -46,6 +48,7 @@ class _SignupStep1State extends State<SignupStep1>
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -74,10 +77,35 @@ class _SignupStep1State extends State<SignupStep1>
       final response = await _apiService.validateEmail(_emailController.text.trim());
       
       if (response['success'] == true) {
-        widget.signupData.firstName = _firstNameController.text.trim();
-        widget.signupData.lastName = _lastNameController.text.trim();
-        widget.signupData.email = _emailController.text.trim();
-        widget.onNext();
+        // Show email confirmation dialog
+        final bool? confirmed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Confirm Email'),
+              content: Text('Please confirm your email address:\n${_emailController.text.trim()}'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Edit'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                TextButton(
+                  child: const Text('Confirm'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (confirmed == true) {
+          widget.signupData.firstName = _firstNameController.text.trim();
+          widget.signupData.lastName = _lastNameController.text.trim();
+          widget.signupData.email = _emailController.text.trim();
+          widget.signupData.password = _passwordController.text;
+          widget.onNext();
+        }
       } else {
         setState(() {
           _error = response['error'] ?? 'Email validation failed';
@@ -175,7 +203,25 @@ class _SignupStep1State extends State<SignupStep1>
                   }
                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
                   if (!emailRegex.hasMatch(value)) {
-                    return 'Enter a valid email address';
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+              CustomTextField(
+                controller: _passwordController,
+                hintText: 'Password',
+                enabled: !_isLoading,
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Password cannot be empty';
+                  }
+                  if (value.length < 8) {
+                    return 'Password must be at least 8 characters';
+                  }
+                  if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]+$').hasMatch(value)) {
+                    return 'Password must contain letters and numbers';
                   }
                   return null;
                 },

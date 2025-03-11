@@ -1,128 +1,69 @@
 class GraphQLQueries {
-  static String getMedications = '''
-    query GetMedications {
-      medications {
-        id
-        name
-        dosage
-        frequency
-        startDate
-        endDate
-        instructions
-      }
-    }
-  ''';
-
-  static String getAllergies = '''
-    query GetAllergies {
-      allergies {
-        id
-        name
-        severity
-        reaction
-        diagnosedDate
-        notes
-      }
-    }
-  ''';
-
-  static String getReports = '''
-    query GetReports(\$year: Int!) {
-      reports(year: \$year) {
-        id
-        reportType
-        dateTime
-        title
-        status
-        placeholderImageUrl
-        patientName
-        referredBy
-        ageSex
-        investigations
-        dailyCaseNumber
-        patientID
-        medications {
+  // Single query to get all patient data including reports (procedures)
+  static String getPatientData = '''
+    query GetPatientData(\$patient: ID!) {
+      procedures(patient: \$patient) {
+        Procedures {
+          encounter
+          patient
           id
-          name
-          dosage
-          frequency
-          startDate
-          endDate
-          instructions
+          code
+          display
+          Date
+          meta
         }
-        allergies {
-          id
-          name
+      }
+      observations(patient: \$patient, code: null, encounter: null) {
+        encounter
+        patient
+        code
+        display
+        unit
+        value
+        timestamp
+        meta
+      }
+      allergys(patient: \$patient) {
+        allergyIntolerances {
+          patient
+          code
+          display
+          timestamp
+          criticality
           severity
-          reaction
-          diagnosedDate
-          notes
+          category
+          active
+          source
+          verificationStatus
         }
-        ... on CBCReport {
-          testResults {
-            testName
-            value
-            unit
-            reference
-          }
-        }
-        ... on SerumChlorideReport {
-          chlorideValue
-          unit
-          reference
-        }
-        ... on SerumSodiumReport {
-          sodiumValue
-          unit
-          reference
-        }
-        ... on HBA1cReport {
-          hba1cValue
-          unit
-          reference
-        }
-        ... on SerumPotassiumReport {
-          potassiumValue
-          unit
-          reference
-        }
-        ... on LipidProfileReport {
-          totalCholesterol
-          triglycerides
-          hdl
-          ldl
-          vldl
-          ldlHdlRatio
-          totalCholesterolHdlRatio
-        }
-        ... on LiverFunctionTestReport {
-          bilirubinTotal
-          bilirubinDirect
-          bilirubinIndirect
-          sgpt
-          sgot
-          alkalinePhosphatase
-          serumProtein
-          serumAlbumin
-          globulin
-          agRatio
-        }
-        ... on ThyroidFunctionTestReport {
-          t3
-          t4
-          tsh
-        }
-        ... on CRPReport {
-          crpQuantitative
-          crpQualitative
-        }
-        ... on SerumCreatinineReport {
-          creatinineValue
-          unit
-          reference
+      }
+      medications(patient: \$patient) {
+        medications {
+          patient
+          code
+          display
+          dosage
+          route
+          prescriber
+          meta
         }
       }
     }
   ''';
 
+  // Query for specific observations (report content) by encounter
+  static String getObservationsByEncounter = '''
+    query GetObservationsByEncounter(\$patient: ID!, \$encounter: ID!) {
+      observations(patient: \$patient, encounter: \$encounter) {
+        encounter
+        patient
+        code
+        display
+        unit
+        value
+        timestamp
+        meta
+      }
+    }
+  ''';
 }

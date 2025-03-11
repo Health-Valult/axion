@@ -3,11 +3,7 @@ abstract class BaseReport {
   DateTime get dateTime;
   String get title;
   String get status;
-  String get placeholderImageUrl;
-  String get patientName;
-  String get referredBy;
-  String get ageSex;
-  String get investigations;
-  String get dailyCaseNumber;
-  String get patientID;
+  String? get placeholderImageUrl;
+  List<Map<String, dynamic>>? get observations;
+  Map<String, dynamic>? get meta;
 }
