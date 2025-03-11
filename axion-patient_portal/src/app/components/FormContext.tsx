@@ -7,12 +7,7 @@ interface FormData {
     mobileNumber: string;
     nic: string;
     dateOfBirth: string;
-    houseNumber: string;
-    street: string;
-    city: string;
-    district: string;
     password: string;
-    confirmPassword: string;
 }
 
 interface FormContextType {
@@ -30,12 +25,7 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         mobileNumber: "",
         nic: "",
         dateOfBirth: "",
-        houseNumber: "",
-        street: "",
-        city: "",
-        district: "",
-        password: "",
-        confirmPassword: ""
+        password: ""
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

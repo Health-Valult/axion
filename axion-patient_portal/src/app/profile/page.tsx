@@ -5,7 +5,6 @@ import { Upload } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import SidebarLayout from "@/app/components/Layout";
-import ModeSwitch from "@/app/components/ModeSwitch";
 
 export default function Profile() {
     return (
@@ -47,9 +46,6 @@ function ProfileForm() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 p-6 flex flex-col items-center">
-            <div className="absolute top-6 right-6">
-                <ModeSwitch/>
-            </div>
             <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-orange-300">Your Profile</h1>
             <div className="flex flex-col items-center space-y-3">
                 <Image

@@ -108,14 +108,6 @@ const CBCReport: React.FC<CBCReportProps> = ({ reportData }) => {
         </tr>
     );
 
-    const createConditionRow = (label: string, highValueCondition: string, lowValueCondition: string) => (
-        <tr>
-            <td className="px-3 py-2">{label}</td>
-            <td className="px-3 py-2">{highValueCondition}</td>
-            <td className="px-3 py-2">{lowValueCondition}</td>
-        </tr>
-    );
-
     return (
         <Card ref={pdfRef} className="w-full max-w-2xl mx-auto p-4 overflow-scroll">
             <CardHeader>
