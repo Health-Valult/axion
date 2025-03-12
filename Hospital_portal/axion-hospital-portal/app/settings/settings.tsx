@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react';
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/card";
 import { Bell, Moon, Globe, Lock, Shield } from 'lucide-react';
-import Switch from "@/components/ui/Switch";
+import Switch from "@/components/ui/switch";
 
 const Settings = () => {
   const [notifications, setNotifications] = useState(false);

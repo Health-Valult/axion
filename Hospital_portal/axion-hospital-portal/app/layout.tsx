@@ -1,19 +1,13 @@
 "use client"
+
 import React, { useState } from "react";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
-import {
-  IconArrowLeft,
-  IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
-} from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../app/globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,17 +27,12 @@ const geistMono = Geist_Mono({
 const links = [
   {
     label: "Home",
-    href: "/upload_file",
+    href: "/",
     icon: "",
   },
   {
     label: "Search Patient",
-    href: "/search_patients",
-    icon: "",
-  },
-  {
-    label: "upload file",
-    href: "/upload_file",
+    href: "/search_patient",
     icon: "",
   },
 
@@ -51,9 +40,14 @@ const links = [
     label: "Settings",
     href: "/settings",
     icon: "",
+  },
+
+  {
+    label: "Profile",
+    href: "/",
+    icon: "",
        },
   ];
-/* const [open, setOpen] = useState(false); */
 
 export const AxionLogo = ({
 	width,
@@ -216,7 +210,6 @@ export const LogoIcon = () => {
 		</Link>
 	);
 };
-
 
 export default function RootLayout({
 	children,
