@@ -24,14 +24,16 @@ staffQuery = {
 def _sign_in_user(credentials,Collection:Collection,query:dict)->JSONResponse:
     try:
         c_user_exists = Collection.find_one(query) is not None
-        
 
         if c_user_exists:
-            print("user already exists")
             return JSONResponse(status_code=409, content={"details":"user already exists"})
+        
         credentials["UserID"] = bson.Binary.from_uuid(uuid.uuid5(uuid.NAMESPACE_DNS,credentials.get("Email")))
+        credentials["prevLogin"]={}
         credentials["Password"] = hasher.hash(credentials.get("Password")) 
+
         Collection.insert_one(credentials)
+        
         return JSONResponse(status_code=201, content={"details":"user created successfuly"})
     
     except errors.OperationFailure:

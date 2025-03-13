@@ -41,4 +41,4 @@ class SignupLog(BaseModel):
 def log(Mq:sendMQ,type:Literal["general","error","signup","login"],log:GeneralLog|ErrorLog|LoginLog|SignupLog):
     log = log.model_dump()
     Mq.send(Qname = "analytics", task="log", body = {"type":type,"body":log},type="request")
-    print("log sent     ")
+    print("log sent")

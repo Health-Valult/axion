@@ -1,6 +1,6 @@
 from typing import Literal
 from authlib.jose import jwt,JsonWebToken
-from app.utils.redis import redis_AX
+from app.shared.utils.Cache.redis import redis_AX
 from authlib.jose.errors import ExpiredTokenError
 import os
 
@@ -10,13 +10,12 @@ def authenticate_session(bearerToken:str,Red:redis_AX=None,refresh_token:bool=Fa
 
         key = os.path.join("app","data","keys","refresh_public.pem") if refresh_token else os.path.join("app","data","keys","public.pem")
 
-
         with open(key,"r") as file:
             key = file.read()
 
         if not refresh_token:    
             bearerToken = bearerToken.split()[1]
-        print(bearerToken)
+  
         decoded_token = jwt.decode(bearerToken,key)
         decoded_token.validate()
 

@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 from fastapi import FastAPI
-from app.models.user import *
+from app.models.models import *
 from app.utils.signIn_user import _sign_in_user
 from starlette.requests import Request
 from pymongo.collection import Collection
 
 route = APIRouter()
 
-@route.post("/axion/auth/signup/user")
+@route.post("/axion/auth/signup/user",tags=["signup"])
 def user_signup(request:Request,credentials:User):
 
     state:FastAPI = request.app
@@ -26,7 +26,7 @@ def user_signup(request:Request,credentials:User):
     return _sign_in_user(credentials=credentials,Collection=collection,query=patientQuery)
 
 
-@route.post("/axion/auth/signup/user")
+@route.post("/axion/auth/signup/user",tags=["signup"])
 def doctor_signup(request:Request,credentials:Doctor):
     
     state:FastAPI = request.app

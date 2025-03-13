@@ -1,28 +1,44 @@
 import json
+import logging
 import time
 from pika import BlockingConnection,ConnectionParameters
+from pika.exceptions import AMQPConnectionError
 from pika import BasicProperties
 from json import dumps
 import uuid
 from typing import Literal
+
+logger = logging.getLogger("uvicorn")
+
 class sendMQ:
 
     def __init__(self,host:str,service:str):
         self.service = service
-        self.connection = BlockingConnection(
-            ConnectionParameters(host=host,heartbeat=0))
+        retries = 5
+        for attempt in range(retries):
+            try:
+                logger.info("connecting to 🐇MQ...")
+                self.connection = BlockingConnection(ConnectionParameters(host=host,heartbeat=0))
+                break
+                
+            except AMQPConnectionError:   
+                logger.info("unable to connect to rabbitMQ")
+                time.sleep(1) 
+                continue
         self.channel = self.connection.channel()
-
-    def send(self,Qname:str,task:str,body:dict,type:Literal["request","response"],status:Literal["success","error"] = None,declare:bool = True):
-
+        
 
 
+
+    def send(self,Qname:str,task:str,body:dict,type:Literal["request","response"],status:Literal["success","error"] = None, declare:bool=True):
+
+    
         if type == "request":
             msg_obj = {
                 "sender":self.service,
                 "reciver":Qname,
                 "id":f"{self.service}-{uuid.uuid4()}",
-                "request":{
+                "response":{
                     "task":task,
                     "body":body
                 }
@@ -47,9 +63,9 @@ class sendMQ:
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
 
     def send_and_await(self,Qname:str,task:str,body:dict):
-        print("it works ur the problem")
+
         return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
-        print(return_q)
+
 
         msg_obj = {
             "sender":self.service,
@@ -72,10 +88,11 @@ class sendMQ:
         while time.time() - start_time < timeout:
             method_frame, properties, body = self.channel.basic_get(queue=return_q, auto_ack=True)
             if method_frame:
-                    return(json.loads(body.decode("utf-8")))
+                
+                return(json.loads(body))
+                    
             time.sleep(0.1)  
-        raise Exception("Internal Server Error")
+        
 
     def terminate_session(self):
         self.connection.close()
-

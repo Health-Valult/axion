@@ -1,10 +1,8 @@
 from typing_extensions import Annotated
-from pydantic import AfterValidator, BaseModel,EmailStr,Field, model_validator, validator
-import datetime
+from pydantic import AfterValidator, BaseModel,EmailStr,Field
 import re
 from pydantic import BaseModel, EmailStr, constr
 from typing import List, Optional
-import re
 
 def PasswordValidator(value:str):
     match = re.match(r'^(?=.*[A-Z].*[A-Z])(?=.*\d.*\d.*\d)(?=.*[@_&#]).+$',value)
@@ -13,8 +11,13 @@ def PasswordValidator(value:str):
     return value
 
 
+
+class Location(BaseModel):
+    Latitude:float
+    Longitude:float
+
 class User(BaseModel):
-    NIC:str
+    Email:str
     FirstName:str
     LastName:str
     Email:EmailStr
@@ -26,6 +29,9 @@ class User(BaseModel):
 class Userlg(BaseModel):
     Email:EmailStr
     Password:Annotated[str,AfterValidator(PasswordValidator)]
+    Location:Location
+    IpAddress:str
+    AndroidId:str
 
 class Token(BaseModel):
     Token:str
@@ -39,6 +45,7 @@ class Delete(BaseModel):
     Password:Annotated[str,AfterValidator(PasswordValidator)]
 
 class OTP(BaseModel):
+    tempID:str
     otp:int = Field(min_length=6,max_length=6)
 
 class SendOtp(BaseModel):

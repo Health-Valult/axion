@@ -8,7 +8,7 @@ class redis_AX:
         self.pool = redis.ConnectionPool.from_url(host,max_connections=connection)
 
     def connect(self):
-        self.r = redis.Redis(connection_pool=self.pool)
+        self.r = redis.Redis(connection_pool=self.pool,retry_on_timeout=True)
         return self
     
     def get_token(self, token, ):

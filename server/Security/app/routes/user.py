@@ -1,20 +1,21 @@
 import uuid
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
-from app.consumer_proceses_callback import authenticate_session
+from app.callback.authenticate_session import authenticate_session
 from app.utils.reset_pw import _password_reset
 from app.utils.delete_profile import _delete_profile
 from app.utils.get_profile import _get_profile
-from app.models.user import*
-from fastapi import APIRouter,FastAPI
+from app.models.models import *
+from fastapi import APIRouter,FastAPI,Depends
 from pymongo.collection import Collection
 
-
-
+from app.shared.middleware.authentication import Authenticate
 
 route = APIRouter()
 
-@route.post("/axion/user/reset-password")
+
+
+@route.post("/axion/user/reset-password",tags=["secure"],dependencies=[Depends(Authenticate)])
 def reset_password(request:Request,cred:Password):
 
     state:FastAPI = request.app
@@ -25,13 +26,11 @@ def reset_password(request:Request,cred:Password):
 
     cache = state.state.Cache
 
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+
     new_pw = cred.New
     old_pw = cred.Old
-    print(new_pw)
-    print(old_pw)
-    token = token = request.headers.get('authorization')
-    session = authenticate_session(token,Red=cache)
-    c_uuid,role = session.get("uuid"),session.get("role")
+
     if new_pw == old_pw:
         return JSONResponse(status_code=406,content={"msg":"Old password cannot be the same as new password"})
 
@@ -47,7 +46,7 @@ def reset_password(request:Request,cred:Password):
 
 
 
-@route.get("/axion/user/profile")
+@route.get("/axion/user/profile",tags=["secure"],dependencies=[Depends(Authenticate)])
 def get_profile(request:Request):
 
     state:FastAPI = request.app
@@ -58,9 +57,8 @@ def get_profile(request:Request):
 
     cache = state.state.Cache
 
-    token = token = request.headers.get('authorization')
-    session = authenticate_session(token,Red=cache)
-    c_uuid,role = session.get("uuid"),session.get("role")
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+
 
     if role == "patient":
         return _get_profile(collection=p_collection,c_uuid=uuid.UUID(c_uuid),)
@@ -72,7 +70,7 @@ def get_profile(request:Request):
         return _get_profile(collection=h_collection,c_uuid=uuid.UUID(c_uuid),)
     
 
-@route.post("/axion/user/profile/delete")
+@route.post("/axion/user/profile/delete",tags=["secure"],dependencies=[Depends(Authenticate)])
 def delete_profile(request:Request,cred:Delete):
 
     state:FastAPI = request.app
@@ -86,9 +84,8 @@ def delete_profile(request:Request,cred:Delete):
     password = cred.Password
     nic = cred.NIC
 
-    token = token = request.headers.get('authorization')
-    session = authenticate_session(token,Red=cache)
-    c_uuid,role = session.get("uuid"),session.get("role")
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+
 
     if role == "patient":
         return _delete_profile(collection=p_collection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
