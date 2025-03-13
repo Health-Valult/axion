@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import "../app/globals.css";
 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -32,7 +33,7 @@ const links = [
   },
   {
     label: "Search Patient",
-    href: "/search_patient",
+    href: "/search",
     icon: "",
   },
 
@@ -224,7 +225,7 @@ export default function RootLayout({
 		<body
 		  className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 		>
-		  <div className="flex h-screen"> {/* This is the parent flex container */}
+		<div className="flex h-screen"> {/*This is the parent flex container */}
 			<Sidebar open={open} setOpen={setOpen}>
 			<SidebarBody className="justify-between gap-10">
 				<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">

@@ -8,6 +8,7 @@ import PatientDetails from "@/app/components/patient-details";
 import MedicalHistory from "@/app/components/MedicalHistory";
 import LabReports from "@/app/components/LabReports";
 import { useRouter } from "next/navigation";
+import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 
 const SearchPatient = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -153,7 +154,7 @@ const SearchPatient = () => {
       title: "Navigation",
       description: "Redirecting to upload page...",
     });
-    router.push("/upload-report/FileUpload");
+    router.push("app/upload-report/ReportUploadMethod");
   };
 
   return (
@@ -167,20 +168,24 @@ const SearchPatient = () => {
         </p>
       </header>
 
-      <SearchForm 
-        searchQuery={searchQuery}
-        isSearching={isSearching}
-        onSearchQueryChange={setSearchQuery}
-        onSubmit={handleSearch}
-      />
+      <ToastProvider>
+        <SearchForm 
+          searchQuery={searchQuery}
+          isSearching={isSearching}
+          onSearchQueryChange={setSearchQuery}
+          onSubmit={handleSearch}
+        />
+      
+        {patient && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in">
+            <PatientDetails patient={patient} />
+            <MedicalHistory patient={patient} />
+            <LabReports patient={patient} onUploadReport={handleUploadReport} />
+          </div>
+        )}
+      <ToastViewport />
+    </ToastProvider>
 
-      {patient && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in">
-          <PatientDetails patient={patient} />
-          <MedicalHistory patient={patient} />
-          <LabReports patient={patient} onUploadReport={handleUploadReport} />
-        </div>
-      )}
     </div>
   );
 };

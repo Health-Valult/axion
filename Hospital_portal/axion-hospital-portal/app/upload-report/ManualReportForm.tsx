@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -20,14 +20,22 @@ export const ManualReportForm = ({ patientId, onCancel }: ManualReportFormProps)
   const navigate = useNavigate();
   const [selectedReport, setSelectedReport] = useState("");
   const [reportData, setReportData] = useState<CommonReportData>({
-    date: new Date().toISOString().split("T")[0],
-    time: new Date().toTimeString().split(" ")[0].slice(0, 5),
+    date: "",
+    time: "",
     practitioner: "",
     clinic: "",
     recorder: "",
     attachPdf: false,
     pdfFile: null,
   });
+
+  useEffect(() => {
+    setReportData(prev => ({
+      ...prev,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toTimeString().split(" ")[0].slice(0, 5), 
+    }));
+  }, []);
 
   // For CBC specific fields
   const [cbcData, setCbcData] = useState<CBCFormData>({
