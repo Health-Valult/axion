@@ -51,7 +51,7 @@ async def lifespan(app:FastAPI):
     
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://localhost:6379",10).connect()
+    app.state.Cache = redis_AX("redis://cache:6379",10).connect()
 
     # loading refresh token
     with open('./app/data/keys/refresh_private.pem', 'r') as file:
@@ -80,4 +80,4 @@ app.add_middleware(Logging)
 
 # main app
 if __name__ == '__main__':
-    uvicorn.run("app.main:app",port=8000,reload=True)
+    uvicorn.run(app= "app.main:app",host= "0.0.0.0",port=8000,reload=True)
