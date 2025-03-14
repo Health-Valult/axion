@@ -13,8 +13,9 @@ hasher = PasswordHasher()
 
 def _sign_in_user(credentials,Collection:Collection,query:dict)->JSONResponse:
     try:
-        c_user_exists = Collection.find_one(query) is not None
+        c_user_exists = Collection.find_one(query) 
         print(c_user_exists)
+        print(c_user_exists is not None)
         if c_user_exists:
             return JSONResponse(status_code=409, content={"details":"user already exists"})
         
