@@ -8,23 +8,13 @@ from pymongo import errors
 
 hasher = PasswordHasher()
 
-patientQuery = {
-    "$or":[{"NIC":""},{"Email":""},{"Telephone":""}]
-}
 
-docQuery = {
-    "$or":[{"NIC":""},{"Email":""},{"Telephone":""},{"SlmcNumber":""}]
-}
-
-staffQuery = {
-    "$or":[{"NIC":""},{"Email":""},{"Telephone":""}]
-}
 
 
 def _sign_in_user(credentials,Collection:Collection,query:dict)->JSONResponse:
     try:
         c_user_exists = Collection.find_one(query) is not None
-
+        print(c_user_exists)
         if c_user_exists:
             return JSONResponse(status_code=409, content={"details":"user already exists"})
         
@@ -38,3 +28,5 @@ def _sign_in_user(credentials,Collection:Collection,query:dict)->JSONResponse:
     
     except errors.OperationFailure:
         return JSONResponse(status_code=500, content={"details":"internal server error"})
+
+
