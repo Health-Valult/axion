@@ -33,7 +33,7 @@ const links = [
   },
   {
     label: "Search Patient",
-    href: "/search",
+    href: "/search_patient",
     icon: "",
   },
 

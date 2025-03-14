@@ -154,7 +154,7 @@ const SearchPatient = () => {
       title: "Navigation",
       description: "Redirecting to upload page...",
     });
-    router.push("app/upload-report/ReportUploadMethod");
+    router.push("/upload-report/ReportUploadMethod");
   };
 
   return (

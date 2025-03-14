@@ -3,9 +3,6 @@
 import React from "react";
 
 export interface CBCFormData {
-  patientName: string;
-  referredBy: string;
-  ageSex: string;
   investigations: string;
   hemoglobin: string;
   totalLeukocyteCount: string;
@@ -33,12 +30,12 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
     <div className="space-y-4">
       <div className="space-y-2">
         <label className="block text-sm font-medium">
-          Patient Name <span className="text-red-500">*</span>
+          Investigations <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          name="patientName"
-          value={cbcData.patientName}
+          name="investigations"
+          value={cbcData.investigations}
           onChange={onChange}
           placeholder="Patient Name"
           className="search-input"
@@ -46,9 +43,9 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
         />
       </div>
       
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="block text-sm font-medium">
-          Age / Sex <span className="text-red-500">*</span>
+          Reffered By <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -59,7 +56,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           className="search-input"
           required
         />
-      </div>
+      </div> */}
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">

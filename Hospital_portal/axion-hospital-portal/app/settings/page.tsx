@@ -14,7 +14,7 @@ const Settings = () => {
   return (
     <div className="space-y-8 p-6 max-w-2xl mx-auto">
       <header>
-        <h1 className="text-4xl font-bold text-primary">Settings</h1>
+        <h1 className="text-4xl font-bold text-black">Settings</h1>
         <p className="text-secondary-foreground">Customize your account preferences</p>
       </header>
       

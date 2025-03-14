@@ -13,7 +13,7 @@ const Switch = ({ checked, onCheckedChange }: SwitchProps) => {
     <button
       onClick={() => onCheckedChange(!checked)}
       className={`relative w-12 h-6 flex items-center rounded-full border transition-colors
-        ${checked ? "bg-blue-500 border-blue-500" : "bg-gray-300 border-gray-300"}`}
+        ${checked ? "bg-purple-500 border-purple-500" : "bg-gray-300 border-gray-300"}`}
     >
       <div
         className={`absolute left-1 h-4 w-4 rounded-full bg-white shadow transition-transform

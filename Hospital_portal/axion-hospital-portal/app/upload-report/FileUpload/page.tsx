@@ -1,18 +1,17 @@
-"use client"
+"use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import { FileUp, ArrowLeft } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 
 interface FileUploadFormProps {
   patientId: string;
-  onCancel: () => void;
 }
 
-export const FileUploadForm = ({ patientId, onCancel }: FileUploadFormProps) => {
-  const navigate = useNavigate();
+export default function FileUploadForm({ patientId }: FileUploadFormProps) {
+  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -20,6 +19,10 @@ export const FileUploadForm = ({ patientId, onCancel }: FileUploadFormProps) => 
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
     }
+  };
+
+  const handleCancel = () => {
+    router.back(); // Navigates to the previous page
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,14 +38,13 @@ export const FileUploadForm = ({ patientId, onCancel }: FileUploadFormProps) => 
 
     setIsUploading(true);
 
-    // Simulate file processing
     setTimeout(() => {
       setIsUploading(false);
       toast({
         title: "Success",
         description: "Report uploaded successfully",
       });
-      navigate("/");
+      router.push("/search_patient");
     }, 1500);
   };
 
@@ -86,7 +88,7 @@ export const FileUploadForm = ({ patientId, onCancel }: FileUploadFormProps) => 
       <CardFooter className="flex justify-between">
         <button
           type="button"
-          onClick={onCancel}
+          onClick={handleCancel}
           className="btn-secondary"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -113,4 +115,4 @@ export const FileUploadForm = ({ patientId, onCancel }: FileUploadFormProps) => 
       </CardFooter>
     </Card>
   );
-};
+}
