@@ -3,7 +3,6 @@
 import React from "react";
 
 export interface CBCFormData {
-  investigations: string;
   hemoglobin: string;
   totalLeukocyteCount: string;
   neutrophils: string;
@@ -28,7 +27,7 @@ interface CBCFormFieldsProps {
 const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <label className="block text-sm font-medium">
           Investigations <span className="text-red-500">*</span>
         </label>
@@ -41,7 +40,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           className="search-input"
           required
         />
-      </div>
+      </div> */}
       
       {/* <div className="space-y-2">
         <label className="block text-sm font-medium">

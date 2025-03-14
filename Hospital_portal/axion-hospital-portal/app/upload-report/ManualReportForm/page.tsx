@@ -14,7 +14,7 @@ import UFRFormFields from "@/app/upload-report/templates/UFRReport";
 import CRPFormFields from "@/app/upload-report/templates/CPRReport";
 import ESRFormFields from "../templates/ESRReport";
 import FBSFormFields from "../templates/FBSReport";
-import GenericReportFields from "../templates/GenericReportFields";
+// import GenericReportFields from "../templates/GenericReportFields";
 import HbA1cFormFields from "../templates/HbA1cReport";
 import LFTFormFields from "../templates/LFTReport";
 import LipidProfileFormFields from "../templates/LipidProfileReport";
@@ -66,6 +66,7 @@ const ManualReportForm = ({ patientId, onCancel }: ManualReportFormProps) => {
     practitioner: "",
     clinic: "",
     recorder: "",
+    instructions:"",
     attachPdf: false,
     pdfFile: null,
   });

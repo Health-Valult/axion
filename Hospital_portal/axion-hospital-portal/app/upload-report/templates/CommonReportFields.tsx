@@ -10,6 +10,7 @@ export interface CommonReportData {
   clinic: string;
   recorder: string;
   attachPdf: boolean;
+  instructions:string;
   pdfFile: File | null;
 }
 
@@ -101,6 +102,22 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
           type="text"
           name="recorder"
           value={reportData.recorder}
+          onChange={onInputChange}
+          placeholder="Your name"
+          className="search-input"
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium flex items-center gap-2">
+          <User className="h-4 w-4" />
+          Instructions <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="recorder"
+          value={reportData.instructions}
           onChange={onInputChange}
           placeholder="Your name"
           className="search-input"
