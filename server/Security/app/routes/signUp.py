@@ -7,7 +7,7 @@ from pymongo.collection import Collection
 
 route = APIRouter()
 
-@route.post("/axion/auth/signup/user",tags=["signup"])
+@route.post("/axion/auth/signup/patient",tags=["signup"])
 def user_signup(request:Request,credentials:User):
 
     state:FastAPI = request.app
@@ -26,7 +26,7 @@ def user_signup(request:Request,credentials:User):
     return _sign_in_user(credentials=credentials,Collection=collection,query=patientQuery)
 
 
-@route.post("/axion/auth/signup/user",tags=["signup"])
+@route.post("/axion/auth/signup/doctor",tags=["signup"])
 def doctor_signup(request:Request,credentials:Doctor):
     
     state:FastAPI = request.app
