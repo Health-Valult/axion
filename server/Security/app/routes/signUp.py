@@ -19,9 +19,6 @@ def user_signup(request:Request,credentials:User):
     c_email = credentials.get("Email")
     c_phone = credentials.get("Telephone")
 
-    print(c_nic)
-    print(c_email)
-    print(c_phone)
     patientQuery = {
     "$match":[{"NIC":c_nic},{"Email":c_email},{"Telephone":c_phone}]
     }

@@ -17,6 +17,7 @@ class Location(BaseModel):
     Longitude:float
 
 class User(BaseModel):
+    NIC:str
     Email:str
     FirstName:str
     LastName:str
