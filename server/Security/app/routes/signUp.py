@@ -20,7 +20,7 @@ def user_signup(request:Request,credentials:User):
     c_phone = credentials.get("Telephone")
 
     patientQuery = {
-    "$match":[{"NIC":c_nic},{"Email":c_email},{"Telephone":c_phone}]
+    "$or":[{"NIC":c_nic},{"Email":c_email},{"Telephone":c_phone}]
     }
 
     return _sign_in_user(credentials=credentials,Collection=collection,query=patientQuery)
