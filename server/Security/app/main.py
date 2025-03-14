@@ -57,6 +57,8 @@ async def lifespan(app:FastAPI):
     with open('./app/data/keys/refresh_private.pem', 'r') as file:
         app.state.refresh_private_key = file.read()
 
+    logger.info(app.state)
+
     yield
 
     logger.info("shutting down server")

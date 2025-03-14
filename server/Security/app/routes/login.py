@@ -13,10 +13,10 @@ route = APIRouter()
 
 @route.post("/axion/auth/login/patient",tags=["auth"])
 def user_login(request:Request,cred:Userlg):
-    state:FastAPI = request.app
-    collection:Collection = state.state.PatientsCollection
-    cache = state.state.Cache
-    return authenticate(collection=collection,cred=cred,endpoint="patient",Red=cache,state=state.state)
+    state:FastAPI = request.app.state
+    collection:Collection = state.PatientsCollection
+    cache = state.Cache
+    return authenticate(collection=collection,cred=cred,endpoint="patient",Red=cache,state=state)
     
 
 @route.post("/axion/auth/login/doc",tags=["auth"])
