@@ -5,6 +5,7 @@ import { Upload } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import SidebarLayout from "@/app/components/Layout";
+import useAuth from "@/hooks/useAuth";
 
 export default function Profile() {
     return (
@@ -43,6 +44,12 @@ function ProfileForm() {
     const handleSave = () => {
         alert("Profile updated successfully!");
     };
+
+    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+
+    if (!isAuthenticated) {
+        return null;  // If not authenticated, nothing will be rendered
+    }
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 p-6 flex flex-col items-center">

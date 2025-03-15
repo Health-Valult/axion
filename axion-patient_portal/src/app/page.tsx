@@ -14,6 +14,8 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { useLanguage } from "@/app/components/LanguageContext";
 import LanguageSwitch from '@/app/components/LanguageSwitch';
 import {useDarkMode} from "@/app/components/DarkModeContext";
+import useAuth from "@/hooks/useAuth";
+
 
 export default function DashboardLayout() {
     return (
@@ -69,6 +71,11 @@ const Dashboard = () => {
         { id: 2, message: "You have a new lab report available for viewing." },
         { id: 3, message: "Reminder: Take your Amoxicillin at 8 PM." },
     ];
+    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+
+    if (!isAuthenticated) {
+        return null;  // If not authenticated, nothing will be rendered
+    }
 
     return (
         <div className="min-h-screen dark:bg-gray-950 p-6">

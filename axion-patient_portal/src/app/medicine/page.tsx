@@ -6,6 +6,7 @@ import { useLanguage } from "@/app/components/LanguageContext";
 import SidebarLayout from "@/app/components/Layout";
 import Image from "next/image";
 import {useDarkMode} from "@/app/components/DarkModeContext";
+import useAuth from "@/hooks/useAuth";
 
 export default function MedicineLayout() {
     return (
@@ -18,6 +19,11 @@ export default function MedicineLayout() {
 const PatientMedicineList: React.FC = () => {
     const { t } = useLanguage();
     const { darkMode } = useDarkMode();
+    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+
+    if (!isAuthenticated) {
+        return null;  // If not authenticated, nothing will be rendered
+    }
 
     const medicines = [
         {

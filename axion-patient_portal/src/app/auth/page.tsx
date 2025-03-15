@@ -38,6 +38,7 @@ interface LoginFormErrors {
 
 const Auth: React.FC = () => {
     const [isActive, setIsActive] = useState(false);
+    const [value, setValue] = useState("");
     const [signUpStep, setSignUpStep] = useState(1);
     const [formData, setFormData] = useState<FormData>({
         firstName: "",
@@ -248,7 +249,7 @@ const Auth: React.FC = () => {
                             <button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
                             </button>
-                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={() => registerUser}>
+                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={async () => await registerUser(formData)}>
                                 Register
                             </button>
                         </div>
@@ -258,7 +259,7 @@ const Auth: React.FC = () => {
                 return (
                     <FormProvider>
                         <h1 className="text-2xl font-bold text-gray-500 mb-8">OTP Verification</h1>
-                        <InputOTP maxLength={6}>
+                        <InputOTP maxLength={6} value={value} onChange={value => setValue(value)} >
                             <InputOTPGroup>
                                 <InputOTPSlot index={0} />
                                 <InputOTPSlot index={1} />
@@ -343,7 +344,7 @@ const Auth: React.FC = () => {
                             onChange={(e) => setLoginFormData({ ...loginFormData, password: e.target.value })}
                         />
                         <a href="#" className="text-sm text-blue-500 mb-4">Forget Your Password?</a>
-                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() => loginUser(formData.nic, formData.password)}>
+                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  loginUser(loginFormData.email, loginFormData.password)}>
                             Sign In
                         </button>
                     </FormProvider>
@@ -377,12 +378,22 @@ const Auth: React.FC = () => {
 // Function to handle user registration
 const registerUser = async (formData: FormData) => {
     try {
-        const response = await fetch("/axion/auth/signup/user", {
+        const response = await fetch(`/api/proxy`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData), // Sending the form data as JSON
+            body: JSON.stringify(
+                {
+                    "NIC": formData.nic,
+                    "FirstName": formData.firstName,
+                    "LastName": formData.lastName,
+                    "Email": formData.email,
+                    "Telephone": formData.mobileNumber,
+                    "DateOfBirth":10092003 ,
+                    "Password": formData.password
+                }
+            ), // Sending the form data as JSON
         });
 
         if (!response.ok) {
@@ -402,30 +413,59 @@ const registerUser = async (formData: FormData) => {
     }
 };
 
-
-// Function to handle user login
-const loginUser = async (nic: string, password: string) => {
+const loginUser = async (email: string, password: string) => {
+    console.log(JSON.stringify({
+        Email: email,
+        Password: password,
+        Location: {
+            Latitude: 12.3456,
+            Longitude: 78.9012
+        },
+        IpAddress: "192.168.1.1",
+        AndroidId: "unique_device_id"
+    }));
     try {
-        const response = await fetch("/axion/auth/login/patient", {
+        const response = await fetch(`api/proxy`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
             },
-            body: JSON.stringify({ nic, password }), // Sending the credentials as JSON
+            body: JSON.stringify({
+                Email: email,
+                Password: password,
+                Location: {
+                    Latitude: 12.3456,
+                    Longitude: 78.9012
+                },
+                IpAddress: "192.168.1.1",
+                AndroidId: "unique_device_id"
+            }),
         });
 
         if (!response.ok) {
-            // If response is not successful, throw an error
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Login failed.");
+            // If response is not successful, handle the error
+            const errorData = await response.text(); // Get response body as text
+            throw new Error(`Error: ${response.status} - ${errorData}`);
         }
 
-        // Handle the successful login response
         const data = await response.json();
         alert("Login successful!");
-        // You can store the token or user data in localStorage, cookies, or context
-        localStorage.setItem("userToken", data.token); // For example, saving a JWT token
-        return data; // Optionally return some data (e.g., user details, token)
+
+        if (data) {
+            const { session_token, refresh_token } = data; // Adjust this based on the actual API response
+            console.log("Session: " + session_token + "Refresh: " + refresh_token)
+            sessionStorage.setItem("session_token", session_token);
+            sessionStorage.setItem("refresh_token", refresh_token);
+
+            // document.cookie = `session_token=${session_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600`;
+            // document.cookie = `refresh_token=${refresh_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=2592000`;
+
+            window.location.href = "/";
+        } else {
+            console.error("No data in response.");
+            alert("Login failed. No response data.");
+        }
 
     } catch (error) {
         console.error("Error during login:", error);
@@ -437,7 +477,7 @@ const loginUser = async (nic: string, password: string) => {
 async function verifyOTP(otp: number, token: string): Promise<void> {
     try {
         // Send the POST request using fetch
-        const response = await fetch("/axion/auth/verify/otp", {
+        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/verify/otp`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "proxy": "https://axiontestgateway.azure-api.net",
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "@apollo/server": "^4.11.3",
@@ -23,6 +24,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",
     "input-otp": "^1.4.2",

@@ -16,6 +16,7 @@ import ReportModal from "@/app/components/ReportModal";
 import SidebarLayout from "@/app/components/Layout";
 import Image from "next/image";
 import {useDarkMode} from "@/app/components/DarkModeContext";
+import useAuth from "@/hooks/useAuth";
 
 export default function ReportsLayout() {
     return (
@@ -66,6 +67,12 @@ function ReportsPage() {
     const filteredReports = filterDate
         ? sortedReports.filter(report => report.date === format(filterDate, "yyyy-MM-dd"))
         : sortedReports;
+
+    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+
+    if (!isAuthenticated) {
+        return null;  // If not authenticated, nothing will be rendered
+    }
 
     return (
         <div className="p-6 min-h-screen bg-white dark:bg-gray-950">
