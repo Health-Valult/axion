@@ -1,19 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Upload } from "lucide-react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import SidebarLayout from "@/app/components/Layout";
-import useAuth from "@/hooks/useAuth";
-
-export default function Profile() {
-    return (
-        <SidebarLayout>
-            <ProfileForm />
-        </SidebarLayout>
-    );
-}
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"; // Assuming ShadCN Dialog is imported
+import { Button } from "@/components/ui/button"; // Import your Button component
+import useAuth from "@/hooks/useAuth"; // Adjust your authentication hook
 
 function ProfileForm() {
     const [profile, setProfile] = useState({
@@ -30,43 +20,92 @@ function ProfileForm() {
         avatar: "/user-icon.jpg",
     });
 
+    const [isResetPasswordModalOpen, setIsResetPasswordModalOpen] = useState(false);
+    const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [deleteNIC, setDeleteNIC] = useState(""); // For Delete Account NIC
+    const [deletePassword, setDeletePassword] = useState(""); // For Delete Account Password
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
-    };
-
-    const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = URL.createObjectURL(e.target.files[0]);
-            setProfile({ ...profile, avatar: file });
-        }
     };
 
     const handleSave = () => {
         alert("Profile updated successfully!");
     };
 
-    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+    const handleResetPassword = async (oldPassword: string, newPassword: string) => {
+        console.log(JSON.stringify({
+            Old: oldPassword,
+            New: newPassword
+        }));
+        try {
+            const response = await fetch("/api/proxy", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
+                },
+                body: JSON.stringify({
+                    Old: oldPassword,
+                    New: newPassword,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Something went wrong during password reset.");
+            }
+
+            const data = await response.json();
+            alert("Password updated successfully!");
+            setIsResetPasswordModalOpen(false); // Close the modal after success
+            return data;
+        } catch (error) {
+            console.error("Error during password reset:", error);
+            alert("An error occurred. Please try again.");
+        }
+    };
+
+    const handleDeleteAccount = async (nic: string, password: string) => {
+        try {
+            const response = await fetch("/api/proxy", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
+                },
+                body: JSON.stringify({
+                    NIC: nic,
+                    Password: password,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Something went wrong during account deletion.");
+            }
+
+            const data = await response.json();
+            alert("Account deleted successfully!");
+            setIsDeleteAccountModalOpen(false); // Close the modal after success
+            return data;
+        } catch (error) {
+            console.error("Error during account deletion:", error);
+            alert("An error occurred. Please try again.");
+        }
+    };
+
+    const isAuthenticated = useAuth();
 
     if (!isAuthenticated) {
-        return null;  // If not authenticated, nothing will be rendered
+        return null;
     }
 
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 p-6 flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-orange-300">Your Profile</h1>
-            <div className="flex flex-col items-center space-y-3">
-                <Image
-                    src={profile.avatar}
-                    alt="Profile"
-                    width={96}
-                    height={96}
-                    className="rounded-full border-2 border-gray-300"
-                />
-                <label className="cursor-pointer flex items-center gap-2 text-blue-600 hover:text-blue-800">
-                    <Upload className="h-4 w-4" /> Change Picture
-                    <input type="file" className="hidden" onChange={handleUpload} />
-                </label>
-            </div>
 
             <div className="mt-6 w-full max-w-lg space-y-4">
                 {[
@@ -76,10 +115,6 @@ function ProfileForm() {
                     { label: "Phone", name: "phone" },
                     { label: "NIC", name: "nic", disabled: true },
                     { label: "Date of Birth", name: "dob", type: "date" },
-                    { label: "House Number", name: "houseNumber" },
-                    { label: "Street", name: "street" },
-                    { label: "City", name: "city" },
-                    { label: "District", name: "district" },
                 ].map(({ label, name, type = "text", disabled }) => (
                     <div key={name}>
                         <label className="block text-sm font-medium text-black dark:text-white">{label}</label>
@@ -104,7 +139,110 @@ function ProfileForm() {
                 >
                     Save Changes
                 </Button>
+
+                <Button
+                    onClick={() => setIsResetPasswordModalOpen(true)}
+                    className="w-full font-semibold mt-4"
+                    variant="default"
+                >
+                    Reset Password
+                </Button>
+
+                <Button
+                    onClick={() => setIsDeleteAccountModalOpen(true)}
+                    className="w-full font-semibold mt-4"
+                    variant="destructive"
+                >
+                    Delete Account
+                </Button>
             </div>
+
+            {/* Reset Password Modal */}
+            <Dialog open={isResetPasswordModalOpen} onOpenChange={setIsResetPasswordModalOpen}>
+                <DialogContent>
+                    <DialogTitle>Reset Your Password</DialogTitle>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium">Old Password</label>
+                            <input
+                                type="password"
+                                value={oldPassword}
+                                onChange={(e) => setOldPassword(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border rounded-md"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium">New Password</label>
+                            <input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border rounded-md"
+                            />
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-between">
+                        <Button
+                            onClick={async () => await handleResetPassword(oldPassword, newPassword)}
+                            className="bg-purple-600 text-white rounded-md"
+                        >
+                            Submit
+                        </Button>
+                        <Button
+                            onClick={() => setIsResetPasswordModalOpen(false)} // Close modal
+                            className="bg-gray-400 text-white rounded-md"
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Account Modal */}
+            <Dialog open={isDeleteAccountModalOpen} onOpenChange={setIsDeleteAccountModalOpen}>
+                <DialogContent>
+                    <DialogTitle>Delete Your Account</DialogTitle>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium">NIC</label>
+                            <input
+                                type="text"
+                                value={deleteNIC}
+                                onChange={(e) => setDeleteNIC(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border rounded-md"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium">Password</label>
+                            <input
+                                type="password"
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                className="mt-1 block w-full px-4 py-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="text-sm text-gray-600 mt-2">
+                            Enter NIC and Password to confirm account deletion.
+                        </div>
+                    </div>
+                    <div className="mt-4 flex justify-between">
+                        <Button
+                            onClick={() => handleDeleteAccount(deleteNIC, deletePassword)}
+                            className="bg-red-600 text-white rounded-md"
+                        >
+                            Confirm Deletion
+                        </Button>
+                        <Button
+                            onClick={() => setIsDeleteAccountModalOpen(false)} // Close modal
+                            className="bg-gray-400 text-white rounded-md"
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
+
+export default ProfileForm;

@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 export async function POST(request: Request) {
-    const apiUrl = `https://axiontestgateway.azure-api.net/axion/auth/login/patient`;
+    const apiUrl = `https://axiontestgateway.azure-api.net/axion/user/reset-password`;
 
     try {
         const body = await request.json(); // Read the body from the incoming request
@@ -10,6 +10,7 @@ export async function POST(request: Request) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionStorage.getItem('session_token')}`,
             },
             body: JSON.stringify(body), // Forward the body as it is
         });

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import {Bell, User} from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import {useRouter} from "next/navigation";
 import SidebarLayout from "@/app/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,7 @@ const Dashboard = () => {
         { id: 2, message: "You have a new lab report available for viewing." },
         { id: 3, message: "Reminder: Take your Amoxicillin at 8 PM." },
     ];
+    const router = useRouter();
     const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
 
     if (!isAuthenticated) {
@@ -117,13 +118,27 @@ const Dashboard = () => {
                             </PopoverContent>
                         </Popover>
                         <Tooltip>
-                            <TooltipTrigger>
-                                <Link href="/profile">
+                        <TooltipTrigger>
+                            <Popover>
+                                <PopoverTrigger>
                                     <User size={24} className="cursor-pointer" />
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent>Profile</TooltipContent>
-                        </Tooltip>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-2 space-y-2 dark:bg-gray-950">
+                                    <Button variant="outline" className="w-full" onClick={() => router.push('/profile')}>
+                                        Profile
+                                    </Button>
+                                    <Button variant="destructive" className="w-full" onClick={() => {
+                                        sessionStorage.removeItem("session_token");
+                                        sessionStorage.removeItem("refresh_token");
+                                        router.push("/auth");
+                                    }}>
+                                        Logout
+                                    </Button>
+                                </PopoverContent>
+                            </Popover>
+                        </TooltipTrigger>
+                        <TooltipContent>Profile</TooltipContent>
+                    </Tooltip>
                     </TooltipProvider>
                     <LanguageSwitch />
                 </div>
