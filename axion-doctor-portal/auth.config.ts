@@ -6,7 +6,7 @@ export const authConfig = {
 	},
 	callbacks: {
 		authorized({ auth, request: { nextUrl } }) {
-			const isLoggedIn = !!auth?.user;
+			const isLoggedIn = !!auth?.user; // Changed from auth?.accessToken
 			const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
 
 			// Handle session error (e.g., when the refresh token is invalid)
@@ -21,15 +21,15 @@ export const authConfig = {
 				if (isLoggedIn) return true;
 				return false; // Redirect unauthenticated users to login page
 			} else if (isLoggedIn) {
-				return Response.redirect(new URL('/dashboard', nextUrl));
+				return Response.redirect(new URL('/', nextUrl));
 			}
 			return true;
 		},
 	},
-	providers: [],
+	providers: [], // Providers are configured in auth.ts
 	session: {
 		strategy: 'jwt',
-		maxAge: 7 * 24 * 60 * 60, // 7 days
+		maxAge: 7 * 24 * 60 * 60, // 7 days for refresh token
 	},
 	secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;

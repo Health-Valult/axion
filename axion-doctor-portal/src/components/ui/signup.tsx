@@ -31,10 +31,11 @@ import {
 import { Textarea } from './textarea';
 import { AxionLogo } from '@/app/components/SideBar';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const nicRegex = /^([0-9]{12}|[0-9]{9}[vV])$/;
-const phoneRegex = /^\+94[0-9]{9}$/;
-const slmcRegex = /^[0-9]{5}$/;
+const phoneRegex = /^[0-9]{10}$/;
+const slmcRegex = /^SLMC[0-9]{5}$/;
 const passRegex =
 	/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,20}$/;
 
@@ -58,7 +59,13 @@ const formSchema = z.object({
 			})
 		)
 		.optional()
-		.default([]),
+		.default([
+			{
+				degree: 'MBBS',
+				institution: 'University of Colombo',
+				year: 2020,
+			},
+		]),
 	password: z
 		.string()
 		.regex(
@@ -105,13 +112,58 @@ export function DoctorSignup() {
 	const onSubmit = async (values: z.infer<typeof formSchema>) => {
 		try {
 			setIsLoading(true);
-			console.log(values);
-			// API call would go here
+			console.log('Submitting form data:', values);
+
+			// Prepare the data in the format expected by the API
+			const doctorData = {
+				FullName: values.fullName,
+				NIC: values.nic,
+				Email: values.email,
+				Telephone: values.phone,
+				Address: values.address,
+				Specialization: values.specialization,
+				Affiliation: values.affiliation,
+				OfficeHours: values.officeHours,
+				SlmcNumber: values.slmcNumber,
+				Experience: values.experience,
+				Qualifications: values.qualifications || [],
+				Password: values.password,
+			};
+
+			// API endpoint
+			const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+			const response = await fetch('/api/proxy', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+				},
+				body: JSON.stringify(doctorData),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				console.error('Registration failed:', errorData);
+				toast.error(
+					`Registration failed: ${
+						errorData.message || 'Unknown error'
+					}`
+				);
+				throw new Error(errorData.message || 'Registration failed');
+			}
+
+			const result = await response.json();
+			console.log('Registration successful:', result);
+			toast.success('Registration successful! Redirecting to login...');
+
+			// Redirect to login page on success
 			setTimeout(() => {
 				router.push('/login');
 			}, 1500);
 		} catch (error) {
-			console.error(error);
+			toast('Error during registration:' + error);
+			// Handle error - you could set an error state here to display to the users
 		} finally {
 			setIsLoading(false);
 		}
@@ -375,7 +427,7 @@ export function DoctorSignup() {
 											type="number"
 											placeholder="0"
 											{...field}
-											value={field.value} // Explicitly set value from form state
+											value={field.value.toString()} // Explicitly set value from form state
 											onChange={(e) =>
 												field.onChange(
 													Number(e.target.value)
