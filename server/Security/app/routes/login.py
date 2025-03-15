@@ -39,8 +39,9 @@ def staff_login(request:Request,cred:Userlg):
 @route.post("/axion/auth/refresh",tags=["secure"],dependencies=[Depends(Authenticate)])
 def refresh(request:Request,cred:Token):
     state:FastAPI = request.app
+    cache = state.state.Cache
     refresh_token = cred.Token
-    response = authenticate_session(refresh_token,refresh_token=True,Red=state.Cache).get("uuid")
+    response = authenticate_session(refresh_token,refresh_token=True,Red=cache).get("uuid")
     new_session = generateTokens(type="session",endpoint="patient",payload=response,key=state.refresh_private_key,exp=60)
     return JSONResponse(status_code=200, content={"token":new_session})
     
@@ -48,8 +49,9 @@ def refresh(request:Request,cred:Token):
 @route.post("/axion/auth/logout",tags=["secure"],dependencies=[Depends(Authenticate)])
 def logout(request:Request):
     state:FastAPI = request.app
+    cache = state.state.Cache
     token = request.headers.get('authorization')
-    response = authenticate_session(token,Red=state.Cache)["uuid"]
-    state.Cache.set_token(token = token,key = response,ttl=60,token_type="session")
-    state.Cache.delete_token(key = response,token_type="refresh")
+    response = authenticate_session(token,Red=cache)["uuid"]
+    cache.set_token(token = token,key = response,ttl=60,token_type="session")
+    cache.delete_token(key = response,token_type="refresh")
     return JSONResponse(status_code=200, content={"msg":"logout sucessful"})

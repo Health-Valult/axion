@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+import logging
 import warnings
 import pymongo
 import uvicorn
@@ -20,6 +22,7 @@ from app.ax_types.procedure import *
 
 from app.middleware.auth import Auth
 from app.utils.logging import*
+from app.shared.utils.Cache.redis import redis_AX
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -34,6 +37,45 @@ ImmCollection = Database.get_collection("immunizations")
 ProCollection = Database.get_collection("procedures")
 
 MQ = sendMQ("localhost","record")
+logger = logging.getLogger("uvicorn")
+# startup events
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+
+    # rabbitMQ connection startup
+    app.state.sender_task = sendMQ("mq","security")
+    # app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback_security))
+
+    # database connection startup
+    logger.info("connecting to DB 🍃...")
+    DBClient = pymongo.MongoClient(URL)
+    Database = DBClient.get_database("users_db")
+    app.state.PatientsCollection = Database.get_collection("patients")
+    app.state.DoctorsCollection = Database.get_collection("doctors")
+    app.state.HospitalCollection = Database.get_collection("hospital")
+    
+    # cache connection startup
+    logger.info("connecting to cache 📚...")
+    app.state.Cache = redis_AX("redis://cache:6379",10).connect()
+
+    # loading refresh token
+    with open('./app/data/keys/refresh_private.pem', 'r') as file:
+        app.state.refresh_private_key = file.read()
+
+    logger.info(app.state)
+
+    yield
+
+    logger.info("shutting down server")
+
+    # cleanup tasks
+    app.state.consumer_task.cancel()
+    DBClient.close()
+    app.state.Cache.disconnect()
+
+
+# instantiating FastAPI server
+app = FastAPI(lifespan=lifespan,title="record")
 
 @strawberry.type
 class Query:
@@ -46,47 +88,25 @@ class Query:
             code:str,
             encounter:str
         ) -> Observation:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections}
-            observationAggregate = ObsCollection.aggregate([
-                    {"$match": {
-                        "patient": patient, 
-                        "code": code, 
-                        "encounter":encounter
-                        }},
-                    {"$project": query|{"_id":0}} 
-                ])
-            
-            observationAggregateResult = next(observationAggregate,None)
-            if observationAggregateResult is None:
-                return None
-            observationQueryResult = Observation(**observationAggregateResult)
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return observationQueryResult
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
+        
+        request = info.context["request"]
+        query={ selection.name:1 for selection in info.selected_fields[0].selections}
+        observationAggregate = ObsCollection.aggregate([
+                {"$match": {
+                    "patient": patient, 
+                    "code": code, 
+                    "encounter":encounter
+                    }},
+                {"$project": query|{"_id":0}} 
+            ])
+        
+        observationAggregateResult = next(observationAggregate,None)
+        if observationAggregateResult is None:
+            return None
+        observationQueryResult = Observation(**observationAggregateResult)
+        
+        return observationQueryResult
+        
 
     @strawberry.field
     async def observationStack(
@@ -97,43 +117,21 @@ class Query:
         start:Optional[str] = strawberry.UNSET,
         end:Optional[str] = strawberry.UNSET
         )-> ObservationStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            observationAggregate = ObsCollection.aggregate([
-                    {"$match": {
-                        "patient": patient, 
-                        "code": code, 
-                        }},
-                    {"$project": query|{"_id":0}} 
-                ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return ObservationStack(
-                Observations=[Observation(**obs) for obs in observationAggregate]
-            )
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
+        
+        request = info.context["request"]
+        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        observationAggregate = ObsCollection.aggregate([
+                {"$match": {
+                    "patient": patient, 
+                    "code": code, 
+                    }},
+                {"$project": query|{"_id":0}} 
+            ])
+       
+        return ObservationStack(
+            Observations=[Observation(**obs) for obs in observationAggregate]
+        )
+       
 
     @strawberry.field
     async def allergys(
@@ -377,7 +375,6 @@ graphql_app = GraphQLRouter(schema)
 
 
 
-app = FastAPI()
 app.include_router(graphql_app, prefix="/graphql")
 
 app.add_middleware(Auth,Mq=MQ)
