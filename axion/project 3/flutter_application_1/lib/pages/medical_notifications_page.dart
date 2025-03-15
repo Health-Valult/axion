@@ -5,13 +5,22 @@ import 'package:flutter_application_1/services/api_service.dart';
 class MedicalNotificationsPage extends StatefulWidget {
   const MedicalNotificationsPage({super.key});
 
+  static List<Map<String, String>> reminders = [];
+
+  static List<Map<String, String>> getReminders(List<Map<String, dynamic>> notifications) {
+    reminders = notifications.map((notification) => {
+      'time': notification['time']?.toString() ?? 'N/A',
+      'title': notification['title']?.toString() ?? 'Untitled'
+    }).toList();
+    return reminders;
+  }
+
   @override
   State<MedicalNotificationsPage> createState() => _MedicalNotificationsPageState();
 }
 
 class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
   final ApiService _apiService = ApiService();
-  List<Map<String, dynamic>> _notifications = [];
   bool _isLoading = true;
 
   @override
@@ -24,8 +33,9 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
     try {
       final notifications = await _apiService.getMedicalNotifications();
       setState(() {
-        _notifications = notifications;
         _isLoading = false;
+        // Update static reminders
+        MedicalNotificationsPage.getReminders(notifications);
       });
     } catch (e) {
       setState(() {
@@ -34,39 +44,6 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to load notifications: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  Future<void> _addNotification() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (context) => const AddNotificationDialog(),
-    );
-
-    if (result != null) {
-      try {
-        await _apiService.addMedicalNotification(result);
-        _loadNotifications(); // Reload the list
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add notification: ${e.toString()}')),
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _deleteNotification(String id) async {
-    try {
-      await _apiService.deleteMedicalNotification(id);
-      _loadNotifications(); // Reload the list
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete notification: ${e.toString()}')),
         );
       }
     }
@@ -90,16 +67,10 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(loc.medicalNotifications),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _addNotification,
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _notifications.isEmpty
+        child: MedicalNotificationsPage.reminders.isEmpty
             ? Center(
                 child: Text(
                   loc.noReports,
@@ -108,12 +79,11 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
                 ),
               )
             : ListView.builder(
-                itemCount: _notifications.length,
+                itemCount: MedicalNotificationsPage.reminders.length,
                 itemBuilder: (context, index) {
-                  final notification = _notifications[index];
+                  final notification = MedicalNotificationsPage.reminders[index];
                   final time = notification['time'] ?? 'N/A';
                   final title = notification['title'] ?? 'Untitled';
-                  final id = notification['id'] ?? '';
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -136,33 +106,6 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
                           fontSize: 16,
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _deleteNotification(id),
-                      ),
-                      onTap: () async {
-                        final result = await showDialog<Map<String, dynamic>>(
-                          context: context,
-                          builder: (context) => EditNotificationDialog(
-                            notification: notification,
-                          ),
-                        );
-
-                        if (result != null) {
-                          try {
-                            await _apiService.updateMedicalNotification(id, result);
-                            _loadNotifications(); // Reload the list
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to update notification: ${e.toString()}'),
-                                ),
-                              );
-                            }
-                          }
-                        }
-                      },
                     ),
                   );
                 },

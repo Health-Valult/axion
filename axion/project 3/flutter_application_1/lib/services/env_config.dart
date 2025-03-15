@@ -4,8 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// and configuration settings used throughout the application.
 class EnvConfig {
   // API Configuration
-  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000/api';
-  static String get graphqlUrl => dotenv.env['GRAPHQL_URL'] ?? 'http://localhost:3000/api/graphql';
+  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://axiontestgateway.azure-api.net';
+  static String get graphqlUrl => dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/axion/graphql';
   
   // Authentication Configuration
   static int get accessTokenDuration => int.parse(dotenv.env['ACCESS_TOKEN_DURATION'] ?? '3600');
@@ -25,25 +25,27 @@ class EnvConfig {
 class _AuthEndpoints {
   const _AuthEndpoints();
   
-  String get signupUser => '/axion/auth/signup/user';
+  String get signupUser => '/auth/signup/patient';
   String get validateEmail => '/axion/auth/validate/email';
   String get validateOTP => '/axion/auth/validate/otp';
-  String get sendOTP => '/axion/auth/send/otp';
-  String get loginUser => '/axion/auth/login/user';
+  String get sendOTP => '/axion/auth/otp/send';
+  String get verifyOTP => '/axion/auth/otp/verify';
+  String get loginUser => '/auth/login/patient';
   String get refreshToken => '/axion/auth/refresh';
   String get logout => '/axion/auth/logout';
-  String get resetPassword => '/axion/auth/reset-password';
+  String get resetPassword => '/axion/user/reset-password';
 }
 
 /// Profile-related endpoints
 class _ProfileEndpoints {
   const _ProfileEndpoints();
   
-  String get profile => '/axion/user/profile';
+  String get profile => '/user/profile';
   String get update => '/axion/user/profile/update';
   String get changePassword => '/axion/user/profile/change-password';
   String get uploadPicture => '/axion/user/profile/picture';
   String get delete => '/axion/user/profile/delete';
+  String get verifyDelete => '/axion/user/profile/verify-delete';
 }
 
 /// Settings-related endpoints

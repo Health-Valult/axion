@@ -7,6 +7,7 @@ import 'package:flutter_application_1/services/connectivity_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +18,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _loginForm = GlobalKey<FormState>();
-  final TextEditingController _nicController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _authService = AuthService();
   final _connectivityService = ConnectivityService();
@@ -26,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    _nicController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -52,28 +53,29 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Modified to only support user login
       final result = await _authService.login(
-        _nicController.text,
+        _emailController.text,
         _passwordController.text,
       );
 
       if (mounted) {
-        if (result['success'] && result['data']['role'] == 'user') {
+        if (result['success']) {  
           isLoggedIn = true;
           context.go('/home');
         } else {
           setState(() {
-            _error = result['data']['role'] != 'user' 
-                ? 'Only patient login is allowed'
-                : (result['error'] ?? 'Login failed');
+            if (result['details'] != null) {
+              print('Login Error Details: ${json.encode(result['details'])}');
+            }
+            _error = result['error'] ?? 'Login failed';
           });
         }
       }
     } catch (e) {
+      print('Login Screen Error: $e');
       if (mounted) {
         setState(() {
-          _error = 'Network error occurred. Please check your connection and try again.';
+          _error = 'An unexpected error occurred. Please try again.';
         });
       }
     } finally {
@@ -163,14 +165,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 30.0),
                     child: LoginTextFieald(
-                      controller: _nicController,
-                      label: "NIC",
+                      controller: _emailController,
+                      label: "Email",
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your NIC';
+                          return 'Please enter your email';
                         }
-                        if (!(value.length == 10 || value.length == 12)) {
-                          return 'Incorrect NIC format';
+                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailRegex.hasMatch(value)) {
+                          return 'Please enter a valid email address';
                         }
                         return null;
                       },

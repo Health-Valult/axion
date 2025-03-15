@@ -106,5 +106,12 @@
   "deleteAccountDescription": "Deleting your account will remove all your personal data permanently.",
   "deleteAccountConfirmation": "Please confirm that you want to delete your account.",
   "nic": "NIC",
-  "password": "Password"
+  "password": "Password",
+  "privacy": "Privacy",
+  "pushNotifications": "Push Notifications",
+  "emailNotifications": "Email Notifications",
+  "medicalAlerts": "Medical Alerts",
+  "shareProfile": "Share Profile",
+  "showActivity": "Show Activity",
+  "allowRecommendations": "Allow Recommendations"
 }

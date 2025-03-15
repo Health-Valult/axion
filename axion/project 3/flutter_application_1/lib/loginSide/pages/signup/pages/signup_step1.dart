@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/loginSide/pages/login/login_screen.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
-import 'package:flutter_application_1/services/api_service.dart';
-import 'package:flutter_application_1/services/connectivity_service.dart';
 
 class SignupStep1 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -27,20 +24,14 @@ class _SignupStep1State extends State<SignupStep1>
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _apiService = ApiService();
-  final _connectivityService = ConnectivityService();
-  String? _error;
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     // Initialize controllers with existing data
-    _firstNameController.text = widget.signupData.firstName;
-    _lastNameController.text = widget.signupData.lastName;
-    _emailController.text = widget.signupData.email;
-    _passwordController.text = widget.signupData.password;
+    _firstNameController.text = widget.signupData.FirstName;
+    _lastNameController.text = widget.signupData.LastName;
+    _emailController.text = widget.signupData.Email;
   }
 
   @override
@@ -48,77 +39,32 @@ class _SignupStep1State extends State<SignupStep1>
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _validateAndSaveData() async {
-    if (!widget.formKey.currentState!.validate()) {
+  void _validateAndProceed() {
+    final formState = widget.formKey.currentState;
+    if (formState == null) {
+      print('Form state is null in SignupStep1');
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    if (formState.validate()) {
+      // Save data to signupData model
+      widget.signupData.FirstName = _firstNameController.text.trim();
+      widget.signupData.LastName = _lastNameController.text.trim();
+      widget.signupData.Email = _emailController.text.trim();
 
-    try {
-      // Check internet connectivity first
-      final hasInternet = await _connectivityService.checkInternetConnection();
-      if (!hasInternet) {
-        setState(() {
-          _error = 'No internet connection. Please check your network and try again.';
-          _isLoading = false;
-        });
-        return;
-      }
+      // Debug print to verify data is saved
+      print('Step 1 Data Saved:');
+      print('First Name: ${widget.signupData.FirstName}');
+      print('Last Name: ${widget.signupData.LastName}');
+      print('Email: ${widget.signupData.Email}');
 
-      // Validate email with API
-      final response = await _apiService.validateEmail(_emailController.text.trim());
-      
-      if (response['success'] == true) {
-        // Show email confirmation dialog
-        final bool? confirmed = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Confirm Email'),
-              content: Text('Please confirm your email address:\n${_emailController.text.trim()}'),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Edit'),
-                  onPressed: () => Navigator.of(context).pop(false),
-                ),
-                TextButton(
-                  child: const Text('Confirm'),
-                  onPressed: () => Navigator.of(context).pop(true),
-                ),
-              ],
-            );
-          },
-        );
-
-        if (confirmed == true) {
-          widget.signupData.firstName = _firstNameController.text.trim();
-          widget.signupData.lastName = _lastNameController.text.trim();
-          widget.signupData.email = _emailController.text.trim();
-          widget.signupData.password = _passwordController.text;
-          widget.onNext();
-        }
-      } else {
-        setState(() {
-          _error = response['error'] ?? 'Email validation failed';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _error = 'Network error occurred. Please try again.';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      formState.save();
+      widget.onNext();
+    } else {
+      print('Validation failed in SignupStep1');
     }
   }
 
@@ -135,39 +81,14 @@ class _SignupStep1State extends State<SignupStep1>
           key: widget.formKey,
           child: Column(
             children: [
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.error.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _error!,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.error,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               CustomTextField(
                 controller: _firstNameController,
                 hintText: 'First Name',
-                enabled: !_isLoading,
+                onSaved: (value) {
+                  if (value != null) {
+                    widget.signupData.FirstName = value.trim();
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'First Name cannot be empty';
@@ -181,7 +102,11 @@ class _SignupStep1State extends State<SignupStep1>
               CustomTextField(
                 controller: _lastNameController,
                 hintText: 'Last Name',
-                enabled: !_isLoading,
+                onSaved: (value) {
+                  if (value != null) {
+                    widget.signupData.LastName = value.trim();
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
                     return 'Last Name cannot be empty';
@@ -195,71 +120,26 @@ class _SignupStep1State extends State<SignupStep1>
               CustomTextField(
                 controller: _emailController,
                 hintText: 'Email',
-                enabled: !_isLoading,
                 keyboardType: TextInputType.emailAddress,
+                onSaved: (value) {
+                  if (value != null) {
+                    widget.signupData.Email = value.trim();
+                  }
+                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email cannot be empty';
+                    return 'Email is required';
                   }
-                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                  if (!emailRegex.hasMatch(value)) {
-                    return 'Please enter a valid email address';
+                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) {
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
               ),
-              CustomTextField(
-                controller: _passwordController,
-                hintText: 'Password',
-                enabled: !_isLoading,
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password cannot be empty';
-                  }
-                  if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
-                  }
-                  if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]+$').hasMatch(value)) {
-                    return 'Password must contain letters and numbers';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               CustomButton(
+                onPressed: _validateAndProceed,
                 text: 'Next',
-                onPressed: _isLoading ? null : () {
-                  _validateAndSaveData();
-                },
-                isLoading: _isLoading,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Already have an account? ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

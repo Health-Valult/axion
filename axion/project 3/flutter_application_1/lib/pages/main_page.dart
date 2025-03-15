@@ -40,10 +40,6 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _loadCurrentUser();
-    // For testing: simulate an API call triggering the auth notification after 2 seconds.
-    Future.delayed(const Duration(seconds: 2), () {
-      NotificationService.triggerAuthNotification();
-    });
     _startAuthNotificationPolling();
   }
 

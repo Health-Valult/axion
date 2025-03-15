@@ -12,12 +12,14 @@ class ApiConfig {
   static String get validateEmail => EnvConfig.auth.validateEmail;
   static String get validateOTP => EnvConfig.auth.validateOTP;
   static String get sendOTP => EnvConfig.auth.sendOTP;
+  static String get verifyOTP => EnvConfig.auth.verifyOTP;
   static String get loginUser => EnvConfig.auth.loginUser;
   static String get refreshToken => EnvConfig.auth.refreshToken;
   static String get logout => EnvConfig.auth.logout;
   static String get resetPassword => EnvConfig.auth.resetPassword;
   static String get userProfile => EnvConfig.profile.profile;
   static String get deleteAccount => EnvConfig.profile.delete;
+  static String get verifyAndDeleteAccount => EnvConfig.profile.verifyDelete;
   
   // Profile endpoints
   static String get updateProfile => EnvConfig.profile.update;
@@ -47,10 +49,7 @@ class ApiConfig {
   static String get validateLink => EnvConfig.links.validate;
   
   // Medical Records endpoints (GraphQL)
-  static String get getMedications => EnvConfig.medical.endpoint;
-  static String get getAllergies => EnvConfig.medical.endpoint;
-  static String get getReports => EnvConfig.medical.endpoint;
-  static String get getReportDetails => EnvConfig.medical.endpoint;
+
   
   // Medical Notifications endpoints
   static String get addMedicalNotification => EnvConfig.notifications.medical;

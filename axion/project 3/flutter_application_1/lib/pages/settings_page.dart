@@ -2,12 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/main.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_application_1/models/settings.dart';
 import 'package:flutter_application_1/services/api_service.dart';
-import 'package:flutter_application_1/services/auth_service.dart';
 
 /// ==========================
 /// Helper methods to persist settings
@@ -35,6 +31,16 @@ Future<void> saveLocale(Locale locale) async {
   await prefs.setString('locale', locale.languageCode);
 }
 
+Future<void> saveNotificationPreferences(Map<String, bool> preferences) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('notification_preferences', json.encode(preferences));
+}
+
+Future<void> savePrivacySettings(Map<String, bool> settings) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('privacy_settings', json.encode(settings));
+}
+
 /// ==========================
 /// SettingsPage
 /// ==========================
@@ -47,12 +53,11 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _apiService = ApiService();
   bool _isDarkMode = true;
   late String _selectedLanguage;
   bool _isLoading = true;
-  String? _error;
-  Settings? _settings;
+  Map<String, bool> _notificationPreferences = {};
+  Map<String, bool> _privacySettings = {};
 
   final Map<String, Locale> _languageMap = {
     'English': const Locale('en'),
@@ -71,47 +76,56 @@ class _SettingsPageState extends State<SettingsPage> {
     _loadSettings();
   }
 
-  Future<void> _loadSettings({int retryCount = 3}) async {
-    while (retryCount > 0) {
-      try {
-        setState(() {
-          _isLoading = true;
-          _error = null;
-        });
-
-        final settings = await _apiService.getSettings();
-        setState(() {
-          _settings = settings as Settings?;
-          _isLoading = false;
-        });
-        return;
-      } catch (e) {
-        retryCount--;
-        if (retryCount == 0) {
-          setState(() {
-            _error = e.toString();
-            _isLoading = false;
-          });
-        } else {
-          await Future.delayed(const Duration(seconds: 1));
-        }
-      }
-    }
-  }
-
-  Future<Settings?> _loadSettingsFromPrefs() async {
+  Future<void> _loadSettings() async {
+    setState(() => _isLoading = true);
+    
     try {
       final prefs = await SharedPreferences.getInstance();
-      final settingsJson = prefs.getString('settings');
-      if (settingsJson != null) {
-        final Map<String, dynamic> settingsMap = json.decode(settingsJson);
-        return Settings.fromJson(settingsMap);
+      
+      // Load notification preferences
+      final notificationPrefsString = prefs.getString('notification_preferences');
+      if (notificationPrefsString != null) {
+        _notificationPreferences = Map<String, bool>.from(
+          json.decode(notificationPrefsString)
+        );
+      } else {
+        // Default preferences
+        _notificationPreferences = {
+          'push_notifications': true,
+          'email_notifications': true,
+          'medical_alerts': true,
+        };
       }
-      return null;
+
+      // Load privacy settings
+      final privacySettingsString = prefs.getString('privacy_settings');
+      if (privacySettingsString != null) {
+        _privacySettings = Map<String, bool>.from(
+          json.decode(privacySettingsString)
+        );
+      } else {
+        // Default settings
+        _privacySettings = {
+          'share_profile': false,
+          'show_activity': true,
+          'allow_recommendations': true,
+        };
+      }
     } catch (e) {
-      print('Error loading settings: $e');
-      return null;
+      // If there's an error, use default values
+      _notificationPreferences = {
+        'push_notifications': true,
+        'email_notifications': true,
+        'medical_alerts': true,
+      };
+      _privacySettings = {
+        'share_profile': false,
+        'show_activity': true,
+        'allow_recommendations': true,
+      };
     }
+
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -127,25 +141,6 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
 
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(title: Text(loc.settings)),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Error: $_error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadSettings,
-                child: Text(loc.retry),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       appBar: AppBar(title: Text(loc.settings)),
       body: RefreshIndicator(
@@ -157,17 +152,13 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             _buildLanguageCard(loc),
             const SizedBox(height: 16),
+            _buildNotificationsCard(loc),
+            const SizedBox(height: 16),
+            _buildPrivacyCard(loc),
+            const SizedBox(height: 16),
             _buildChangePasswordCard(loc),
             const SizedBox(height: 16),
             _buildDeleteAccountCard(loc),
-            if (_settings?.notifications.isNotEmpty ?? false) ...[
-              const SizedBox(height: 16),
-              _buildNotificationsCard(loc),
-            ],
-            if (_settings?.privacy.isNotEmpty ?? false) ...[
-              const SizedBox(height: 16),
-              _buildPrivacyCard(loc),
-            ],
           ],
         ),
       ),
@@ -180,21 +171,10 @@ class _SettingsPageState extends State<SettingsPage> {
         title: Text(loc.darkMode),
         value: _isDarkMode,
         onChanged: (bool value) async {
-          try {
-            await _apiService.updateSettings({'darkMode': value});
-            setState(() => _isDarkMode = value);
-            final newMode = value ? ThemeMode.dark : ThemeMode.light;
-            MyApp.themeNotifier.value = newMode;
-            await saveThemeMode(newMode);
-          } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to update theme: ${e.toString()}'),
-                ),
-              );
-            }
-          }
+          setState(() => _isDarkMode = value);
+          final newMode = value ? ThemeMode.dark : ThemeMode.light;
+          MyApp.themeNotifier.value = newMode;
+          await saveThemeMode(newMode);
         },
       ),
     );
@@ -202,71 +182,25 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildLanguageCard(AppLocalizations loc) {
     return Card(
-      child: ListTile(
-        title: Text(loc.language),
-        trailing: DropdownButton<String>(
-          value: _selectedLanguage,
-          items: _languageMap.keys.map((String lang) {
-            return DropdownMenuItem<String>(
-              value: lang,
-              child: Text(lang),
-            );
-          }).toList(),
-          onChanged: (String? value) async {
-            if (value != null) {
-              try {
-                final newLocale = _languageMap[value]!;
-                await _apiService
-                    .updateSettings({'language': newLocale.languageCode});
+      child: Column(
+        children: [
+          ListTile(
+            title: Text(loc.language),
+          ),
+          ...(_languageMap.keys.map((language) => RadioListTile<String>(
+            title: Text(language),
+            value: language,
+            groupValue: _selectedLanguage,
+            onChanged: (String? value) async {
+              if (value != null) {
                 setState(() => _selectedLanguage = value);
-                MyApp.setLocale(newLocale);
+                final newLocale = _languageMap[value]!;
+                MyApp.localeNotifier.value = newLocale;
                 await saveLocale(newLocale);
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content:
-                          Text('Failed to update language: ${e.toString()}'),
-                    ),
-                  );
-                }
               }
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildChangePasswordCard(AppLocalizations loc) {
-    return Card(
-      child: ListTile(
-        title: Text(loc.changePassword),
-        trailing: const Icon(Icons.lock, color: Colors.blueGrey),
-        onTap: () {
-          showDialog(
-            context: context,
-            builder: (_) => const ChangePasswordDialog(),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _showDeleteAccountDialog(AppLocalizations loc) async {
-    await showDialog(
-      context: context,
-      builder: (context) => const DeleteAccountDialog(),
-    );
-  }
-
-  Widget _buildDeleteAccountCard(AppLocalizations loc) {
-    return Card(
-      child: ListTile(
-        title: Text(loc.deleteAccount),
-        subtitle: Text(loc.deleteAccountDescription),
-        trailing: const Icon(Icons.warning, color: Colors.red),
-        onTap: () => _showDeleteAccountDialog(loc),
+            },
+          ))),
+        ],
       ),
     );
   }
@@ -274,46 +208,20 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildNotificationsCard(AppLocalizations loc) {
     return Card(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              loc.notificationPreferences,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          ListTile(
+            title: Text(loc.notifications),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _settings!.notifications.length,
-            itemBuilder: (context, index) {
-              final notification = _settings!.notifications[index];
-              return SwitchListTile(
-                title: Text(notification),
-                value: _settings!.preferences['notifications']?[notification] ?? false,
-                onChanged: (bool value) async {
-                  try {
-                    await _apiService
-                        .updateNotificationPreferences({notification: value});
-                    await _loadSettings();
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Failed to update notification preference: ${e.toString()}'),
-                        ),
-                      );
-                    }
-                  }
-                },
-              );
+          ...(_notificationPreferences.entries.map((entry) => SwitchListTile(
+            title: Text(_getNotificationTitle(entry.key, loc)),
+            value: entry.value,
+            onChanged: (bool value) async {
+              setState(() {
+                _notificationPreferences[entry.key] = value;
+              });
+              await saveNotificationPreferences(_notificationPreferences);
             },
-          ),
+          ))),
         ],
       ),
     );
@@ -322,48 +230,82 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildPrivacyCard(AppLocalizations loc) {
     return Card(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              loc.privacySettings,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          ListTile(
+            title: Text(loc.privacy),
           ),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _settings!.privacy.length,
-            itemBuilder: (context, index) {
-              final entry = _settings!.privacy.entries.elementAt(index);
-              return SwitchListTile(
-                title: Text(entry.key),
-                value: entry.value as bool,
-                onChanged: (bool value) async {
-                  try {
-                    await _apiService.updatePrivacyPreference(entry.key, value);
-                    await _loadSettings();
-                  } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Failed to update privacy setting: ${e.toString()}'),
-                        ),
-                      );
-                    }
-                  }
-                },
-              );
+          ...(_privacySettings.entries.map((entry) => SwitchListTile(
+            title: Text(_getPrivacySettingTitle(entry.key, loc)),
+            value: entry.value,
+            onChanged: (bool value) async {
+              setState(() {
+                _privacySettings[entry.key] = value;
+              });
+              await savePrivacySettings(_privacySettings);
             },
-          ),
+          ))),
         ],
       ),
     );
+  }
+
+  Widget _buildChangePasswordCard(AppLocalizations loc) {
+    return Card(
+      child: ListTile(
+        title: Text(loc.changePassword),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => const ChangePasswordDialog(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccountCard(AppLocalizations loc) {
+    return Card(
+      child: ListTile(
+        title: Text(
+          loc.deleteAccount,
+          style: const TextStyle(color: Colors.red),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.red),
+        onTap: () {
+          showDialog(
+            context: context,
+            builder: (context) => const DeleteAccountDialog(),
+          );
+        },
+      ),
+    );
+  }
+
+  String _getNotificationTitle(String key, AppLocalizations loc) {
+    switch (key) {
+      case 'push_notifications':
+        return loc.pushNotifications;
+      case 'email_notifications':
+        return loc.emailNotifications;
+      case 'medical_alerts':
+        return loc.medicalAlerts;
+      default:
+        return key;
+    }
+  }
+
+  String _getPrivacySettingTitle(String key, AppLocalizations loc) {
+    switch (key) {
+      case 'share_profile':
+        return loc.shareProfile;
+      case 'show_activity':
+        return loc.showActivity;
+      case 'allow_recommendations':
+        return loc.allowRecommendations;
+      default:
+        return key;
+    }
   }
 }
 
@@ -379,11 +321,10 @@ class DeleteAccountDialog extends StatefulWidget {
 }
 
 class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
+  final _apiService = ApiService();
   final _nicController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isPasswordVisible = false;
   bool _isLoading = false;
-  final _authService = AuthService();
 
   @override
   void dispose() {
@@ -393,33 +334,27 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   }
 
   Future<void> _attemptDeleteAccount() async {
-    final loc = AppLocalizations.of(context)!;
-
     if (_nicController.text.isEmpty || _passwordController.text.isEmpty) {
-      await _showErrorDialog(loc.allFieldsRequired);
+      _showErrorDialog('Please fill in all fields');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      final result = await _authService.deleteAccount(
+      await _apiService.verifyAndDeleteAccount(
         _nicController.text,
         _passwordController.text,
       );
-
-      if (!mounted) return;
-
-      if (result['success']) {
-        // Account deleted successfully, navigate to login screen
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/login', (route) => false);
-      } else {
-        await _showErrorDialog(result['error']);
+      
+      if (mounted) {
+        Navigator.of(context).pop(); // Close dialog
+        Navigator.of(context).pushReplacementNamed('/login');
       }
     } catch (e) {
-      if (!mounted) return;
-      await _showErrorDialog(e.toString());
+      if (mounted) {
+        _showErrorDialog(e.toString());
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -427,103 +362,93 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
     }
   }
 
-  Future<void> _showErrorDialog(String message) async {
-    return showDialog(
+  void _showErrorDialog(String message) {
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.error),
+        title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.ok),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _showConfirmationDialog() async {
-    final loc = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
+  void _showConfirmationDialog() {
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(loc.deleteAccountConfirmation),
-        content: Text(loc.deleteConfirmationMsg),
+        title: const Text('Confirm Account Deletion'),
+        content: const Text(
+          'Are you sure you want to delete your account? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(loc.cancel),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
           ),
           TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _attemptDeleteAccount();
+            },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(loc.delete),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
-
-    if (confirmed == true) {
-      await _attemptDeleteAccount();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-
+    
     return AlertDialog(
       title: Text(loc.deleteAccount),
-      content: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(loc.deleteAccountWarning),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _nicController,
-                  decoration: InputDecoration(
-                    labelText: loc.nic,
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: !_isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: loc.password,
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                      onPressed: () {
-                        setState(
-                            () => _isPasswordVisible = !_isPasswordVisible);
-                      },
-                    ),
-                  ),
-                ),
-              ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(loc.deleteAccountConfirmation),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _nicController,
+              decoration: InputDecoration(
+                labelText: loc.nic,
+                border: const OutlineInputBorder(),
+              ),
             ),
-      actions: _isLoading
-          ? null
-          : [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(loc.cancel),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: loc.password,
+                border: const OutlineInputBorder(),
               ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: _showConfirmationDialog,
-                child: Text(loc.delete),
-              ),
-            ],
+              obscureText: true,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(loc.cancel),
+        ),
+        if (_isLoading)
+          const CircularProgressIndicator()
+        else
+          TextButton(
+            onPressed: _showConfirmationDialog,
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: Text(loc.delete),
+          ),
+      ],
     );
   }
 }
@@ -544,10 +469,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _isLoading = false;
   bool _currentPasswordVisible = false;
   bool _newPasswordVisible = false;
   bool _confirmPasswordVisible = false;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -558,17 +483,15 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   }
 
   Future<void> _attemptChangePassword() async {
-    final loc = AppLocalizations.of(context)!;
-
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
-      _showErrorDialog(loc.allFieldsRequired);
+      _showErrorDialog('Please fill in all fields');
       return;
     }
 
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      _showErrorDialog(loc.passwordsDoNotMatch);
+      _showErrorDialog('New passwords do not match');
       return;
     }
 
@@ -579,8 +502,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         _currentPasswordController.text,
         _newPasswordController.text,
       );
+      
       if (mounted) {
-        Navigator.of(context).pop();
         _showConfirmationDialog();
       }
     } catch (e) {
@@ -598,12 +521,12 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.error),
+        title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.ok),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -611,16 +534,18 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   }
 
   void _showConfirmationDialog() {
-    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(loc.success),
-        content: Text(loc.passwordChangeSuccess),
+        title: const Text('Success'),
+        content: const Text('Your password has been changed successfully.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(loc.ok),
+            onPressed: () {
+              Navigator.of(context).pop(); // Close confirmation dialog
+              Navigator.of(context).pop(); // Close change password dialog
+            },
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -638,8 +563,11 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       obscureText: !visible,
       decoration: InputDecoration(
         labelText: label,
+        border: const OutlineInputBorder(),
         suffixIcon: IconButton(
-          icon: Icon(visible ? Icons.visibility_off : Icons.visibility),
+          icon: Icon(
+            visible ? Icons.visibility_off : Icons.visibility,
+          ),
           onPressed: toggleVisibility,
         ),
       ),
@@ -649,7 +577,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-
+    
     return AlertDialog(
       title: Text(loc.changePassword),
       content: SingleChildScrollView(
@@ -660,8 +588,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               loc.currentPassword,
               _currentPasswordController,
               _currentPasswordVisible,
-              () => setState(
-                  () => _currentPasswordVisible = !_currentPasswordVisible),
+              () => setState(() => _currentPasswordVisible = !_currentPasswordVisible),
             ),
             const SizedBox(height: 16),
             _buildPasswordField(
@@ -675,8 +602,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               loc.confirmNewPassword,
               _confirmPasswordController,
               _confirmPasswordVisible,
-              () => setState(
-                  () => _confirmPasswordVisible = !_confirmPasswordVisible),
+              () => setState(() => _confirmPasswordVisible = !_confirmPasswordVisible),
             ),
           ],
         ),
@@ -686,12 +612,13 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(loc.cancel),
         ),
-        _isLoading
-            ? const CircularProgressIndicator()
-            : ElevatedButton(
-                onPressed: _attemptChangePassword,
-                child: Text(loc.save),
-              ),
+        if (_isLoading)
+          const CircularProgressIndicator()
+        else
+          TextButton(
+            onPressed: _attemptChangePassword,
+            child: Text(loc.save),
+          ),
       ],
     );
   }

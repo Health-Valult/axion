@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/services/session_service.dart';
 import 'package:flutter_application_1/services/env_config.dart';
@@ -7,16 +8,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_ip_address/get_ip_address.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AuthService {
   static String get baseUrl => EnvConfig.apiBaseUrl;
   final _sessionService = SessionService();
   final _deviceInfoPlugin = DeviceInfoPlugin();
 
+  String get _loginEndpoint => EnvConfig.auth.loginUser;
+
   Future<String?> _getAndroidId() async {
     try {
       final androidInfo = await _deviceInfoPlugin.androidInfo;
-      return androidInfo.id; // Using id instead of androidId
+      return androidInfo.id;
     } catch (e) {
       print('Failed to get Android ID: $e');
       return null;
@@ -24,33 +28,30 @@ class AuthService {
   }
 
   Future<Position?> _getCurrentLocation() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
     try {
-      // Check if location services are enabled
-      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      // First check if we have permission
+      final hasPermission = await Permission.location.isGranted;
+      if (!hasPermission) {
+        print('Location permission not granted');
+        return null;
+      }
+
+      // Check if location service is enabled
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        return Future.error('Location services are disabled.');
+        print('Location services are disabled');
+        return null;
       }
 
-      permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          return Future.error('Location permissions are denied');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        return Future.error('Location permissions are permanently denied');
-      }
-
-      // Get location with high accuracy and timeout
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 5),
+      // Get current position with high accuracy
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+        timeLimit: const Duration(seconds: 30),
       );
+
+      print('Got current position: ${position.latitude}, ${position.longitude}');
+      return position;
+
     } catch (e) {
       print('Error getting location: $e');
       return null;
@@ -68,13 +69,43 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> login(String nic, String password) async {
+  Future<Map<String, dynamic>> _makeAuthRequest(String endpoint, Map<String, dynamic> data) async {
     try {
-      // Validate input
-      if (nic.isEmpty || password.isEmpty) {
+      final response = await http.post(
+        Uri.parse(EnvConfig.apiBaseUrl + endpoint),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(data),
+      );
+
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return {
+          'success': true,
+          'data': responseData,
+        };
+      } else {
         return {
           'success': false,
-          'error': 'NIC and password are required',
+          'error': responseData['message'] ?? responseData['error'] ?? 'Request failed',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      // Validate input
+      if (email.isEmpty || password.isEmpty) {
+        return {
+          'success': false,
+          'error': 'Email and password are required',
         };
       }
 
@@ -89,62 +120,58 @@ class AuthService {
       final String? ipAddress = results[1] as String?;
       final String? androidId = results[2] as String?;
 
-      // Try to connect to server with data in exact order
-      try {
-        final response = await http.post(
-          Uri.parse('$baseUrl/auth/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'nic': nic,                    // 1st: NIC
-            'password': password,          // 2nd: Password
-            'location': position != null ? {  // 3rd: Geolocation
-              'latitude': position.latitude,
-              'longitude': position.longitude,
-            } : null,
-            'ipAddress': ipAddress,        // 4th: IP Address
-            'androidId': androidId,        // 5th: Android ID
-          }),
-        ).timeout(const Duration(seconds: 10));
+      // Prepare request body with real device data
+      final requestBody = {
+        'Email': email,
+        'Password': password,
+        'Location': position != null ? {
+          'Latitude': position.latitude,
+          'Longitude': position.longitude,
+        } : null,
+        'IpAddress': ipAddress,
+        'AndroidId': androidId,
+      };
 
-        if (response.statusCode == 200) {
-          final responseData = json.decode(response.body);
-          if (responseData['success']) {
-            // Set session with tokens
-            await _sessionService.setSession(
-              token: responseData['data']['accessToken'],
-              refreshToken: responseData['data']['refreshToken'],
-              expiry: DateTime.now().add(const Duration(hours: 1)),
-              userData: responseData['data']['userData'] ?? {},
-            );
-            return {
-              'success': true,
-              'data': responseData['data'],
-            };
-          }
-          return {
-            'success': false,
-            'error': responseData['error'] ?? 'Login failed',
-          };
-        }
+      // Log request data for debugging
+      print('Login Request URL: $baseUrl$_loginEndpoint');
+      print('Login Request Body: ${json.encode(requestBody)}');
+
+      // Send request to server
+      final response = await _makeAuthRequest(_loginEndpoint, requestBody);
+
+      if (response['success']) {
+        final responseData = response['data'];
+        
+        // Store the session tokens
+        await _sessionService.setSession(
+          token: responseData['session_token'],
+          refreshToken: responseData['refresh_token'],
+          expiry: DateTime.now().add(const Duration(hours: 1)),
+          userData: responseData['userData'] ?? {},
+        );
+
         return {
-          'success': false,
-          'error': 'Server error occurred',
+          'success': true,
+          'data': responseData,
         };
-      } on TimeoutException {
-        return {
-          'success': false,
-          'error': 'Connection timed out',
-        };
-      } catch (e) {
-        return {
-          'success': false,
-          'error': 'Network error occurred',
-        };
+      } else {
+        return response;
       }
-    } catch (e) {
+    } on TimeoutException {
       return {
         'success': false,
-        'error': e.toString(),
+        'error': 'Connection timed out. Please check your internet connection and try again.',
+      };
+    } on IOException {
+      return {
+        'success': false,
+        'error': 'Network error occurred. Please check your internet connection.',
+      };
+    } catch (e) {
+      print('Login Error: $e');
+      return {
+        'success': false,
+        'error': 'An unexpected error occurred. Please try again.',
       };
     }
   }
@@ -214,13 +241,7 @@ class AuthService {
     try {
       final token = await _sessionService.getSessionToken();
       if (token != null) {
-        await http.post(
-          Uri.parse('$baseUrl/auth/logout'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
+        await _makeAuthRequest('auth/logout', {});
       }
     } finally {
       await _sessionService.clearSession();
@@ -245,26 +266,11 @@ class AuthService {
 
   Future<Map<String, dynamic>> resendOTP(String phoneNumber) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/resend-otp'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'phoneNumber': phoneNumber,
-        }),
-      );
+      final response = await _makeAuthRequest('auth/resend-otp', {
+        'phoneNumber': phoneNumber,
+      });
 
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': 'OTP resent successfully',
-        };
-      } else {
-        final error = json.decode(response.body);
-        return {
-          'success': false,
-          'error': error['message'] ?? 'Failed to resend OTP',
-        };
-      }
+      return response;
     } catch (e) {
       return {
         'success': false,
@@ -283,36 +289,16 @@ class AuthService {
         };
       }
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/delete-account'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'nic': nic,
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 10));
+      final response = await _makeAuthRequest('auth/delete-account', {
+        'nic': nic,
+        'password': password,
+      }).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
+      if (response['success']) {
         await _sessionService.clearSession();
-        return {
-          'success': true,
-          'message': 'Account deleted successfully',
-        };
+        return response;
       } else {
-        final error = json.decode(response.body);
-        String errorMessage = error['message'] ?? 'Failed to delete account';
-        
-        if (response.statusCode == 401) {
-          errorMessage = 'Invalid NIC or password';
-        }
-        
-        return {
-          'success': false,
-          'error': errorMessage,
-        };
+        return response;
       }
     } on TimeoutException {
       return {

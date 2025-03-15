@@ -89,18 +89,21 @@ class _LogPageState extends State<LogPage> {
 
   Future<void> _loadLogs() async {
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _error = null;
       });
 
       final logs = await _apiService.getLogs();
+      if (!mounted) return;
       setState(() {
         _logs = logs;
         _groupedLogs = _groupByDate(logs);
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;

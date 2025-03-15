@@ -49,6 +49,7 @@ dependencies:
   mask_text_input_formatter: ^2.2.0
   get_ip_address: ^0.0.7  # Updated to correct version
   device_info_plus: ^9.1.2  # Added for getting Android ID
+  uuid: ^4.3.3  # For generating unique identifiers for OTP tracking
   json_annotation: ^4.9.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -57,6 +58,7 @@ dependencies:
     sdk: flutter
   share_plus: ^10.1.4
   flutter_dotenv: ^5.2.1
+  provider: ^6.1.2
 
 flutter_icons:
   android: true
@@ -93,6 +95,7 @@ flutter:
   assets:
     - assets/img/Logo.svg
     - assets/img/biometricAuth.svg
+    - .env
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

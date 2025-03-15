@@ -14,16 +14,50 @@ class SignupPageView extends StatefulWidget {
 
 class _SignupPageViewState extends State<SignupPageView> {
   final PageController _pageController = PageController();
-  final _formKeys = List.generate(2, (index) => GlobalKey<FormState>());
+  final _formKeys = List.generate(3, (index) => GlobalKey<FormState>());
   final _signupData = SignupData();
 
   int _currentPage = 0;
+  bool _step1DataSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Debug print initial state
+    print('Initial SignupData state:');
+    print('First Name: ${_signupData.FirstName}');
+    print('Last Name: ${_signupData.LastName}');
+    print('Email: ${_signupData.Email}');
+  }
+
+  void _onStep1Complete() {
+    _step1DataSaved = true;
+    _nextPage();
+  }
 
   void _nextPage() {
-    if (_currentPage < _formKeys.length &&
-        !(_formKeys[_currentPage].currentState?.validate() ?? false)) {
+    final currentFormKey = _formKeys[_currentPage];
+    if (currentFormKey.currentState == null) {
+      print('Form state is null for step ${_currentPage + 1}');
       return;
     }
+
+    if (!currentFormKey.currentState!.validate()) {
+      print('Validation failed for step ${_currentPage + 1}');
+      return;
+    }
+
+    // Force the current form to save its state
+    currentFormKey.currentState!.save();
+
+    // Debug print to verify data after each step
+    print('Current SignupData state after step ${_currentPage + 1}:');
+    print('First Name: ${_signupData.FirstName}');
+    print('Last Name: ${_signupData.LastName}');
+    print('Email: ${_signupData.Email}');
+    print('NIC: ${_signupData.NIC}');
+    print('Phone: ${_signupData.Telephone}');
+    print('DOB: ${_signupData.DateOfBirth}');
 
     if (_currentPage < 2) {
       setState(() => _currentPage++);
@@ -89,15 +123,17 @@ class _SignupPageViewState extends State<SignupPageView> {
                 children: [
                   SignupStep1(
                     formKey: _formKeys[0],
-                    onNext: _nextPage,
+                    onNext: _onStep1Complete,
                     signupData: _signupData,
                   ),
                   SignupStep2(
                     formKey: _formKeys[1],
                     onNext: _nextPage,
                     signupData: _signupData,
+                    step1DataSaved: _step1DataSaved,
                   ),
                   SignupStep3(
+                    formKey: _formKeys[2],
                     signupData: _signupData,
                   ),
                 ],

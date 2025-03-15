@@ -5,18 +5,19 @@ import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart'; 
 import 'package:flutter_application_1/loginSide/widgets/terms_conditions_dialog.dart';
-import 'package:go_router/go_router.dart';
 
 class SignupStep2 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final VoidCallback onNext;
   final SignupData signupData;
+  final bool step1DataSaved;
 
   const SignupStep2({
     Key? key,
     required this.formKey,
     required this.onNext,
     required this.signupData,
+    required this.step1DataSaved,
   }) : super(key: key);
 
   @override
@@ -26,9 +27,7 @@ class SignupStep2 extends StatefulWidget {
 class _SignupStep2State extends State<SignupStep2>
     with AutomaticKeepAliveClientMixin {
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
   final _nicController = TextEditingController();
   final _dobController = TextEditingController(); 
 
@@ -40,36 +39,86 @@ class _SignupStep2State extends State<SignupStep2>
 
   final _apiService = ApiService();
   bool _showPassword = false;
-  bool _showConfirmPassword = false;
   bool _isLoading = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _passwordController.text = widget.signupData.password;
-    _confirmPasswordController.text = widget.signupData.password;
-    _phoneController.text = widget.signupData.telephone ?? '';
-    _addressController.text = widget.signupData.address ?? '';
-    _nicController.text = widget.signupData.nic ?? '';
-    _dobController.text = widget.signupData.dateOfBirth ?? ''; 
+    _passwordController.text = widget.signupData.Password;
+    _phoneController.text = widget.signupData.Telephone;
+    _nicController.text = widget.signupData.NIC;
+    _dobController.text = widget.signupData.DateOfBirth > 0 
+        ? _formatDate(widget.signupData.DateOfBirth) 
+        : '';
+
+    // Debug print to verify Step 1 data
+    print('Step2 Init - Step 1 data saved: ${widget.step1DataSaved}');
+    print('First Name: ${widget.signupData.FirstName}');
+    print('Last Name: ${widget.signupData.LastName}');
+    print('Email: ${widget.signupData.Email}');
+  }
+
+  @override
+  void didUpdateWidget(SignupStep2 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Debug print when widget updates
+    print('Step2 Updated - Step 1 data saved: ${widget.step1DataSaved}');
+    print('First Name: ${widget.signupData.FirstName}');
+    print('Last Name: ${widget.signupData.LastName}');
+    print('Email: ${widget.signupData.Email}');
+  }
+
+  String _formatDate(int date) {
+    String dateStr = date.toString();
+    if (dateStr.length != 8) return '';
+    return '${dateStr.substring(2, 4)}/${dateStr.substring(4, 6)}/${dateStr.substring(0, 2)}${dateStr.substring(6)}';
+  }
+
+  int _parseDateToInt(String date) {
+    // Convert from MM/DD/YYYY to YYYYMMDD
+    final parts = date.split('/');
+    if (parts.length != 3) return 0;
+    return int.parse('${parts[2]}${parts[0]}${parts[1]}');
   }
 
   @override
   void dispose() {
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     _phoneController.dispose();
-    _addressController.dispose();
     _nicController.dispose();
-    _dobController.dispose(); 
+    _dobController.dispose();
     super.dispose();
   }
 
-  Future<void> _validateAndSaveData() async {
+  Future<void> _validateAndSendData() async {
     if (!widget.formKey.currentState!.validate()) {
       return;
     }
+
+    if (!widget.step1DataSaved) {
+      setState(() {
+        _error = 'Please complete Step 1 first';
+      });
+      return;
+    }
+
+    // Update signup data before validation
+    widget.signupData.Password = _passwordController.text;
+    widget.signupData.Telephone = _phoneController.text.trim();
+    widget.signupData.NIC = _nicController.text.trim();
+    widget.signupData.DateOfBirth = _parseDateToInt(_dobController.text.trim());
+
+    // Debug print to verify all data before showing terms
+    print('\n=== Signup Data Before Terms ===');
+    print('First Name: ${widget.signupData.FirstName}');
+    print('Last Name: ${widget.signupData.LastName}');
+    print('Email: ${widget.signupData.Email}');
+    print('NIC: ${widget.signupData.NIC}');
+    print('Phone: ${widget.signupData.Telephone}');
+    print('DOB: ${widget.signupData.DateOfBirth}');
+    print('Password: ${widget.signupData.Password}');
+    print('===========================\n');
 
     final bool? accepted = await showDialog<bool>(
       context: context,
@@ -78,9 +127,6 @@ class _SignupStep2State extends State<SignupStep2>
     );
 
     if (accepted != true) {
-      if (mounted) {
-        context.go('/login');
-      }
       return;
     }
 
@@ -90,24 +136,25 @@ class _SignupStep2State extends State<SignupStep2>
     });
 
     try {
-      final response = await _apiService.sendOTP(
-        widget.signupData.email!,
-        otpType: 'email'
-      );
+      print('\n=== Making Signup API Call ===');
+      final response = await _apiService.signupUser(widget.signupData.toJson());
       
       if (response['success'] == true) {
-        widget.signupData.password = _passwordController.text;
-        widget.signupData.telephone = _phoneController.text.trim();
-        widget.signupData.address = _addressController.text.trim();
-        widget.signupData.nic = _nicController.text.trim();
-        widget.signupData.dateOfBirth = _dobController.text.trim();
-        widget.onNext();
+        print('✅ API Call Successful');
+        if (mounted) {
+          widget.onNext(); // Navigate to OTP page
+        }
       } else {
+        print('❌ API Call Failed');
+        final error = response['error'] ?? 'Signup failed';
+        print('Error: $error');
         setState(() {
-          _error = response['error'] ?? 'Failed to send OTP';
+          _error = error;
         });
       }
     } catch (e) {
+      print('❌ API Call Error');
+      print('Error: ${e.toString()}');
       setState(() {
         _error = e.toString();
       });
@@ -115,6 +162,7 @@ class _SignupStep2State extends State<SignupStep2>
       setState(() {
         _isLoading = false;
       });
+      print('===========================\n');
     }
   }
 
@@ -132,16 +180,38 @@ class _SignupStep2State extends State<SignupStep2>
           child: Column(
             children: [
               if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Text(
-                    _error!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 14,
-                    ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+              CustomTextField(
+                controller: _nicController,
+                hintText: 'NIC Number',
+                enabled: !_isLoading,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'NIC number is required';
+                  }
+                  return null;
+                },
+              ),
               CustomTextField(
                 controller: _dobController,
                 hintText: 'Date of Birth (MM/DD/YYYY)',
@@ -152,16 +222,23 @@ class _SignupStep2State extends State<SignupStep2>
                   if (value == null || value.trim().isEmpty) {
                     return 'Date of Birth is required';
                   }
+                  if (!RegExp(r'^\d{2}/\d{2}/\d{4}$').hasMatch(value)) {
+                    return 'Please enter a valid date (MM/DD/YYYY)';
+                  }
                   return null;
                 },
               ),
               CustomTextField(
-                controller: _nicController,
-                hintText: 'NIC Number',
+                controller: _phoneController,
+                hintText: 'Phone Number',
                 enabled: !_isLoading,
+                keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'NIC number is required';
+                    return 'Phone number is required';
+                  }
+                  if (!RegExp(r'^\d{10}$').hasMatch(value.replaceAll(RegExp(r'[^\d]'), ''))) {
+                    return 'Please enter a valid 10-digit phone number';
                   }
                   return null;
                 },
@@ -203,62 +280,10 @@ class _SignupStep2State extends State<SignupStep2>
                   return null;
                 },
               ),
-              CustomTextField(
-                controller: _confirmPasswordController,
-                hintText: 'Confirm Password',
-                enabled: !_isLoading,
-                obscureText: !_showConfirmPassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _showConfirmPassword ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _showConfirmPassword = !_showConfirmPassword;
-                    });
-                  },
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please confirm your password';
-                  }
-                  if (value != _passwordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-              CustomTextField(
-                controller: _phoneController,
-                hintText: 'Phone Number',
-                enabled: !_isLoading,
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Phone number is required';
-                  }
-                  if (!RegExp(r'^\+?[\d\s-]{10,}$').hasMatch(value)) {
-                    return 'Enter a valid phone number';
-                  }
-                  return null;
-                },
-              ),
-              CustomTextField(
-                controller: _addressController,
-                hintText: 'Address',
-                enabled: !_isLoading,
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Address is required';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               CustomButton(
+                onPressed: _isLoading ? null : _validateAndSendData,
                 text: 'Next',
-                onPressed: _isLoading ? null : _validateAndSaveData,
                 isLoading: _isLoading,
               ),
             ],

@@ -27,6 +27,7 @@ class _LinkPageState extends State<LinkPage> {
 
   Future<void> _loadLinks() async {
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _error = null;
@@ -34,6 +35,8 @@ class _LinkPageState extends State<LinkPage> {
 
       // Only load links, no editing functionality
       final links = await _apiService.getLinks();
+      if (!mounted) return;
+      
       if (links.isEmpty) {
         setState(() {
           _error = 'No active links available';
@@ -47,6 +50,7 @@ class _LinkPageState extends State<LinkPage> {
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
