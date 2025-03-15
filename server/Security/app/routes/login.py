@@ -22,15 +22,15 @@ def user_login(request:Request,cred:Userlg):
 @route.post("/axion/auth/login/doctor",tags=["auth"])
 def doctor_login(request:Request,cred:Userlg):
     state:FastAPI = request.app
-    collection:Collection = state.state.PatientsCollection
+    collection:Collection = state.state.DoctorsCollection
     cache = state.state.Cache
-    return authenticate(collection=collection,cred=cred,endpoint="doctor",state=state)
+    return authenticate(collection=collection,cred=cred,endpoint="doctor",Red=cache,state=state)
 
 
 @route.post("/axion/auth/login/staff",tags=["auth"])
 def staff_login(request:Request,cred:Userlg):
     state:FastAPI = request.app
-    collection:Collection = state.state.PatientsCollection
+    collection:Collection = state.state.HospitalCollection
     cache = state.state.Cache
     return authenticate(collection=collection,cred=cred,endpoint="hospital",state=state)
 
