@@ -42,7 +42,7 @@ class Password(BaseModel):
     New:Annotated[str,AfterValidator(PasswordValidator)]
 
 class Delete(BaseModel):
-    NIC:str
+    Email:str
     Password:Annotated[str,AfterValidator(PasswordValidator)]
 
 class OTP(BaseModel):

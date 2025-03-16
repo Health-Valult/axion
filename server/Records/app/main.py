@@ -30,11 +30,11 @@ warnings.filterwarnings("ignore", message="You appear to be connected to a Cosmo
 DBClient = pymongo.MongoClient(URL)
 Database = DBClient.get_database("records_db")
 
-ObsCollection = Database.get_collection("observations")
-AllCollection = Database.get_collection("allergyIntolerance")
-MedCollection = Database.get_collection("medications")
-ImmCollection = Database.get_collection("immunizations")
-ProCollection = Database.get_collection("procedures")
+ObservationCollection = Database.get_collection("observations")
+AllergiesCollection = Database.get_collection("allergyIntolerance")
+MedicationsCollection = Database.get_collection("medications")
+ImmunizationsCollection = Database.get_collection("immunizations")
+ProceduresCollection = Database.get_collection("procedures")
 
 MQ = sendMQ("localhost","record")
 logger = logging.getLogger("uvicorn")
@@ -43,17 +43,19 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
-    app.state.sender_task = sendMQ("mq","security")
+    app.state.sender_task = sendMQ("mq","record")
     # app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback_security))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = pymongo.MongoClient(URL)
     Database = DBClient.get_database("users_db")
-    app.state.PatientsCollection = Database.get_collection("patients")
-    app.state.DoctorsCollection = Database.get_collection("doctors")
-    app.state.HospitalCollection = Database.get_collection("hospital")
-    
+    app.state.ObservationCollection = Database.get_collection("observations")
+    app.state.AllergiesCollection = Database.get_collection("allergyIntolerance")
+    app.state.MedicationsCollection = Database.get_collection("medications")
+    app.state.ImmunizationsCollection = Database.get_collection("immunizations")
+    app.state.ProceduresCollection = Database.get_collection("procedures")
+
     # cache connection startup
     logger.info("connecting to cache 📚...")
     app.state.Cache = redis_AX("redis://cache:6379",10).connect()
@@ -69,7 +71,7 @@ async def lifespan(app:FastAPI):
     logger.info("shutting down server")
 
     # cleanup tasks
-    app.state.consumer_task.cancel()
+    #app.state.consumer_task.cancel()
     DBClient.close()
     app.state.Cache.disconnect()
 
@@ -77,297 +79,9 @@ async def lifespan(app:FastAPI):
 # instantiating FastAPI server
 app = FastAPI(lifespan=lifespan,title="record")
 
-@strawberry.type
-class Query:
 
-    @strawberry.field
-    async def observations(
-            self,
-            info:Info,
-            patient:str,
-            code:str,
-            encounter:str
-        ) -> Observation:
-        
-        request = info.context["request"]
-        query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        observationAggregate = ObsCollection.aggregate([
-                {"$match": {
-                    "patient": patient, 
-                    "code": code, 
-                    "encounter":encounter
-                    }},
-                {"$project": query|{"_id":0}} 
-            ])
-        
-        observationAggregateResult = next(observationAggregate,None)
-        if observationAggregateResult is None:
-            return None
-        observationQueryResult = Observation(**observationAggregateResult)
-        
-        return observationQueryResult
-        
-
-    @strawberry.field
-    async def observationStack(
-        self,
-        info:Info,
-        patient:str,
-        code:str,
-        start:Optional[str] = strawberry.UNSET,
-        end:Optional[str] = strawberry.UNSET
-        )-> ObservationStack:
-        
-        request = info.context["request"]
-        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-        observationAggregate = ObsCollection.aggregate([
-                {"$match": {
-                    "patient": patient, 
-                    "code": code, 
-                    }},
-                {"$project": query|{"_id":0}} 
-            ])
        
-        return ObservationStack(
-            Observations=[Observation(**obs) for obs in observationAggregate]
-        )
        
-
-    @strawberry.field
-    async def allergys(
-        self,
-        info:Info,
-        
-        patient:str
-        ) -> AllergyIntoleranceStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            allergyAggregate = AllCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return AllergyIntoleranceStack(
-                    allergyIntolerances=[AllergyIntolerance(**obs) for obs in allergyAggregate]
-                )
-            
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
-
-    @strawberry.field
-    async def medications(
-        self, 
-        info:Info,
-        
-        patient:str,
-        start:Optional[str] = strawberry.UNSET,
-        end:Optional[str] = strawberry.UNSET
-        ) -> MedicationStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            medicationAggregate = MedCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return MedicationStack(
-                    medications=[Medication(**obs) for obs in medicationAggregate]
-                )
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
-
-    @strawberry.field
-    async def immunization(
-        self,
-        info:Info,
-        
-        patient:str,
-        start:Optional[str] = strawberry.UNSET,
-        end:Optional[str] = strawberry.UNSET
-        ) -> ImmunizationStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            immunizationAggregate = ImmCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return ImmunizationStack(
-                    immunizations=[Immunization(**obs) for obs in immunizationAggregate]
-                )
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
-
-    @strawberry.field
-    async def procedures(
-        self, 
-        info:Info,
-        
-        patient:str,
-        start:Optional[str] = strawberry.UNSET,
-        end:Optional[str] = strawberry.UNSET
-        ) -> ProcedureStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            procedureAggregate = ProCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return ProcedureStack(
-                    Procedures=[Procedure(**obs) for obs in procedureAggregate]
-                )
-            
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
-
-    @strawberry.field
-    async def procedures(
-        self, 
-        info:Info,
-        
-        patient:str,
-        start:Optional[str] = strawberry.UNSET,
-        end:Optional[str] = strawberry.UNSET
-        ) -> ProcedureStack:
-        try:
-            request = info.context["request"]
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            procedureAggregate = ProCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
-            lg = GeneralLog(
-                service="record",
-                endpoint="/graphql",
-                requester= request.state.user.get("uuid"),
-                type=request.method,
-            )
-            log(
-                Mq=MQ,
-                type="general",
-                log=lg
-            )
-            return ProcedureStack(
-                    Procedures=[Procedure(**obs) for obs in procedureAggregate]
-                )
-        except Exception as e:
-
-            des = traceback.format_exc()
-            lg = ErrorLog(
-                sender="record",
-                type=str(e),
-                description= des
-            )
-            log(
-                Mq=MQ,
-                type="error",
-                log=lg
-            )
-
 
 schema = strawberry.Schema(Query)
 

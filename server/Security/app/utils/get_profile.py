@@ -8,6 +8,7 @@ def _get_profile(collection:Collection,c_uuid:UUID,):
             {"$match": {"UserID":bson.Binary.from_uuid(c_uuid)}},
             {"$project": {
                 "_id":0,
+                ""
                 "FirstName":1,
                 "LastName":1,
                 "Email":1,

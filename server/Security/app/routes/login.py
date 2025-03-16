@@ -36,7 +36,7 @@ def staff_login(request:Request,cred:Userlg):
 
 
 
-@route.post("/axion/auth/refresh",tags=["secure"],dependencies=[Depends(Authenticate)])
+@route.post("/axion/auth/refresh",tags=["secure"])
 def refresh(request:Request,cred:Token):
     state:FastAPI = request.app
     cache = state.state.Cache
