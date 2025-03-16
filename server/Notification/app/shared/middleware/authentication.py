@@ -1,5 +1,4 @@
-from fastapi import HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException, Request,WebSocket,WebSocketException
 from app.shared.utils.MQ.sender import sendMQ
 
 
@@ -20,3 +19,24 @@ def Authenticate(request: Request):
     request.state.meta = response.get("body")
     
     return request
+
+
+def Authenticate_WS(webSocket: WebSocket):
+    
+    Mq:sendMQ = webSocket.app.state.sender_task 
+    token:str = webSocket.headers.get('authorization')
+    if token is None:
+        webSocket.close()
+        raise WebSocketException(code=1008, reason="session token expired or invalid")
+    
+    rabbitResponse:dict = Mq.send_and_await("security","sessionAuth",{"token":token})[0]
+    response:dict = rabbitResponse.get("response")
+    
+    status = response.get("task")
+    if status != "verifiedToken":
+        webSocket.close()
+        raise WebSocketException(code=1008, reason="session token expired or invalid")
+    
+    webSocket.state.meta = response.get("body")
+    
+    return webSocket

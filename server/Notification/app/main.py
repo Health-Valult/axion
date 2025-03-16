@@ -3,13 +3,16 @@ import logging
 import warnings
 from fastapi import FastAPI
 import asyncio
+from pymongo import MongoClient
 import uvicorn
-from app.utils.reciever import recieveMQ
-from app.utils.sender import sendMQ
+from app.shared.utils.MQ.reciver import recieveMQ
+from app.shared.utils.MQ.sender import sendMQ
 from app.shared.utils.Cache.redis import redis_AX
 from dotenv import load_dotenv
 import os
 from app.callback.callback import callback
+from firebase_admin import credentials
+import firebase_admin
 
 load_dotenv()
 
@@ -26,20 +29,23 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
-    app.state.sender_task = sendMQ("localhost","security")
-    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback=callback))
+    app.state.sender_task = sendMQ("mq","notification")
+    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'notification',callback=callback))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = MongoClient(URL)
-    Database = DBClient.get_database("users_db")
-    app.state.PatientsCollection = Database.get_collection("patients")
-    app.state.DoctorsCollection = Database.get_collection("doctors")
-    app.state.HospitalCollection = Database.get_collection("hospital")
-    
+    Database = DBClient.get_database("notifications_db")
+    app.state.TokensCollection = Database.get_collection("userDeviceTokens")
+
     # cache connection startup
     logger.info("connecting to cache 📚...")
     app.state.Cache = redis_AX("redis://cache:6379",10).connect()
+
+    # firebase initialization
+    logger.info("connecting to firebase 🔥...")
+    c_credentials = credentials.Certificate("./app/data/axion-6a492-firebase-adminsdk-fbsvc-b2d355fda3.json")
+    app.state.firebase = firebase_admin.initialize_app(credential=c_credentials)
 
     yield
 
@@ -54,16 +60,6 @@ async def lifespan(app:FastAPI):
 # instantiating FastAPI server
 app = FastAPI(lifespan=lifespan,title="notification")
 
-connected_clients = set()
-notification_queue = asyncio.Queue() 
-
-TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-
-MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
-MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET")
-MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL")
 
 
 

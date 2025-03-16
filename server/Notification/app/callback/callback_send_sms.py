@@ -7,7 +7,7 @@ TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 
 twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-async def send_sms(phone_number: str, message: str):
+async def _send_sms(phone_number: str, message: str):
     try:
         twilio_client.messages.create(
             body=message,

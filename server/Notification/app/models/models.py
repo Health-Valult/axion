@@ -8,3 +8,7 @@ class Notification(BaseModel):
     is_global: bool = False
     phone_number: str | None = None
     email: str | None = None
+
+
+class SetToken(BaseModel):
+    Token:str

@@ -1,21 +1,25 @@
-import asyncio
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from starlette.requests import Request
-from pymongo.collection import Collection
-from app.shared.middleware.authentication import Authenticate
-from app.main import notification_queue
+from app.shared.middleware.authentication import Authenticate_WS
+
+import datetime
 
 route = APIRouter()
-connected_clients = set()
+connected_clients:dict = {}
 
 
 
-@route.websocket("/ws")
+@route.websocket("/ws",dependencies=[Depends(Authenticate_WS)])
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    connected_clients.add(websocket)
+    
+
+    c_uuid,role = websocket.state.meta.get("uuid"),websocket.state.meta.get("role")
+
+    connected_clients[c_uuid] = {
+        "time":datetime.datetime.now(datetime.timezone.utc),
+        "role":role,
+        "socket":websocket
+        }
     print(f"WebSocket Client Connected: {websocket.client}")
 
     try:
@@ -25,7 +29,9 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"WebSocket Disconnected: {websocket.client}")
         connected_clients.remove(websocket)
 
-async def process_queue():
+
+# im not sure what this does but im too scared to remove it
+"""async def process_queue():
     while True:
         notification = await notification_queue.get()
         disconnected_clients = []
@@ -38,3 +44,4 @@ async def process_queue():
         
         for ws in disconnected_clients:
             connected_clients.remove(ws)
+"""

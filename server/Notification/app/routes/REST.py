@@ -1,23 +1,24 @@
-import asyncio
-import datetime
-from typing import List
-import uuid
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate
-from server.Notification.app.callback.callback_send_email import send_email
-from server.Notification.app.callback.callback_send_sms import send_sms
 from server.Notification.app.models.models import *
 
 
 route = APIRouter()
 
+route.post("/notifications/set-device-token",dependencies=[Depends(Authenticate)])
+async def set_device_token(request:Request,Token:SetToken):
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+    Token:dict = Token.model_dump()
+    Token["_id"] = c_uuid
+    Token["role"] = role
+    notificationCollection:Collection = request.app.state.TokensCollection
+
+    notificationCollection.insert_one(Token)
 
 
+# dont really know whats below me so im just gonna ignore it 😁
 """@route.post("/send-notification/")
 async def send_notification(notification: Notification):
     
