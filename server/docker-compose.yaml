@@ -31,9 +31,9 @@ services:
     environment:
       - DB_URI="mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 
-      - TWILIO_ACCOUNT_SID = "ACbc22a102035d1169598738f085845f7f"
-      - TWILIO_AUTH_TOKEN = "5d496a1ec47eed33f6ccaa5bbfba1a8d"
-      - TWILIO_PHONE_NUMBER = "+15175832371"
+      - TWILIO_ACCOUNT_SID="ACbc22a102035d1169598738f085845f7f"
+      - TWILIO_AUTH_TOKEN="5d496a1ec47eed33f6ccaa5bbfba1a8d"
+      - TWILIO_PHONE_NUMBER="+15175832371"
 
       - MAILJET_API_KEY="eaba786ef725d15531fdfcb423525cb0"
       - MAILJET_API_SECRET="e15296850e0392377884ea34f8a737f9"
