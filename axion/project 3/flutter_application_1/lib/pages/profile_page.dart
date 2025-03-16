@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/pages/settings_page.dart';
 import 'package:flutter_application_1/services/api_service.dart';
 import 'package:flutter_application_1/models/user.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_application_1/main.dart';
 
 class ProfilePage extends StatelessWidget {
   final User user;
@@ -15,7 +17,7 @@ class ProfilePage extends StatelessWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profile'), 
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -60,9 +62,9 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Contact Information',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: TextStyle(fontSize: 18),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
@@ -88,9 +90,9 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Personal Information',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: TextStyle(fontSize: 18),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
@@ -100,8 +102,13 @@ class ProfilePage extends StatelessWidget {
                     ),
                     ListTile(
                       leading: const Icon(Icons.cake),
-                      title: const Text('Age'),
-                      subtitle: Text('${DateTime.now().year - user.dateOfBirth}'),
+                      title: const Text('Birthday'),
+                      subtitle: Text(
+                        // Convert YYYYMMDD to formatted date
+                        '${user.dateOfBirth.toString().substring(6, 8)}/'  // DD
+                        '${user.dateOfBirth.toString().substring(4, 6)}/'  // MM
+                        '${user.dateOfBirth.toString().substring(0, 4)}',  // YYYY
+                      ),
                     ),
                   ],
                 ),
@@ -138,37 +145,69 @@ class ProfilePage extends StatelessWidget {
   }
 
   Future<void> _showLogoutConfirmation(BuildContext context) async {
-    return showDialog<void>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to logout?'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Logout'),
-              onPressed: () async {
-                Navigator.of(context).pop();
-                try {
-                  await ApiService().logout();
-                  // Navigate to login page or handle logout success
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Logout failed: $e')),
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
     );
+
+    if (confirmed == true) {
+      if (!context.mounted) return;
+      
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      try {
+        final result = await ApiService().logout();
+        
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // Remove loading indicator
+        
+        if (result['success']) {
+          // Update global auth state and navigate using Go Router
+          if (!context.mounted) return;
+          isLoggedIn = false; // Update global auth state
+          context.go('/login'); // Use Go Router navigation
+        } else {
+          // Show error message but still navigate to login since session is cleared
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Logout failed: ${result['error'] ?? ''}')),
+          );
+          if (!context.mounted) return;
+          isLoggedIn = false;
+          context.go('/login');
+        }
+      } catch (e) {
+        if (!context.mounted) return;
+        Navigator.of(context).pop(); // Remove loading indicator
+        
+        // Show error but still navigate to login since session is cleared
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Logout failed: $e')),
+        );
+        if (!context.mounted) return;
+        isLoggedIn = false;
+        context.go('/login');
+      }
+    }
   }
 }
 
@@ -186,6 +225,8 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _birthdayController = TextEditingController();
+  DateTime? _selectedDate;
   bool _isLoading = false;
 
   @override
@@ -194,7 +235,26 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
     _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _birthdayController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        // Display in DD/MM/YYYY format
+        _birthdayController.text = '${picked.day.toString().padLeft(2, '0')}/'
+            '${picked.month.toString().padLeft(2, '0')}/'
+            '${picked.year}';
+      });
+    }
   }
 
   Future<void> _updateProfile() async {
@@ -205,11 +265,22 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
     });
 
     try {
+      // Convert selected date to YYYYMMDD format
+      final dateOfBirth = _selectedDate != null
+          ? int.parse(
+              '${_selectedDate!.year}'
+              '${_selectedDate!.month.toString().padLeft(2, '0')}'
+              '${_selectedDate!.day.toString().padLeft(2, '0')}')
+          : DateTime.now().year * 10000 +
+              DateTime.now().month * 100 +
+              DateTime.now().day;
+
       await _apiService.updateProfile({
         'firstName': _firstNameController.text,
         'lastName': _lastNameController.text,
         'email': _emailController.text,
         'telephone': _phoneController.text,
+        'dateOfBirth': dateOfBirth,
       });
 
       Navigator.pop(context, true);
@@ -239,7 +310,7 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
                 decoration: const InputDecoration(labelText: 'First Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'First name is required';
+                    return 'This field is required';
                   }
                   return null;
                 },
@@ -250,7 +321,7 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
                 decoration: const InputDecoration(labelText: 'Last Name'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Last name is required';
+                    return 'This field is required';
                   }
                   return null;
                 },
@@ -261,7 +332,7 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email is required';
+                    return 'This field is required';
                   }
                   if (!value.contains('@')) {
                     return 'Invalid email';
@@ -275,7 +346,23 @@ class _EditDetailsPageState extends State<EditDetailsPage> {
                 decoration: const InputDecoration(labelText: 'Phone'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Phone is required';
+                    return 'This field is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _birthdayController,
+                decoration: const InputDecoration(
+                  labelText: 'Birthday',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: () => _selectDate(context),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'This field is required';
                   }
                   return null;
                 },

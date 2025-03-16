@@ -12,42 +12,45 @@ class FloatingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return Container(
+      // Use the same background color as the app’s scaffold
+      color: theme.scaffoldBackgroundColor,
       height: 60,
-      width: MediaQuery.of(context).size.width * 0.9,
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(29),
-      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _navBarItem(icon: Icons.receipt_long, index: 1),
-          _navBarItem(icon: Icons.bar_chart,  index: 2),
-          _navBarItem(icon: Icons.home,  index: 0),
-          _navBarItem(icon: Icons.qr_code,  index: 4),
-          _navBarItem(icon: Icons.person, index: 3),
+          _navBarItem(context, icon: Icons.receipt_long, index: 1),
+          _navBarItem(context, icon: Icons.bar_chart,   index: 2),
+          _navBarItem(context, icon: Icons.home,        index: 0),
+          _navBarItem(context, icon: Icons.qr_code,     index: 4),
+          _navBarItem(context, icon: Icons.person,      index: 3),
         ],
       ),
     );
   }
 
-  Widget _navBarItem({
+  Widget _navBarItem(BuildContext context, {
     required IconData icon,
     required int index,
   }) {
     final bool isSelected = (currentIndex == index);
+    final theme = Theme.of(context);
+    final bool isDarkMode = theme.brightness == Brightness.dark;
+
+    // Unselected icon color: black in light mode, grey in dark mode
+    final Color unselectedColor = isDarkMode ? Colors.grey : const Color.fromARGB(255, 101, 101, 101);
+
+    // Keep the same blue color for selected icons in both modes
+    final Color selectedColor = Colors.blue;
 
     return GestureDetector(
       onTap: () => onItemSelected(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: isSelected ? Colors.blue : Colors.grey, size: 32,),
-          const SizedBox(height: 0),
-          
-        ],
+      child: Icon(
+        icon,
+        color: isSelected ? selectedColor : unselectedColor,
+        size: 32,
       ),
     );
   }

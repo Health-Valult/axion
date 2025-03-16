@@ -25,8 +25,10 @@ class _HomePageState extends State<HomePage> {
   // UI state variables
   bool _isMedicationExpanded = false;
   bool _isAllergiesExpanded = false;
+  bool _isImmunizationsExpanded = false;
   final Set<int> _expandedMedicationItems = {};
   final Set<int> _expandedAllergyItems = {};
+  final Set<int> _expandedImmunizationItems = {};
   bool _hasPendingNotifications = false;
 
   @override
@@ -117,6 +119,11 @@ class _HomePageState extends State<HomePage> {
                   'detail': a['timestamp'] ?? 'No date',
                   'type': 'allergy'
                 }).toList(),
+            ...(data['immunizations']?['immunizations'] as List? ?? []).map((i) => {
+                  'title': i['display'] ?? 'Unknown Immunization',
+                  'detail': i['timestamp'] ?? 'No date',
+                  'type': 'immunization'
+                }).toList(),
           ];
         });
       } catch (e) {
@@ -170,7 +177,7 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // Split medical records into medications and allergies
+    // Split medical records into medications, allergies and immunizations
     final medicationList = _medicalRecords
         ?.where((record) => record['type'] == 'medication')
         .map((m) => <String, String>{
@@ -184,6 +191,14 @@ class _HomePageState extends State<HomePage> {
         .map((a) => <String, String>{
               'title': a['title']?.toString() ?? 'Unknown',
               'detail': a['detail']?.toString() ?? 'No detail'
+            })
+        .toList() ?? [];
+
+    final immunizationsList = _medicalRecords
+        ?.where((record) => record['type'] == 'immunization')
+        .map((i) => <String, String>{
+              'title': i['title']?.toString() ?? 'Unknown',
+              'detail': i['detail']?.toString() ?? 'No detail'
             })
         .toList() ?? [];
 
@@ -201,9 +216,17 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     RichText(
                       text: TextSpan(
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         children: [
-                          TextSpan(text: '${loc.welcome} '),
+                          TextSpan(
+                            text: '${loc.welcome} ',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).brightness == Brightness.light
+                                  ? Colors.black
+                                  : Colors.white,
+                            ),
+                          ),
                           WidgetSpan(
                             alignment: PlaceholderAlignment.baseline,
                             baseline: TextBaseline.alphabetic,
@@ -258,9 +281,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -327,7 +348,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 _buildSectionCapsule(
                   context: context,
                   title: loc.medication,
@@ -341,9 +361,7 @@ class _HomePageState extends State<HomePage> {
                   },
                   expandedItems: _expandedMedicationItems,
                 ),
-
                 const SizedBox(height: 16),
-
                 _buildSectionCapsule(
                   context: context,
                   title: loc.allergies,
@@ -356,6 +374,20 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                   expandedItems: _expandedAllergyItems,
+                ),
+                const SizedBox(height: 16),
+                _buildSectionCapsule(
+                  context: context,
+                  title: 'Immunizations',
+                  items: immunizationsList,
+                  iconData: Icons.vaccines,
+                  isSectionExpanded: _isImmunizationsExpanded,
+                  onSectionToggle: () {
+                    setState(() {
+                      _isImmunizationsExpanded = !_isImmunizationsExpanded;
+                    });
+                  },
+                  expandedItems: _expandedImmunizationItems,
                 ),
               ],
             ),

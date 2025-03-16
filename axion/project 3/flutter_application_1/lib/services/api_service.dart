@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_application_1/services/api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/models/user.dart';
@@ -15,139 +16,65 @@ class ApiService {
 
   // Helper method to get headers with auth token
   Future<Map<String, String>> _getHeaders() async {
-    print('\n=== Getting Auth Headers ===');
     final sessionService = SessionService();
     final token = await sessionService.getSessionToken();
-    print('Token found: ${token != null}');
     
     if (token == null) {
-      print('❌ No auth token found in secure storage');
+      return {
+        'Content-Type': 'application/json',
+      };
     }
     
-    final headers = {
+    return {
       'Content-Type': 'application/json',
-      'Authorization': token != null ? 'Bearer $token' : '',
+      'Authorization': 'Bearer $token',
     };
-    print('Headers prepared: ${headers.toString()}');
-    print('=====================\n');
-    return headers;
   }
 
-  // Helper method to handle API response with better error handling
+  // Helper method to handle API response
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
-    print('\n=== Handling API Response ===');
-    print('Status Code: ${response.statusCode}');
-    
     try {
       final data = jsonDecode(response.body);
-      print('Response Data:');
-      print(const JsonEncoder.withIndent('  ').convert(data));
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('✅ Request Successful');
         return {
           'success': true,
           'data': data,
         };
       } else {
-        print('❌ Request Failed');
         final error = data['message'] ?? data['error'] ?? 'An error occurred';
-        print('Error: $error');
         return {
           'success': false,
           'error': error,
           'statusCode': response.statusCode,
         };
       }
-    } on FormatException catch (e) {
-      print('❌ Invalid Response Format');
-      print('Error: ${e.toString()}');
-      return {
-        'success': false,
-        'error': 'Invalid response format from server',
-        'statusCode': response.statusCode,
-      };
     } catch (e) {
-      print('❌ Unexpected Error');
-      print('Error: ${e.toString()}');
       return {
         'success': false,
         'error': 'Failed to process response: ${e.toString()}',
         'statusCode': response.statusCode,
       };
-    } finally {
-      print('=====================\n');
     }
   }
 
-  // Helper method to validate connection before making API call
-  Future<bool> _validateConnection() async {
+  // Helper method to make API calls with retry
+  Future<Map<String, dynamic>> _makeApiCall(Future<http.Response> Function() apiCall) async {
     try {
-      final result = await http.get(Uri.parse(ApiConfig.baseUrl + '/health'));
-      return result.statusCode == 200;
+      final response = await apiCall().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw TimeoutException('Request timed out');
+        },
+      );
+      
+      return _handleResponse(response);
     } catch (e) {
-      return false;
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
     }
-  }
-
-  // Helper method to handle API calls with connection validation and retry
-  Future<Map<String, dynamic>> _makeApiCall(Future<http.Response> Function() apiCall, {int retryCount = 3}) async {
-    while (retryCount > 0) {
-      try {
-        if (!await _validateConnection()) {
-          retryCount--;
-          if (retryCount > 0) {
-            await Future.delayed(const Duration(seconds: 1));
-            continue;
-          }
-          return {
-            'success': false,
-            'error': 'No internet connection or server is unreachable',
-          };
-        }
-
-        final response = await apiCall().timeout(const Duration(seconds: 30));
-        final result = await _handleResponse(response);
-        if (result['success']) {
-          return result;
-        }
-        
-        // Only retry on 5xx errors or network issues
-        if (result['statusCode'] == null || result['statusCode'] >= 500) {
-          retryCount--;
-          if (retryCount > 0) {
-            await Future.delayed(const Duration(seconds: 1));
-            continue;
-          }
-        }
-        return result;
-
-      } on http.ClientException {
-        retryCount--;
-        if (retryCount > 0) {
-          await Future.delayed(const Duration(seconds: 1));
-          continue;
-        }
-        return {
-          'success': false,
-          'error': 'Network error occurred',
-        };
-      } catch (e) {
-        retryCount--;
-        if (retryCount > 0) {
-          await Future.delayed(const Duration(seconds: 1));
-          continue;
-        }
-        return {
-          'success': false,
-          'error': 'An unexpected error occurred: ${e.toString()}',
-        };
-      }
-    }
-    return {
-      'success': false,
-      'error': 'Maximum retry attempts reached',
-    };
   }
 
   // Auth methods with improved validation
@@ -395,20 +322,27 @@ class ApiService {
 
   Future<Map<String, dynamic>> logout() async {
     try {
-      final response = await http.post(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.logout),
-        headers: await _getHeaders(),
-      );
-      final result = await _handleResponse(response);
+      // Make logout request
+      await _makeApiCall(() async {
+        final headers = await _getHeaders();
+        final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.logout);
+        
+        return http.post(
+          url,
+          headers: headers,
+        );
+      });
       
-      // Clear session data regardless of API response
+      // Always clear session data
       final sessionService = SessionService();
       await sessionService.clearSession();
       
-      return result;
+      return {
+        'success': true,
+        'message': 'Logged out successfully',
+      };
     } catch (e) {
-      print('Logout error: $e');
-      // Still clear session on error
+      // Clear session even if request fails
       final sessionService = SessionService();
       await sessionService.clearSession();
       
@@ -456,35 +390,138 @@ class ApiService {
 
   // Settings methods - Only keep critical account operations
   Future<void> changePassword(String currentPassword, String newPassword) async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.changePassword),
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
-      }),
+    // Validate passwords
+    if (currentPassword.isEmpty || newPassword.isEmpty) {
+      throw Exception('Both current and new passwords are required');
+    }
+
+    // Password validation regex
+    final passwordRegex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
     );
-    await _handleResponse(response);
+
+    if (!passwordRegex.hasMatch(newPassword)) {
+      throw Exception(
+        'Password must be at least 8 characters long and contain:\n'
+        '- At least one uppercase letter\n'
+        '- At least one lowercase letter\n'
+        '- At least one number\n'
+        '- At least one special character (@\$!%*?&)'
+      );
+    }
+
+    if (currentPassword == newPassword) {
+      throw Exception('New password must be different from current password');
+    }
+
+    print('\n=== Change Password Debug ===');
+    print('Base URL: ${EnvConfig.apiBaseUrl}');
+    print('Reset Password Path: ${EnvConfig.auth.resetPassword}');
+    
+    // Remove any trailing slashes from base URL
+    final baseUrl = EnvConfig.apiBaseUrl.endsWith('/')
+        ? EnvConfig.apiBaseUrl.substring(0, EnvConfig.apiBaseUrl.length - 1)
+        : EnvConfig.apiBaseUrl;
+    
+    final url = Uri.parse('$baseUrl${EnvConfig.auth.resetPassword}'); 
+    final headers = await _getHeaders();
+    final requestBody = {
+      'Old': currentPassword,
+      'New': newPassword,
+    };
+
+    print('\n=== Change Password Request ===');
+    print('Full URL: $url');
+    print('Headers: ${headers.toString()}');
+    print('Request Body: ${jsonEncode(requestBody)}');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      print('\n=== Change Password Response ===');
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      final data = await _handleResponse(response);
+      
+      if (!data['success']) {
+        throw Exception(data['error'] ?? 'Failed to change password');
+      }
+    } catch (e) {
+      print('\n=== Change Password Error ===');
+      print('Error: $e');
+      throw e;
+    } finally {
+      print('=========================\n');
+    }
   }
 
-  Future<void> deleteAccount() async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteAccount),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
+  Future<Map<String, dynamic>> deleteAccount(String email, String password) async {
+    print('\n=== Delete Account Request ===');
+    
+    // Validate input
+    if (email.isEmpty || password.isEmpty) {
+      return {
+        'success': false,
+        'error': 'Email and password are required',
+      };
+    }
 
-  Future<void> verifyAndDeleteAccount(String nic, String password) async {
-    final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.verifyAndDeleteAccount),
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'nic': nic,
+    // Validate email format
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      return {
+        'success': false,
+        'error': 'Invalid email format',
+      };
+    }
+
+    try {
+      final headers = await _getHeaders();
+      final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.profile.delete);
+      final requestBody = {
+        'email': email,
         'password': password,
-      }),
-    );
-    await _handleResponse(response);
+      };
+      
+      print('Request URL: $url');
+      print('Headers: ${headers.toString()}');
+      print('Request Body: ${jsonEncode(requestBody)}');
+
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestBody),
+      );
+
+      print('Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      final result = await _handleResponse(response);
+      
+      if (result['success']) {
+        // Clear session on successful deletion
+        final sessionService = SessionService();
+        await sessionService.clearSession();
+      }
+      
+      return result;
+    } catch (e) {
+      print('Error: $e');
+      return {
+        'success': false,
+        'error': 'Failed to delete account: ${e.toString()}',
+      };
+    } finally {
+      print('=========================\n');
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyAndDeleteAccount(String email, String password) async {
+    return deleteAccount(email, password);
   }
 
   // Notifications methods

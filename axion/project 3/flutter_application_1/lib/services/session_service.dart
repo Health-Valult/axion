@@ -30,6 +30,10 @@ class SessionService {
     required DateTime expiry,
     required Map<String, dynamic> userData,
   }) async {
+    // First update the GraphQL client token to ensure it's ready immediately
+    GraphQLConfig.updateToken(token);
+
+    // Then persist the data to secure storage
     await Future.wait([
       _storage.writeSecure(SecureStorageService.sessionTokenKey, token),
       _storage.writeSecure(SecureStorageService.refreshTokenKey, refreshToken),
@@ -37,17 +41,33 @@ class SessionService {
       _storage.writeSecure(SecureStorageService.userDataKey, json.encode(userData)),
     ]);
 
-    // Update GraphQL client token
-    GraphQLConfig.updateToken(token);
-
     // Schedule token refresh
     _scheduleTokenRefresh(expiry);
   }
 
   Future<void> clearSession() async {
-    _refreshTimer?.cancel();
-    await _storage.clearAll();
-    GraphQLConfig.updateToken('');
+    print('\n=== Clearing Session Data ===');
+    try {
+      print('Cancelling refresh timer...');
+      _refreshTimer?.cancel();
+      
+      print('Clearing secure storage...');
+      await _storage.clearAll();
+      print('Secure storage cleared');
+      
+      print('Updating GraphQL token...');
+      GraphQLConfig.updateToken('');
+      print('GraphQL token cleared');
+      
+      print('=== Session Data Cleared Successfully ===\n');
+    } catch (e) {
+      print('\n❌ Error clearing session:');
+      print('Error details: $e');
+      print('Stack trace:');
+      print(StackTrace.current);
+      print('=== Session Clear Failed ===\n');
+      rethrow;
+    }
   }
 
   // Token refresh management

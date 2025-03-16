@@ -161,12 +161,12 @@ class _MyAppState extends State<MyApp> {
   final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: Colors.deepOrange,
-    scaffoldBackgroundColor: const Color.fromARGB(255, 189, 189, 189),
+    scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color.fromARGB(255, 189, 189, 189),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       foregroundColor: Colors.black,
     ),
-    cardColor: const Color.fromARGB(255, 255, 255, 255),
+    cardColor: const Color.fromARGB(240, 240, 240, 240),
     textTheme: ThemeData.light().textTheme.apply(
           bodyColor: Colors.black,
           displayColor: Colors.black,

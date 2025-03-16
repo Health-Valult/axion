@@ -48,6 +48,18 @@ class GraphQLQueries {
           meta
         }
       }
+      immunizations(patient: \$patient) {
+        immunizations {
+          patient
+          code
+          display
+          timestamp
+          status
+          route
+          doseQuantity
+          meta
+        }
+      }
     }
   ''';
 

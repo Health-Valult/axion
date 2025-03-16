@@ -60,7 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         if (result['success']) {  
+          // Wait a short moment for token to be saved
+          await Future.delayed(const Duration(milliseconds: 100));
           isLoggedIn = true;
+          if (!mounted) return;
           context.go('/home');
         } else {
           setState(() {

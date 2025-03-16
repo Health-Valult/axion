@@ -322,39 +322,54 @@ class DeleteAccountDialog extends StatefulWidget {
 
 class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   final _apiService = ApiService();
-  final _nicController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _passwordVisible = false;
 
   @override
   void dispose() {
-    _nicController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _attemptDeleteAccount() async {
-    if (_nicController.text.isEmpty || _passwordController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       _showErrorDialog('Please fill in all fields');
+      return;
+    }
+
+    // Validate email format
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+      _showErrorDialog('Please enter a valid email address');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await _apiService.verifyAndDeleteAccount(
-        _nicController.text,
-        _passwordController.text,
-      );
+      final result = await _apiService.deleteAccount(email, password);
       
-      if (mounted) {
+      if (!mounted) return;
+
+      if (result['success']) {
+        // Show success message and navigate
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account deleted successfully')),
+        );
+        
         Navigator.of(context).pop(); // Close dialog
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      } else {
+        _showErrorDialog(result['error'] ?? 'Failed to delete account. Please check your credentials and try again.');
       }
     } catch (e) {
-      if (mounted) {
-        _showErrorDialog(e.toString());
-      }
+      if (!mounted) return;
+      _showErrorDialog('An unexpected error occurred. Please try again.');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -365,6 +380,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Error'),
         content: Text(message),
@@ -381,10 +397,25 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   void _showConfirmationDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Account Deletion'),
-        content: const Text(
-          'Are you sure you want to delete your account? This action cannot be undone.',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('Are you sure you want to delete your account?'),
+            SizedBox(height: 8),
+            Text(
+              'This action cannot be undone and will:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 4),
+            Text('• Delete all your personal data'),
+            Text('• Remove all your medical records'),
+            Text('• Cancel any active subscriptions'),
+            Text('• Remove access to all services'),
+          ],
         ),
         actions: [
           TextButton(
@@ -396,8 +427,11 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
               Navigator.of(context).pop();
               _attemptDeleteAccount();
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            child: const Text('Delete Account'),
           ),
         ],
       ),
@@ -417,10 +451,13 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
             Text(loc.deleteAccountConfirmation),
             const SizedBox(height: 16),
             TextField(
-              controller: _nicController,
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                labelText: loc.nic,
+                labelText: loc.email,
+                hintText: 'Enter your email address',
                 border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
             ),
             const SizedBox(height: 16),
@@ -428,9 +465,22 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
               controller: _passwordController,
               decoration: InputDecoration(
                 labelText: loc.password,
+                hintText: 'Enter your password',
                 border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.lock_outlined),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _passwordVisible = !_passwordVisible;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
+              obscureText: !_passwordVisible,
             ),
           ],
         ),
@@ -445,7 +495,10 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
         else
           TextButton(
             onPressed: _showConfirmationDialog,
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             child: Text(loc.delete),
           ),
       ],
@@ -474,6 +527,19 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   bool _newPasswordVisible = false;
   bool _confirmPasswordVisible = false;
 
+  // Password validation states
+  bool _hasUpperCase = false;
+  bool _hasLowerCase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
+  bool _hasMinLength = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _newPasswordController.addListener(_validatePassword);
+  }
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -482,7 +548,78 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     super.dispose();
   }
 
+  void _validatePassword() {
+    final password = _newPasswordController.text;
+    setState(() {
+      _hasUpperCase = password.contains(RegExp(r'[A-Z]'));
+      _hasLowerCase = password.contains(RegExp(r'[a-z]'));
+      _hasNumber = password.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = password.contains(RegExp(r'[@$!%*?&]'));
+      _hasMinLength = password.length >= 8;
+    });
+  }
+
+  Widget _buildRequirementRow(bool met, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Icon(
+            met ? Icons.check_circle : Icons.cancel,
+            color: met ? Colors.green : Colors.grey,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              color: met ? Colors.green : Colors.grey,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPasswordField(
+    String label,
+    TextEditingController controller,
+    bool visible,
+    VoidCallback toggleVisibility,
+    {bool isNewPassword = false}
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          controller: controller,
+          obscureText: !visible,
+          decoration: InputDecoration(
+            labelText: label,
+            border: const OutlineInputBorder(),
+            suffixIcon: IconButton(
+              icon: Icon(
+                visible ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: toggleVisibility,
+            ),
+          ),
+        ),
+        if (isNewPassword) ...[
+          const SizedBox(height: 8),
+          _buildRequirementRow(_hasMinLength, 'At least 8 characters'),
+          _buildRequirementRow(_hasUpperCase, 'At least one uppercase letter'),
+          _buildRequirementRow(_hasLowerCase, 'At least one lowercase letter'),
+          _buildRequirementRow(_hasNumber, 'At least one number'),
+          _buildRequirementRow(_hasSpecialChar, 'At least one special character (@\$!%*?&)'),
+        ],
+      ],
+    );
+  }
+
   Future<void> _attemptChangePassword() async {
+    // Validate empty fields
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -490,30 +627,96 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       return;
     }
 
+    // Password validation regex
+    final passwordRegex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+    );
+
+    // Validate new password format
+    if (!passwordRegex.hasMatch(_newPasswordController.text)) {
+      _showErrorDialog(
+        'Password must be at least 8 characters long and contain:\n'
+        '- At least one uppercase letter\n'
+        '- At least one lowercase letter\n'
+        '- At least one number\n'
+        '- At least one special character (@\$!%*?&)'
+      );
+      return;
+    }
+
+    // Validate passwords match
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showErrorDialog('New passwords do not match');
+      return;
+    }
+
+    // Validate new password is different from current
+    if (_currentPasswordController.text == _newPasswordController.text) {
+      _showErrorDialog('New password must be different from current password');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
+      print('\n=== Change Password Attempt ===');
+      print('Current Password: ${_currentPasswordController.text}');
+      print('New Password: ${_newPasswordController.text}');
+      
       await _apiService.changePassword(
         _currentPasswordController.text,
         _newPasswordController.text,
       );
       
       if (mounted) {
-        _showConfirmationDialog();
+        // Clear the form
+        _currentPasswordController.clear();
+        _newPasswordController.clear();
+        _confirmPasswordController.clear();
+        
+        // Show success dialog
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Success'),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Your password has been changed successfully.'),
+                SizedBox(height: 8),
+                Text(
+                  'Please use your new password the next time you log in.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close success dialog
+                  Navigator.of(context).pop(); // Close change password dialog
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
+        print('\n=== Change Password Error ===');
+        print('Error: $e');
         _showErrorDialog(e.toString());
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+      print('=========================\n');
     }
   }
 
@@ -529,47 +732,6 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             child: const Text('OK'),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showConfirmationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Success'),
-        content: const Text('Your password has been changed successfully.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Close confirmation dialog
-              Navigator.of(context).pop(); // Close change password dialog
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(
-    String label,
-    TextEditingController controller,
-    bool visible,
-    VoidCallback toggleVisibility,
-  ) {
-    return TextField(
-      controller: controller,
-      obscureText: !visible,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: Icon(
-            visible ? Icons.visibility_off : Icons.visibility,
-          ),
-          onPressed: toggleVisibility,
-        ),
       ),
     );
   }
@@ -596,6 +758,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               _newPasswordController,
               _newPasswordVisible,
               () => setState(() => _newPasswordVisible = !_newPasswordVisible),
+              isNewPassword: true,
             ),
             const SizedBox(height: 16),
             _buildPasswordField(

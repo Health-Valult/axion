@@ -7,7 +7,7 @@ import 'package:flutter_application_1/pages/notifications_page.dart';
 import 'package:flutter_application_1/pages/reports_page.dart';
 import 'package:flutter_application_1/pages/link_page.dart';
 import 'package:flutter_application_1/pages/profile_page.dart';
-import 'package:flutter_application_1/widgets/floating_nav_bar.dart';
+import 'package:flutter_application_1/widgets/floating_nav_bar.dart'; 
 import 'package:flutter_application_1/services/api_service.dart';
 import 'package:flutter_application_1/services/notification_service.dart';
 
@@ -20,10 +20,10 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
-  bool _showAuthNotification = false; // Triggered by the REST API command.
-  Timer? _authPoller; // Timer for polling the REST API command.
+  bool _showAuthNotification = false;
+  Timer? _authPoller;
   final TextEditingController _verificationController = TextEditingController();
-  String _authNotificationText = "Authentication Required. Tap to verify."; // Controls overlay text.
+  String _authNotificationText = "Authentication Required. Tap to verify.";
   User? _currentUser;
 
   List<Widget> get _pages => [
@@ -45,13 +45,40 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadCurrentUser() async {
     try {
-      final user = await ApiService().getUserProfile();
-      setState(() {
-        _currentUser = user;
-      });
+      // Try loading profile up to 3 times with increasing delays
+      for (int i = 0; i < 3; i++) {
+        try {
+          final user = await ApiService().getUserProfile();
+          if (mounted) {
+            setState(() {
+              _currentUser = user;
+            });
+          }
+          return; // Success, exit retry loop
+        } catch (e) {
+          if (i < 2) {
+            await Future.delayed(Duration(milliseconds: (i + 1) * 500));
+          }
+        }
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load profile. Please try refreshing.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (e) {
-      // Handle error - you might want to show a snackbar or dialog
       debugPrint('Error loading user: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load profile. Please try refreshing.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -62,7 +89,6 @@ class _MainPageState extends State<MainPage> {
     super.dispose();
   }
 
-  // Poll the REST API endpoint for authentication notifications.
   void _startAuthNotificationPolling() {
     _authPoller = Timer.periodic(const Duration(seconds: 5), (timer) async {
       bool authRequired = await NotificationService.checkAuthNotification();
@@ -74,12 +100,11 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // Show the authentication dialog.
   void _showAuthDialog() {
     _verificationController.clear();
     showDialog(
       context: context,
-      barrierDismissible: false, // Forces the user to interact with the dialog.
+      barrierDismissible: false,
       builder: (context) {
         String errorMsg = '';
         return StatefulBuilder(
@@ -109,7 +134,7 @@ class _MainPageState extends State<MainPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    // Cancel: dismiss dialog and vanish overlay.
+                    // Cancel
                     Navigator.of(context).pop();
                     setState(() {
                       _showAuthNotification = false;
@@ -121,7 +146,7 @@ class _MainPageState extends State<MainPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    const correctCode = "123456"; // Dummy verification number.
+                    const correctCode = "123456";
                     if (_verificationController.text.trim() == correctCode) {
                       Navigator.of(context).pop();
                       setState(() {
@@ -133,7 +158,7 @@ class _MainPageState extends State<MainPage> {
                         "description": "Your verification code has been accepted.",
                         "read": false,
                       });
-                      // After 1 second, vanish the overlay and reset the text.
+                      // After 1 second, hide overlay
                       Future.delayed(const Duration(seconds: 1), () {
                         setState(() {
                           _showAuthNotification = false;
@@ -159,25 +184,10 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Use a Stack only for your global auth overlay
       body: Stack(
         children: [
-          // Main page content.
           Positioned.fill(child: _pages[_currentIndex]),
-          // Floating navigation bar.
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 22,
-            child: Center(
-              child: FloatingNavBar(
-                currentIndex: _currentIndex,
-                onItemSelected: (index) {
-                  setState(() => _currentIndex = index);
-                },
-              ),
-            ),
-          ),
-          // Global authentication notification overlay.
           if (_showAuthNotification)
             Positioned(
               top: 50,
@@ -208,6 +218,13 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
         ],
+      ),
+      // Put the nav bar here so it's not floating over the page
+      bottomNavigationBar: FloatingNavBar(
+        currentIndex: _currentIndex,
+        onItemSelected: (index) {
+          setState(() => _currentIndex = index);
+        },
       ),
     );
   }
