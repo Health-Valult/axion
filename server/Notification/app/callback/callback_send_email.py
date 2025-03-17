@@ -3,9 +3,9 @@ import os
 from mailjet_rest import Client as MailjetClient
 from app.utils.gen_email import _gen_email
 
-MAILJET_API_KEY = os.getenv("MAILJET_API_KEY")
-MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET")
-MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL")
+MAILJET_API_KEY = "eaba786ef725d15531fdfcb423525cb0"
+MAILJET_API_SECRET = "e15296850e0392377884ea34f8a737f9"
+MAILJET_FROM_EMAIL = "healthvault.co@gmail.com"
 
 mailjet_client = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
 logger = logging.getLogger("uvicorn")
