@@ -17,6 +17,7 @@ functions = {
 }
 
 async def callback(message:AbstractIncomingMessage) -> None:
+    
     msg:dict = loads(message.body)
     return_q = message.reply_to
     print(return_q)

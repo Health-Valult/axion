@@ -18,7 +18,7 @@ route = APIRouter()
 async def set_device_token(request:Request,email:Email):
     send:sendMQ = request.app.state.sender_task
     body = email.model_dump()
-    response = send.send(Qname="notification",task="send-email",body=body, type="request",)
+    response = send.send_and_await(Qname="notification",task="send-email",body=body)
     return PlainTextResponse(content=f"email sent {response}")
 
 @route.post("/notifications/test/ws")
