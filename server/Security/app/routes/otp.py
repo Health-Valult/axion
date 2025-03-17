@@ -18,16 +18,16 @@ def send_otp(request:Request,cred:SendOtp):
 
     state:FastAPI = request.app.state
 
+    id = cred.tempID
     type = cred.type
     data = cred.data
     
     c_uuid,role = 35726845687,"patient"
-    name = f"otp::{role}::{c_uuid}"
+    name = f"otp::{id}"
     otp = generate_otp()
     payload = {
-        "uuid":c_uuid,
+        "uuid":id,
         "type":type,
-        "role":role,
         "otp":otp
     }
     state.Cache.set_item(name=name,payload=payload,ttl=2)
@@ -46,12 +46,9 @@ def send_otp(request:Request,cred:SendOtp):
 def verify_otp(request:Request,cred:OTP):
     state:FastAPI = request.app
     c_otp = cred.otp
-
-    token = token = request.headers.get('authorization')
-    session = authenticate_session(token,Red=state.Cache)
-    c_uuid,role = session.get("uuid"),session.get("role")
-
-    name = f"otp::{role}::{c_uuid}"
+    c_id = cred.tempID
+   
+    name = f"otp::{c_id}"
     otp_payload = state.Cache.get_item(name=name)
 
     if otp_payload is None:

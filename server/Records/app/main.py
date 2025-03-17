@@ -23,6 +23,7 @@ from app.ax_types.procedure import *
 from app.middleware.auth import Auth
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
+from app.utils import load_to_redis
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -46,6 +47,15 @@ async def lifespan(app:FastAPI):
     app.state.sender_task = sendMQ("mq","record")
     # app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback_security))
 
+    # loader function
+
+    async def loader():
+        while True:
+            await load_to_redis(app=app)
+            await asyncio.sleep(10.0)
+
+    app.state.search_loader = asyncio.create_task(loader())
+
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = pymongo.MongoClient(URL)
@@ -55,6 +65,9 @@ async def lifespan(app:FastAPI):
     app.state.MedicationsCollection = Database.get_collection("medications")
     app.state.ImmunizationsCollection = Database.get_collection("immunizations")
     app.state.ProceduresCollection = Database.get_collection("procedures")
+
+    app.state.PatientsCollection = Database.get_collection("patients")
+
 
     # cache connection startup
     logger.info("connecting to cache 📚...")

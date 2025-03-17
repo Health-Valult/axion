@@ -50,6 +50,7 @@ class OTP(BaseModel):
     otp:int = Field(min_length=6,max_length=6)
 
 class SendOtp(BaseModel):
+    tempID:str
     type:str
     data:EmailStr
 
