@@ -36,6 +36,7 @@ async def send_email(email_content:dict):
             ]
         }
         response = mailjet_client.send.create(data=data)
-        print(f"Email sent to {email_content.get("email")}: {email_content.get("subject")}")
+        logger.warning(response)
+        logger.warning(f"Email sent to {email_content.get("email")}: {email_content.get("subject")}")
     except Exception as e:
         print(f"Failed to send email: {e}")
