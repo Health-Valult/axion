@@ -37,7 +37,7 @@ async def Authenticate_WS(webSocket: WebSocket):
     if status != "verifiedToken":
         await webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
-    print(response.get("body"))
-    webSocket.state.meta = response.get("body")
+    body:dict = response.get("body")
     
-    return webSocket
+    
+    return body.get("uuid"), body.get("role")

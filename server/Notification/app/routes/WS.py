@@ -11,10 +11,8 @@ connected_clients:dict = {}
 @route.websocket("/",)
 async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
-    Authenticate_WS(webSocket=websocket)
+    c_uuid,role = Authenticate_WS(webSocket=websocket)
     await websocket.accept()
-    
-    c_uuid,role = websocket.state.meta.get("uuid"),websocket.state.meta.get("role")
 
     connected_clients[c_uuid] = {
         "time":datetime.datetime.now(datetime.timezone.utc),
