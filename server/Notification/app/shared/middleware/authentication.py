@@ -26,7 +26,6 @@ def Authenticate_WS(webSocket: WebSocket):
     
     Mq:sendMQ = webSocket.app.state.sender_task 
     token:str = webSocket.headers.get('authorization')
-    print("logged as mid")
     if token is None:
         webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
