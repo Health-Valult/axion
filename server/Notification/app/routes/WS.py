@@ -7,8 +7,8 @@ route = APIRouter()
 connected_clients:dict = {}
 
 
-
-@route.websocket("/ws",dependencies=[Depends(Authenticate_WS)])
+#dependencies=[Depends(Authenticate_WS)]
+@route.websocket("/ws",)
 async def websocket_endpoint(websocket: WebSocket):
     print("reached")
     await websocket.accept()
