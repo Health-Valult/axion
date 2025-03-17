@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import PlainTextResponse
 from starlette.requests import Request
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate
@@ -18,6 +19,7 @@ async def set_device_token(request:Request,email:Email):
     send:sendMQ = request.app.state.sender_task
     body = email.model_dump()
     response = send.send_and_await("notification","send-email",body=body)
+    return PlainTextResponse(content=f"email sent {response}")
 
 @route.post("/notifications/test/ws")
 async def set_device_token(request:Request):
