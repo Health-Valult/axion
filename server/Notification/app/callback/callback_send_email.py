@@ -8,7 +8,7 @@ MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL")
 
 mailjet_client = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
 
-async def _send_email(email_content:dict):
+async def send_email(email_content:dict):
     print("email triggered")
     htmlContent = _gen_email(msg=email_content.get("body"),client="Father Touchboys")
 
