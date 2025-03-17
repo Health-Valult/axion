@@ -13,7 +13,7 @@ async def websocket_endpoint(websocket: WebSocket,dependencies=[Depends(Authenti
     print("reached")
     await websocket.accept()
     
-    c_uuid,role = websocket.state.meta.get("uuid"),websocket.state.meta.get("role")
+    c_uuid,role = websocket.app.state.meta.get("uuid"),websocket.state.meta.get("role")
 
     connected_clients[c_uuid] = {
         "time":datetime.datetime.now(datetime.timezone.utc),

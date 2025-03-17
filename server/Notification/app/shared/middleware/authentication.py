@@ -39,6 +39,6 @@ def Authenticate_WS(webSocket: WebSocket):
         webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
     
-    webSocket.state.meta = response.get("body")
+    webSocket.app.state.meta = response.get("body")
     
     return webSocket
