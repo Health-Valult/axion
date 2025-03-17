@@ -10,9 +10,9 @@ connected_clients:dict = {}
 
 @route.websocket("/ws",dependencies=[Depends(Authenticate_WS)])
 async def websocket_endpoint(websocket: WebSocket):
+    print("reached")
     await websocket.accept()
     
-
     c_uuid,role = websocket.state.meta.get("uuid"),websocket.state.meta.get("role")
 
     connected_clients[c_uuid] = {
