@@ -16,7 +16,7 @@ def generate_otp(length=6):
 @route.post("/axion/auth/send/otp")
 def send_otp(request:Request,cred:SendOtp):
 
-    state:FastAPI = request.app
+    state:FastAPI = request.app.state
 
     type = cred.type
     data = cred.data
