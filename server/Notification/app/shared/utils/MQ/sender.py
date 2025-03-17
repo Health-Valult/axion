@@ -38,7 +38,7 @@ class sendMQ:
                 "sender":self.service,
                 "reciver":Qname,
                 "id":f"{self.service}-{uuid.uuid4()}",
-                "response":{
+                "request":{
                     "task":task,
                     "body":body
                 }
