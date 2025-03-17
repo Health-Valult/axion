@@ -4,6 +4,7 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { MoreVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import {usePathname} from "next/navigation";
 import ModeSwitch from "@/app/components/ModeSwitch";
 
 interface SidebarContextProps {
@@ -27,17 +28,16 @@ const SidebarContext = createContext<SidebarContextProps | undefined>(undefined)
 function Sidebar({ children }: SidebarProps) {
     const [expanded, setExpanded] = useState(false);
     const [activeItem, setActiveItem] = useState<string>("");
+    const path = usePathname();
 
     useEffect(() => {
         setExpanded(false);
-
-        const path = window.location.pathname;
 
         if (path === "/") setActiveItem("Dashboard");
         else if (path === "/reports") setActiveItem("Reports");
         else if (path === "/medicine") setActiveItem("Medicines");
         else setActiveItem("");
-    }, []);
+    }, [path]);
 
     return (
         <aside

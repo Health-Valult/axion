@@ -5,6 +5,8 @@ import Image from "next/image";
 import { FormProvider } from "@/app/components/FormContext";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import toast, {Toaster} from "react-hot-toast";
+// import { randomUUID } from 'crypto';
 
 interface FormData {
     firstName: string;
@@ -37,6 +39,7 @@ interface LoginFormErrors {
 }
 
 const Auth: React.FC = () => {
+    // const uuid = randomUUID();
     const [isActive, setIsActive] = useState(false);
     const [value, setValue] = useState("");
     const [signUpStep, setSignUpStep] = useState(1);
@@ -54,27 +57,41 @@ const Auth: React.FC = () => {
         email: "",
     });
     const [errors, setErrors] = useState<FormErrors>({});
-    const [loginErrors] = useState<LoginFormErrors>({});
+    const [loginErrors, setLoginErrors] = useState<LoginFormErrors>({});
 
     const handleRegister = () => setIsActive(true);
     const handleLogin = () => setIsActive(false);
 
-    // const nextStep = () => setSignUpStep((prev) => Math.min(prev + 1, 3)); // Now 3 steps
+    const validateLogin = (loginFormData: LoginFormData): LoginFormErrors => {
+        const errors: LoginFormErrors = {};
+
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!loginFormData.email.trim()) {
+            errors.email = "Email is required.";
+        } else if (!emailPattern.test(loginFormData.email)) {
+            errors.email = "Please enter a valid email.";
+        }
+
+        if (!loginFormData.password.trim()) {
+            errors.password = "Password is required.";
+        } else if (loginFormData.password.length < 6) {
+            errors.password = "Password must be at least 6 characters long.";
+        }
+
+        return errors;
+    }
 
     const validateStep1 = (formData: FormData): FormErrors => {
         const errors: FormErrors = {};
 
-        // Check for first name
         if (!formData.firstName.trim()) {
             errors.firstName = "First Name is required.";
         }
 
-        // Check for last name
         if (!formData.lastName.trim()) {
             errors.lastName = "Last Name is required.";
         }
 
-        // Check for email format
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         if (!formData.email.trim()) {
             errors.email = "Email is required.";
@@ -82,7 +99,6 @@ const Auth: React.FC = () => {
             errors.email = "Please enter a valid email.";
         }
 
-        // Check for password length
         if (!formData.password.trim()) {
             errors.password = "Password is required.";
         } else if (formData.password.length < 6) {
@@ -94,15 +110,13 @@ const Auth: React.FC = () => {
 
     const validateStep2 = (formData: FormData): FormErrors => {
         const errors: FormErrors = {};
-        // Validate Mobile Number (just a simple check for length and digits, adjust regex as needed)
-        const mobilePattern = /^[0-9]{10}$/; // Assuming a 10-digit mobile number format
+        const mobilePattern = /^[0-9]{10}$/;
         if (!formData.mobileNumber.trim()) {
             errors.mobileNumber = "Mobile Number is required.";
         } else if (!mobilePattern.test(formData.mobileNumber)) {
             errors.mobileNumber = "Please enter a valid mobile number.";
         }
 
-        // Validate NIC: 9 digits ending with x/v or 12 digits
         const nicPattern = /^(?:\d{9}[xv]|\d{12})$/i;
         if (!formData.nic.trim()) {
             errors.nic = "NIC is required.";
@@ -110,28 +124,34 @@ const Auth: React.FC = () => {
             errors.nic = "Please enter a valid NIC (9 digits ending with x/v or 12 digits).";
         }
 
-        // Validate Date of Birth: Within 100 years and not in the future
         const currentDate = new Date();
         const birthDate = new Date(formData.dateOfBirth);
         const age = currentDate.getFullYear() - birthDate.getFullYear();
         const month = currentDate.getMonth() - birthDate.getMonth();
-        const maxAge = 100; // Max age = 100 years
+        const maxAge = 100;
 
         if (!formData.dateOfBirth.trim()) {
             errors.dateOfBirth = "Date of Birth is required.";
         } else if (birthDate > currentDate) {
             errors.dateOfBirth = "Date of Birth cannot be in the future.";
         } else if (age > maxAge || (age === maxAge && month >= 0)) {
-            // Check if user is older than 100 years
             errors.dateOfBirth = "Date of Birth must be within the last 100 years.";
         }
 
         return errors;
     };
 
+    const login = () => {
+        const validationErrors = validateLogin(loginFormData);
+        if (Object.keys(validationErrors).length === 0) {
+            loginUser(loginFormData.email, loginFormData.password);
+        } else {
+            setLoginErrors(validationErrors);
+        }
+    }
+
     const nextStep = () => {
         if (signUpStep === 1) {
-            // Validate Step 1
             const validationErrors = validateStep1(formData);
             if (Object.keys(validationErrors).length === 0) {
                 setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 2
@@ -139,7 +159,6 @@ const Auth: React.FC = () => {
                 setErrors(validationErrors);
             }
         } else if (signUpStep === 2) {
-            // Validate Step 2
             const validationErrors = validateStep2(formData);
             if (Object.keys(validationErrors).length === 0) {
                 setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 3
@@ -281,16 +300,15 @@ const Auth: React.FC = () => {
         }
     };
 
-    // const handleSubmit = async () => window.location.href = "/";
-
     const getProgressWidth = (step: number) => {
-        return step * 33.33; // Now 3 steps, so each step is 33.33%
+        return step * 33.33;
     };
 
     const progressWidth = getProgressWidth(signUpStep);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-200 to-purple-300">
+            <div><Toaster/></div>
             <div className="mt-3 mb-3">
                 <Image
                     src="/logo-with-text-black.png"
@@ -344,7 +362,7 @@ const Auth: React.FC = () => {
                             onChange={(e) => setLoginFormData({ ...loginFormData, password: e.target.value })}
                         />
                         <a href="#" className="text-sm text-blue-500 mb-4">Forget Your Password?</a>
-                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  loginUser(loginFormData.email, loginFormData.password)}>
+                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  login()}>
                             Sign In
                         </button>
                     </FormProvider>
@@ -375,10 +393,9 @@ const Auth: React.FC = () => {
     );
 };
 
-// Function to handle user registration
 const registerUser = async (formData: FormData) => {
     try {
-        const response = await fetch(`/api/proxy`, {
+        const response = await fetch(`/api/signup-proxy`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -390,42 +407,32 @@ const registerUser = async (formData: FormData) => {
                     "LastName": formData.lastName,
                     "Email": formData.email,
                     "Telephone": formData.mobileNumber,
-                    "DateOfBirth":10092003 ,
+                    "DateOfBirth":formData.dateOfBirth ,
                     "Password": formData.password
                 }
-            ), // Sending the form data as JSON
+            ),
         });
 
         if (!response.ok) {
-            // If response is not successful, throw an error
             const errorData = await response.json();
+            toast.error("Something went wrong during registration");
             throw new Error(errorData.message || "Something went wrong during registration.");
         }
 
         // Handle the successful registration response
         const data = await response.json();
-        alert("Registration successful!");
-        return data; // Optionally return some data from the backend
+        toast.success("Successfully Registered!");
+        return data;
 
     } catch (error) {
         console.error("Error during registration:", error);
-        alert("Registration failed");
+        toast.error("Registration failed");
     }
 };
 
 const loginUser = async (email: string, password: string) => {
-    console.log(JSON.stringify({
-        Email: email,
-        Password: password,
-        Location: {
-            Latitude: 12.3456,
-            Longitude: 78.9012
-        },
-        IpAddress: "192.168.1.1",
-        AndroidId: "unique_device_id"
-    }));
     try {
-        const response = await fetch(`api/proxy`, {
+        const response = await fetch(`api/login-proxy`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -444,17 +451,15 @@ const loginUser = async (email: string, password: string) => {
         });
 
         if (!response.ok) {
-            // If response is not successful, handle the error
-            const errorData = await response.text(); // Get response body as text
+            const errorData = await response.text();
             throw new Error(`Error: ${response.status} - ${errorData}`);
         }
 
         const data = await response.json();
-        alert("Login successful!");
+        toast.success("Login successful!");
 
         if (data) {
-            const { session_token, refresh_token } = data; // Adjust this based on the actual API response
-            console.log("Session: " + session_token + "Refresh: " + refresh_token)
+            const { session_token, refresh_token } = data;
             sessionStorage.setItem("session_token", session_token);
             sessionStorage.setItem("refresh_token", refresh_token);
 
@@ -464,19 +469,17 @@ const loginUser = async (email: string, password: string) => {
             window.location.href = "/";
         } else {
             console.error("No data in response.");
-            alert("Login failed. No response data.");
+            toast.error("Login failed!");
         }
 
     } catch (error) {
         console.error("Error during login:", error);
-        alert("Login failed");
+        toast.error("Login failed!");
     }
 };
 
-// Function to verify OTP
-async function verifyOTP(otp: number, token: string): Promise<void> {
+async function verifyOTP(otp: number, token: string) {
     try {
-        // Send the POST request using fetch
         const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/verify/otp`, {
             method: 'POST',
             headers: {
@@ -486,19 +489,19 @@ async function verifyOTP(otp: number, token: string): Promise<void> {
             body: JSON.stringify({ otp }),
         });
 
-        // Check if the request was successful
         if (response.ok) {
             const data = await response.json();
-            console.log('OTP verified:', data.msg); // Log success message
+            toast.success("OTP verified!");
+            console.log('OTP verified:', data.msg);
         } else {
             const errorData = await response.json();
-            console.error('OTP verification failed:', errorData.msg); // Log error message
+            toast.error("OTP verification failed!");
+            console.error('OTP verification failed:', errorData.msg);
         }
     } catch (error) {
-        // Handle any network errors or other exceptions
+        toast.error("Error during OTP verification!");
         console.error('Error during OTP verification:', error);
     }
 }
-
 
 export default Auth;

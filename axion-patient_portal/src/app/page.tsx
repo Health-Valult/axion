@@ -15,7 +15,7 @@ import { useLanguage } from "@/app/components/LanguageContext";
 import LanguageSwitch from '@/app/components/LanguageSwitch';
 import {useDarkMode} from "@/app/components/DarkModeContext";
 import useAuth from "@/hooks/useAuth";
-
+import toast, {Toaster} from "react-hot-toast";
 
 export default function DashboardLayout() {
     return (
@@ -72,14 +72,15 @@ const Dashboard = () => {
         { id: 3, message: "Reminder: Take your Amoxicillin at 8 PM." },
     ];
     const router = useRouter();
-    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+    const isAuthenticated = useAuth();
 
     if (!isAuthenticated) {
-        return null;  // If not authenticated, nothing will be rendered
+        return null;
     }
 
     return (
         <div className="min-h-screen dark:bg-gray-950 p-6">
+            <Toaster/>
             <div className="flex items-center justify-between py-4 px-8 bg-white dark:bg-gray-950 rounded-lg">
                 <div className="flex justify-center w-full">
                     <Image
@@ -95,7 +96,7 @@ const Dashboard = () => {
                             <PopoverTrigger>
                                 <Tooltip>
                                     <TooltipTrigger>
-                                        <Bell size={24} className="cursor-pointer mt-3" />
+                                        <Bell size={24} className="cursor-pointer mt-2" />
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>Notifications</p>
@@ -127,10 +128,29 @@ const Dashboard = () => {
                                     <Button variant="outline" className="w-full" onClick={() => router.push('/profile')}>
                                         Profile
                                     </Button>
-                                    <Button variant="destructive" className="w-full" onClick={() => {
-                                        sessionStorage.removeItem("session_token");
-                                        sessionStorage.removeItem("refresh_token");
-                                        router.push("/auth");
+                                    <Button variant="destructive" className="w-full"
+                                            onClick={async () => {
+                                                try {
+                                                    const response = await fetch('/api/logout-proxy', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Authorization': `Bearer ${sessionStorage.getItem("session_token")}`,
+                                                        },
+                                                    });
+                                                    if (response.ok) {
+                                                        toast.success("Logging out...")
+                                                        sessionStorage.removeItem("session_token");
+                                                        sessionStorage.removeItem("refresh_token");
+                                                        router.push("/auth");
+                                                    } else {
+                                                        toast.error("Logout failed")
+                                                        console.error("Logout failed:", await response.text());
+                                                    }
+                                                } catch (error) {
+                                                    toast.error("Error during logout")
+                                                    console.error("Error during logout:", error);
+                                                }
                                     }}>
                                         Logout
                                     </Button>

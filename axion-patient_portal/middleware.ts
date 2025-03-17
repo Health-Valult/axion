@@ -102,6 +102,12 @@ export default async function middleware(request: NextRequest) {
     // Create a response object with CORS headers
     const response = NextResponse.next();
 
+    // Set CORS headers for the request
+    request.headers.set('Access-Control-Allow-Origin', '*'); // Allow all origins or set a specific origin
+    request.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Allowed methods
+    request.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allowed headers
+    request.headers.set('Access-Control-Allow-Credentials', 'true'); // If you want to allow credentials (cookies, etc.)
+
     // Set CORS headers for the response
     response.headers.set('Access-Control-Allow-Origin', '*'); // Allow all origins or set a specific origin
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); // Allowed methods
