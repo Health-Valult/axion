@@ -9,7 +9,6 @@ from app.shared.utils.MQ.reciver import recieveMQ
 from app.shared.utils.MQ.sender import sendMQ
 from app.shared.utils.Cache.redis import redis_AX
 from dotenv import load_dotenv
-import os
 from app.callback.callback import callback
 from firebase_admin import credentials
 import firebase_admin
@@ -65,6 +64,7 @@ app = FastAPI(lifespan=lifespan,title="notification")
 app.include_router(w_route)
 app.include_router(r_route)
 
+logger.info(app.routes)
 
 if __name__ == '__main__':
     uvicorn.run("app.main:app",host="0.0.0.0",port=8080,reload=True)
