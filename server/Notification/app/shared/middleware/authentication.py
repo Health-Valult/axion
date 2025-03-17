@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Request,WebSocket,WebSocketException
 from app.shared.utils.MQ.sender import sendMQ
-
-
+import logging
+logger = logging.getLogger("uvicorn")
 def Authenticate(request: Request):
     
     Mq:sendMQ = request.app.state.sender_task 
@@ -25,6 +25,7 @@ def Authenticate_WS(webSocket: WebSocket):
     
     Mq:sendMQ = webSocket.app.state.sender_task 
     token:str = webSocket.headers.get('authorization')
+    logger.info(token)
     if token is None:
         webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
