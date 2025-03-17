@@ -28,7 +28,7 @@ logger = logging.getLogger("uvicorn")
 # startup events
 @asynccontextmanager
 async def lifespan(app:FastAPI):
-
+    logger.info("v-000")
     # rabbitMQ connection startup
     app.state.sender_task = sendMQ("mq","notification")
     app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'notification',callback=callback))
