@@ -82,16 +82,16 @@ def delete_profile(request:Request,cred:Delete):
     cache = state.state.Cache
 
     password = cred.Password
-    nic = cred.NIC
+    email = cred.Email
 
     c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
 
 
     if role == "patient":
-        return _delete_profile(collection=p_collection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+        return _delete_profile(collection=p_collection,c_uuid=uuid.UUID(c_uuid),email=email,pw=password)
     
     if role == "doctor":
-        return _delete_profile(collection=d_collection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+        return _delete_profile(collection=d_collection,c_uuid=uuid.UUID(c_uuid),email=email,pw=password)
 
     if role == "hospital":
-        return _delete_profile(collection=h_collection,c_uuid=uuid.UUID(c_uuid),nic=nic,pw=password)
+        return _delete_profile(collection=h_collection,c_uuid=uuid.UUID(c_uuid),email=email,pw=password)
