@@ -42,7 +42,7 @@ def refresh(request:Request,cred:Token):
     cache = state.state.Cache
     refresh_token = cred.Token
     response = authenticate_session(refresh_token,refresh_token=True,Red=cache).get("uuid")
-    new_session = generateTokens(type="session",endpoint="patient",payload=response,key=state.refresh_private_key,exp=60)
+    new_session = generateTokens(type="session",endpoint="patient",payload=response,key=state.state.refresh_private_key,exp=60)
     return JSONResponse(status_code=200, content={"token":new_session})
     
 
