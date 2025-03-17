@@ -8,7 +8,7 @@ connected_clients:dict = {}
 
 
 
-@route.websocket("/ws",)
+@route.websocket("/",)
 async def websocket_endpoint(websocket: WebSocket,dependencies=[Depends(Authenticate_WS)]):
     print("reached")
     await websocket.accept()
