@@ -22,12 +22,12 @@ def Authenticate(request: Request):
     return request
 
 
-def Authenticate_WS(webSocket: WebSocket):
+async def Authenticate_WS(webSocket: WebSocket):
     
     Mq:sendMQ = webSocket.app.state.sender_task 
     token:str = webSocket.headers.get('authorization')
     if token is None:
-        webSocket.close()
+        await webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
     
     rabbitResponse:dict = Mq.send_and_await("security","sessionAuth",{"token":token})[0]
@@ -35,7 +35,7 @@ def Authenticate_WS(webSocket: WebSocket):
     
     status = response.get("task")
     if status != "verifiedToken":
-        webSocket.close()
+        await webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
     print(response.get("body"))
     webSocket.state.meta = response.get("body")
