@@ -13,7 +13,7 @@ from app.callback.callback import callback
 from firebase_admin import credentials
 import firebase_admin
 from app.routes.WS import route as w_route
-from app.routes.REST import route as r_route
+from app.routes.REST import route 
 
 load_dotenv()
 
@@ -62,7 +62,7 @@ async def lifespan(app:FastAPI):
 app = FastAPI(lifespan=lifespan,title="notification")
 
 app.include_router(w_route)
-app.include_router(r_route)
+app.include_router(route)
 
 logger.info(app.routes)
 

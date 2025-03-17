@@ -7,7 +7,7 @@ from app.models.models import *
 
 route = APIRouter()
 
-route.post("/notifications/set-device-token",dependencies=[Depends(Authenticate)])
+@route.post("/notifications/set-device-token",dependencies=[Depends(Authenticate)])
 async def set_device_token(request:Request,Token:SetToken):
     c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
     Token:dict = Token.model_dump()
