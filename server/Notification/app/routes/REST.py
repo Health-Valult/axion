@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from starlette.requests import Request
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate
-from server.Notification.app.models.models import *
+from app.models.models import *
 
 
 route = APIRouter()
