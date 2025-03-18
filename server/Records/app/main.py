@@ -8,13 +8,9 @@ from strawberry.fastapi import GraphQLRouter
 import strawberry
 import asyncio
 
-
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
 
-
-
-from app.middleware.auth import Auth
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
 from app.shared.middleware.authentication import AuthenticateMiddleware
@@ -25,6 +21,8 @@ URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongoclus
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
 
 logger = logging.getLogger("uvicorn")
+
+
 # startup events
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -82,7 +80,7 @@ graphql_app = GraphQLRouter(schema)
 
 
 
-app.include_router(graphql_app, prefix="/graphql")
+#app.include_router(graphql_app, prefix="/graphql")
 
 app.add_middleware(AuthenticateMiddleware)
 
@@ -95,18 +93,7 @@ if __name__ == '__main__':
 
 
 
-"""
-CBC
-Urine full Report UFR
-CRP
-Liver Function Test
-Fasting Blood Sugar
-Serum Creatinine SER
-Serum electrolytes 
-Lipid Profile
-HBA1C
-ESR
-Thyroxine
-"""
+
+
 # Az cluster user - TestAxionAdmin
 # Az cluster pw - YRmx2JtrK44FDLV
