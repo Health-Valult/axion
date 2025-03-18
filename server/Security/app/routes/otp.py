@@ -56,7 +56,7 @@ def verify_otp(request:Request,cred:OTP):
     if otp_payload is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
 
-    otp = otp_payload.get("otp")
+    otp = otp_payload.get(b"otp").decode()
     if otp is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
     
