@@ -3,14 +3,14 @@ import logging
 import warnings
 import pymongo
 import uvicorn
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 from app.utils.sender import sendMQ
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
-from app.shared.middleware.authentication import AuthenticateMiddleware
-from app.routes.GQL import Query
+from app.shared.middleware.authentication import Authenticate, AuthenticateMiddleware
+from app.routes.GQL.Patient import PatientQuery
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -37,6 +37,7 @@ async def lifespan(app:FastAPI):
     app.state.MedicationsCollection = Database.get_collection("medications")
     app.state.ImmunizationsCollection = Database.get_collection("immunizations")
     app.state.ProceduresCollection = Database.get_collection("procedures")
+    app.state.LabsCollection = Database.get_collection("labs")
 
     app.state.PatientsCollection = Database.get_collection("patients")
 
@@ -63,11 +64,15 @@ app = FastAPI(title="record",lifespan=lifespan)
 
 # aGts37rYk@fVrFJ
        
+patient_schema = strawberry.Schema(PatientQuery)
+patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenticate)])
 
-schema = strawberry.Schema(Query)
-graphql_app = GraphQLRouter(schema)
+#doctor_schema = strawberry.Schema(Query)
+#doctor_gql_router = GraphQLRouter(patient_schema)
 
-app.include_router(graphql_app, prefix="/graphql")
+app.include_router(patient_gql_router, prefix="/graphql/patient")
+#app.include_router(doctor_gql_router, prefix="/graphql/doctor")
+
 #app.add_middleware(AuthenticateMiddleware)
 
 # main app
