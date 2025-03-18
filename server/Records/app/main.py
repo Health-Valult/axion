@@ -3,18 +3,13 @@ import logging
 import warnings
 import pymongo
 import uvicorn
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
 import strawberry
-import asyncio
-
-from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
-
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
 from app.shared.middleware.authentication import AuthenticateMiddleware
-from app.utils import load_to_redis
 from app.routes.GQL import Query
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
@@ -87,8 +82,9 @@ app.add_middleware(AuthenticateMiddleware)
 
 
 
+# main app
 if __name__ == '__main__':
-    uvicorn.run("app.main:app",port=5000,reload=True)
+    uvicorn.run(app= "app.main:app",host= "0.0.0.0",port=5000,reload=True)
 
 
 
