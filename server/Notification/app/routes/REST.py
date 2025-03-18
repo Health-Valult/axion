@@ -21,7 +21,7 @@ async def set_device_token(request:Request,Token:SetToken):
 
 
 
-@route.get("/notifications/{user_id}", response_model=List[dict],dependencies=[Depends(Authenticate)])
+@route.get("/notifications", response_model=List[dict],dependencies=[Depends(Authenticate)])
 async def get_notifications(request:Request):
     c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
     collection:Collection = request.app.state.Notifications
