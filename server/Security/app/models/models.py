@@ -47,7 +47,7 @@ class Delete(BaseModel):
 
 class OTP(BaseModel):
     tempID:str
-    otp:str = Field(max_length=6)
+    otp:str
 
 class SendOtp(BaseModel):
     tempID:str
