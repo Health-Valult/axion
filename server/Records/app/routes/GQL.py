@@ -85,20 +85,16 @@ class Query:
         
             request:Request = info.context["request"]
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            print(type(request.app.state.MedicationsCollection))
+
             medicationAggregate = request.app.state.MedicationsCollection.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
-            print(type(medicationAggregate))
-            for obs in medicationAggregate:
-                print(obs)
-            res =  MedicationStack(
+
+
+            return MedicationStack(
                     medications=[Medication(**obs) for obs in medicationAggregate]
                 )
-            print(res)
-            return res
 
     @strawberry.field
     async def immunization(
