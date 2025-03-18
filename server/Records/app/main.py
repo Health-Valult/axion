@@ -62,7 +62,7 @@ async def lifespan(app:FastAPI):
 
 
 # instantiating FastAPI server
-app = FastAPI(lifespan=lifespan,title="record")
+app = FastAPI(title="record")
 
 
 # aGts37rYk@fVrFJ
@@ -76,7 +76,7 @@ graphql_app = GraphQLRouter(schema)
 
 #app.include_router(graphql_app, prefix="/graphql")
 
-app.add_middleware(AuthenticateMiddleware)
+#app.add_middleware(AuthenticateMiddleware)
 
 
 
