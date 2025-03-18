@@ -45,10 +45,6 @@ async def lifespan(app:FastAPI):
     logger.info("connecting to cache 📚...")
     app.state.Cache = redis_AX("redis://cache:6379",10).connect()
 
-    # loading refresh token
-    with open('./app/data/keys/refresh_private.pem', 'r') as file:
-        app.state.refresh_private_key = file.read()
-
     logger.info(app.state)
 
     yield
