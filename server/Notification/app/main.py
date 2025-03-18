@@ -39,6 +39,7 @@ async def lifespan(app:FastAPI):
     DBClient = MongoClient(URL)
     Database = DBClient.get_database("notifications_db")
     app.state.TokensCollection = Database.get_collection("userDeviceTokens")
+    app.state.Notifications = Database.get_collection("notifications")
 
     # cache connection startup
     logger.info("connecting to cache 📚...")
