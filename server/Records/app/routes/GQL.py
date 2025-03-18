@@ -87,12 +87,10 @@ class Query:
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
             print(type(request.app.state.MedicationsCollection))
-            medicationAggregate = request.app.state.MedicationsCollection.aggregate([
-                        {"$match": {
-                            "patient": patient,  
-                            }},
-                        {"$project": query|{"_id":0}} 
-                    ])
+            medicationAggregate = request.app.state.MedicationsCollection.find(
+                        {"patient": patient},
+                        query|{"_id":0}
+                    )
             print(type(medicationAggregate))
             for obs in medicationAggregate:
                 print(obs)
