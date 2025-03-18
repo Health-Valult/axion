@@ -31,7 +31,7 @@ async def lifespan(app:FastAPI):
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = pymongo.MongoClient(URL)
-    Database = DBClient.get_database("users_db")
+    Database = DBClient.get_database("records_db")
     app.state.ObservationCollection = Database.get_collection("observations")
     app.state.AllergiesCollection = Database.get_collection("allergyIntolerance")
     app.state.MedicationsCollection = Database.get_collection("medications")
