@@ -18,7 +18,7 @@ class Query:
         
         request = info.context["request"]
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        observationAggregate = app.state.ObservationCollection.aggregate([
+        observationAggregate = request.app.state.ObservationCollection.aggregate([
                 {"$match": {
                     "patient": patient, 
                     "code": code, 

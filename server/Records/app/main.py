@@ -65,18 +65,10 @@ app = FastAPI(title="record",lifespan=lifespan)
        
 
 schema = strawberry.Schema(Query)
-
 graphql_app = GraphQLRouter(schema)
 
-
-
-#app.include_router(graphql_app, prefix="/graphql")
-
-app.add_middleware(AuthenticateMiddleware)
-
-
-
-
+app.include_router(graphql_app, prefix="/graphql")
+#app.add_middleware(AuthenticateMiddleware)
 
 # main app
 if __name__ == '__main__':
