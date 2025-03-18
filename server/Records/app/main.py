@@ -29,10 +29,9 @@ async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
     app.state.sender_task = sendMQ("mq","record")
-    # app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback_security))
 
     # loader function
-    app.state.search_loader = asyncio.create_task(load_to_redis.loader())
+    #app.state.search_loader = asyncio.create_task(load_to_redis.loader())
 
     # database connection startup
     logger.info("connecting to DB 🍃...")
