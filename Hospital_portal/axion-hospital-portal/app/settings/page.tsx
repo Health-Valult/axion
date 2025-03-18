@@ -18,7 +18,7 @@ const Settings = () => {
         <p className="text-secondary-foreground">Customize your account preferences</p>
       </header>
       
-      <Card className="glass-card p-6">
+      <Card className="glass-card p-6 dark:bg-black dark:text-white" >
         <h3 className="text-lg font-semibold mb-6">Preferences</h3>
         <div className="space-y-6">
           <div className="flex items-center justify-between">

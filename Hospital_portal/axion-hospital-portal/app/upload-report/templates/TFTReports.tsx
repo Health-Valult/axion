@@ -3,11 +3,6 @@
 import React from "react";
 
 export interface TFTFormData {
-    patientName: "",
-    referredBy: "",
-    ageSex: "",
-    date: "",
-    investigations: "",
     tsh: "",
     t3: "",
     t4: "",
@@ -21,36 +16,6 @@ interface TFTFormFieldsProps {
 const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Patient Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="patientName"
-          value={tftData.patientName}
-          onChange={onChange}
-          placeholder="Patient Name"
-          className="search-input"
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-        referredBy <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="referredBy"
-          value={tftData.referredBy}
-          onChange={onChange}
-          placeholder="Nurse Name"
-          className="search-input"
-          required
-        />
-      </div>
-
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="block text-sm font-medium">
@@ -61,7 +26,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
             name="tsh"
             value={tftData.tsh}
             onChange={onChange}
-            placeholder="14.0"
+            placeholder="2.0"
             className="search-input"
             required
           />
@@ -76,7 +41,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
             name="t3"
             value={tftData.t3}
             onChange={onChange}
-            placeholder="7.5"
+            placeholder="100"
             className="search-input"
             required
           />
@@ -93,7 +58,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
             name="t4"
             value={tftData.t4}
             onChange={onChange}
-            placeholder="60"
+            placeholder="7.0"
             className="search-input"
             required
           />

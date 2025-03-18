@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 import Image from "next/image";
 import "../app/globals.css";
 
@@ -28,24 +29,23 @@ const geistMono = Geist_Mono({
 const links = [
   {
     label: "Home",
-    href: "/",
-    icon: "",
-  },
-  {
-    label: "Search Patient",
     href: "/search_patient",
     icon: "",
   },
-
+//   {
+//     label: "Search Patient",
+//     href: "/search_patient",
+//     icon: "",
+//   },
   {
     label: "Settings",
-    href: "/settings",
+    href: "/Login",
     icon: "",
   },
 
   {
     label: "Profile",
-    href: "/",
+    href: "/profile",
     icon: "",
        },
   ];
@@ -257,10 +257,13 @@ export default function RootLayout({
 				</div>
 			</SidebarBody>
 			</Sidebar>
-
+			
+			<ToastProvider>
 			<div className="flex-1 overflow-y-auto p-4"> {/* This is the main content area */}
 			{children}
 			</div>
+			<ToastViewport />
+			</ToastProvider>
 		</div>
 		</body>
 	  </html>

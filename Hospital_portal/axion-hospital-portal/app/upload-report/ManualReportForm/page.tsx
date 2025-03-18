@@ -21,6 +21,7 @@ import LipidProfileFormFields from "../templates/LipidProfileReport";
 import SearumCFormFields from "../templates/SerumCReport";
 import SerumElectroFormFields from "../templates/SerumElectroReport";
 import TFTFormFields from "../templates/TFTReports";
+import { Patient } from "@/app/types/patient";
 
 // Import all report templates
 import {
@@ -38,7 +39,7 @@ import {
 } from "@/app/upload-report/data/CBCFormData";
 
 interface ManualReportFormProps {
-  patientId: string;
+  patient: Patient;
   onCancel: () => void;
 }
 
@@ -57,7 +58,7 @@ const reportTemplatesMap: { [key: string]: any } = {
   tft: TFTReportTemplate,
 };
 
-const ManualReportForm = ({ patientId, onCancel }: ManualReportFormProps) => {
+const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   const router = useRouter();
   const [selectedReport, setSelectedReport] = useState("");
   const [reportData, setReportData] = useState<CommonReportData>({
@@ -159,6 +160,7 @@ const ManualReportForm = ({ patientId, onCancel }: ManualReportFormProps) => {
   if (showPreview) {
     return (
       <ReportPreview
+        patient={patient}
         reportType={selectedReport}
         reportData={{ ...dynamicReportData, date: `${reportData.date} ${reportData.time}` }}
         isSaving={isSaving}

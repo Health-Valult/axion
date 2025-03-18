@@ -3,10 +3,6 @@
 import React from "react";
 
 export interface SerumElectroFormData {
-    patientName: "",
-    referredBy: "",
-    ageSex: "",
-    date: "",
     sodium: "",
     potassium: "",
     chloride: "",
@@ -23,35 +19,6 @@ interface SerumElectroFormFieldsProps {
 const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumelectroData, onChange }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Patient Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="patientName"
-          value={serumelectroData.patientName}
-          onChange={onChange}
-          placeholder="Patient Name"
-          className="search-input"
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Referred By <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="referredBy"
-          value={serumelectroData.referredBy}
-          onChange={onChange}
-          placeholder="Nurse Name"
-          className="search-input"
-          required
-        />
-      </div>
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -63,7 +30,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="sodium"
             value={serumelectroData.sodium}
             onChange={onChange}
-            placeholder="14.0"
+            placeholder="140"
             className="search-input"
             required
           />
@@ -78,7 +45,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="potassium"
             value={serumelectroData.potassium}
             onChange={onChange}
-            placeholder="7.5"
+            placeholder="4.0"
             className="search-input"
             required
           />
@@ -95,7 +62,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="neutrophils"
             value={serumelectroData.chloride}
             onChange={onChange}
-            placeholder="60"
+            placeholder="100"
             className="search-input"
             required
           />
@@ -110,7 +77,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="bicarbonate"
             value={serumelectroData.bicarbonate}
             onChange={onChange}
-            placeholder="30"
+            placeholder="24"
             className="search-input"
             required
           />
@@ -125,7 +92,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="calcium"
             value={serumelectroData.calcium}
             onChange={onChange}
-            placeholder="3"
+            placeholder="9.5"
             className="search-input"
             required
           />
@@ -142,7 +109,7 @@ const SerumElectroFormFields: React.FC<SerumElectroFormFieldsProps> = ({ serumel
             name="magnesium"
             value={serumelectroData.magnesium}
             onChange={onChange}
-            placeholder="6"
+            placeholder="2.0"
             className="search-input"
             required
           />

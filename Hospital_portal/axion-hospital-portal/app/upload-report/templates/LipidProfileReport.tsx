@@ -3,10 +3,6 @@
 import React from "react";
 
 export interface LipidProfileFormData {
-    patientName: "",
-    referredBy: "",
-    ageSex: "",
-    date: "",
     totalCholesterol: "",
     triglycerides: "",
     hdl: "",
@@ -26,36 +22,6 @@ interface LipidProfileFormFieldsProps {
 const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidprofileData, onChange }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Patient Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="patientName"
-          value={lipidprofileData.patientName}
-          onChange={onChange}
-          placeholder="Patient Name"
-          className="search-input"
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-        Referred By <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="referredBy"
-          value={lipidprofileData.referredBy}
-          onChange={onChange}
-          placeholder="Nurse Name"
-          className="search-input"
-          required
-        />
-      </div>
-
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="block text-sm font-medium">
@@ -66,7 +32,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="totalCholesterol"
             value={lipidprofileData.totalCholesterol}
             onChange={onChange}
-            placeholder="14.0"
+            placeholder="180"
             className="search-input"
             required
           />
@@ -81,7 +47,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="triglycerides"
             value={lipidprofileData.triglycerides}
             onChange={onChange}
-            placeholder="7.5"
+            placeholder="150"
             className="search-input"
             required
           />
@@ -98,7 +64,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="hdl"
             value={lipidprofileData.hdl}
             onChange={onChange}
-            placeholder="60"
+            placeholder="50"
             className="search-input"
             required
           />
@@ -113,7 +79,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="ldl"
             value={lipidprofileData.ldl}
             onChange={onChange}
-            placeholder="30"
+            placeholder="100"
             className="search-input"
             required
           />
@@ -128,7 +94,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="vldl"
             value={lipidprofileData.vldl}
             onChange={onChange}
-            placeholder="3"
+            placeholder="30"
             className="search-input"
             required
           />
@@ -145,7 +111,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="ldlToHdlRatio"
             value={lipidprofileData.ldlToHdlRatio}
             onChange={onChange}
-            placeholder="6"
+            placeholder="2.0"
             className="search-input"
             required
           />
@@ -160,7 +126,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="totalCholesterolToHdlRatio"
             value={lipidprofileData.totalCholesterolToHdlRatio}
             onChange={onChange}
-            placeholder="1"
+            placeholder="4.5"
             className="search-input"
             required
           />
@@ -177,7 +143,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="tgToHdlRatio"
             value={lipidprofileData.tgToHdlRatio}
             onChange={onChange}
-            placeholder="250"
+            placeholder="3.0"
             className="search-input"
             required
           />
@@ -192,7 +158,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
             name="nonHdlCholesterol"
             value={lipidprofileData.nonHdlCholesterol}
             onChange={onChange}
-            placeholder="5.0"
+            placeholder="130"
             className="search-input"
             required
           />

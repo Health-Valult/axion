@@ -116,7 +116,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
         </label>
         <input
           type="text"
-          name="recorder"
+          name="instructions"
           value={reportData.instructions}
           onChange={onInputChange}
           placeholder="Your name"

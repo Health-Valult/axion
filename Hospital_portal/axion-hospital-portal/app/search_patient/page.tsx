@@ -25,6 +25,7 @@ const SearchPatient = () => {
       name: "Jane Smith",
       age: 29,
       gender: "Female",
+      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
       lastVisit: "30 April 2024",
       registrationDate: "24 April 2022.",
       birthdate: "08.04.1996.",
@@ -63,6 +64,7 @@ const SearchPatient = () => {
       name: "Hema Zue",
       age: 20,
       gender: "Female",
+      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
       lastVisit: "10 Jan 2025",
       registrationDate: "04 January 2025.",
       birthdate: "08.04.2004.",
@@ -89,6 +91,7 @@ const SearchPatient = () => {
       name: "Katherin John",
       age: 60,
       gender: "Female",
+      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
       lastVisit: "21 February 2025",
       registrationDate: "04 January 2025.",
       birthdate: "10.09.1965.",
@@ -168,7 +171,6 @@ const SearchPatient = () => {
         </p>
       </header>
 
-      <ToastProvider>
         <SearchForm 
           searchQuery={searchQuery}
           isSearching={isSearching}
@@ -183,8 +185,6 @@ const SearchPatient = () => {
             <LabReports patient={patient} onUploadReport={handleUploadReport} />
           </div>
         )}
-      <ToastViewport />
-    </ToastProvider>
 
     </div>
   );

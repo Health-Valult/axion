@@ -1,10 +1,5 @@
 export const CBCReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
+    
     hemoglobin: "",
     totalLeukocyteCount: "",
     neutrophils: "",

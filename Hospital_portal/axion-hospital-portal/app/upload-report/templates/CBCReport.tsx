@@ -15,8 +15,7 @@ export interface CBCFormData {
   hematocrit: string;
   meanCorpuscularVolume: string;
   meanCellHemoglobin: string;
-  meanCellHemoglobinConcentration: string;
-  date?: string; 
+  meanCellHemoglobinConcentration: string; 
 }
 
 interface CBCFormFieldsProps {
@@ -27,35 +26,6 @@ interface CBCFormFieldsProps {
 const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
   return (
     <div className="space-y-4">
-      {/* <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Investigations <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="investigations"
-          value={cbcData.investigations}
-          onChange={onChange}
-          placeholder="Patient Name"
-          className="search-input"
-          required
-        />
-      </div> */}
-      
-      {/* <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Reffered By <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="ageSex"
-          value={cbcData.ageSex}
-          onChange={onChange}
-          placeholder="28/M"
-          className="search-input"
-          required
-        />
-      </div> */}
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">

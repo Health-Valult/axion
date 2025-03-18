@@ -3,10 +3,6 @@
 import React from "react";
 
 export interface UFRFormData {
-    patientName: "",
-    referredBy: "",
-    ageSex: "",
-    date: "",
     quantity: "",
     color: "",
     transparency: "",
@@ -32,36 +28,6 @@ interface UFRFormFieldsProps {
 const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-          Patient Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="patientName"
-          value={ufrData.patientName}
-          onChange={onChange}
-          placeholder="Patient Name"
-          className="search-input"
-          required
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">
-        Referred By <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="referredBy"
-          value={ufrData.referredBy}
-          onChange={onChange}
-          placeholder="Nurse Name"
-          className="search-input"
-          required
-        />
-      </div>
-
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="block text-sm font-medium">
@@ -72,7 +38,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="quantity"
             value={ufrData.quantity}
             onChange={onChange}
-            placeholder="14.0"
+            placeholder="50 ml"
             className="search-input"
             required
           />
@@ -87,7 +53,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="color"
             value={ufrData.color}
             onChange={onChange}
-            placeholder="7.5"
+            placeholder="Yellow"
             className="search-input"
             required
           />
@@ -104,7 +70,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="transparency"
             value={ufrData.transparency}
             onChange={onChange}
-            placeholder="60"
+            placeholder="Clear"
             className="search-input"
             required
           />
@@ -119,7 +85,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="specificGravity"
             value={ufrData.specificGravity}
             onChange={onChange}
-            placeholder="30"
+            placeholder="1.020"
             className="search-input"
             required
           />
@@ -134,7 +100,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="pH"
             value={ufrData.pH}
             onChange={onChange}
-            placeholder="3"
+            placeholder="6.0"
             className="search-input"
             required
           />
@@ -151,7 +117,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="protein"
             value={ufrData.protein}
             onChange={onChange}
-            placeholder="6"
+            placeholder="Negative"
             className="search-input"
             required
           />
@@ -166,7 +132,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="sugar"
             value={ufrData.sugar}
             onChange={onChange}
-            placeholder="1"
+            placeholder="Negative"
             className="search-input"
             required
           />
@@ -183,7 +149,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="ketones"
             value={ufrData.ketones}
             onChange={onChange}
-            placeholder="250"
+            placeholder="Negative"
             className="search-input"
             required
           />
@@ -198,7 +164,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="bilirubin"
             value={ufrData.bilirubin}
             onChange={onChange}
-            placeholder="5.0"
+            placeholder="Negative"
             className="search-input"
             required
           />
@@ -215,7 +181,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="rbc"
             value={ufrData.rbc}
             onChange={onChange}
-            placeholder="42"
+            placeholder="0-2"
             className="search-input"
             required
           />
@@ -230,7 +196,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="pusCells"
             value={ufrData.pusCells}
             onChange={onChange}
-            placeholder="90"
+            placeholder="0-5"
             className="search-input"
             required
           />
@@ -247,7 +213,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="epithelialCells"
             value={ufrData.epithelialCells}
             onChange={onChange}
-            placeholder="30"
+            placeholder="0-2"
             className="search-input"
             required
           />
@@ -262,7 +228,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="casts"
             value={ufrData.casts}
             onChange={onChange}
-            placeholder="34"
+            placeholder="None"
             className="search-input"
             required
           />
@@ -279,7 +245,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="crystals"
             value={ufrData.crystals}
             onChange={onChange}
-            placeholder="30"
+            placeholder="None"
             className="search-input"
             required
           />
@@ -294,7 +260,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
             name="bacteria"
             value={ufrData.bacteria}
             onChange={onChange}
-            placeholder="34"
+            placeholder="None"
             className="search-input"
             required
           />

@@ -2,7 +2,6 @@
 
 
 import React, { useState } from "react";
-import { Button } from "@nextui-org/react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@nextui-org/react";
 //import { Label } from "@nextui-org/react";
@@ -21,38 +20,30 @@ const Register = () => {
 
   const [formData, setFormData] = useState({
     // General Information
+    fullName: "",
+    dateOfBirth: "",
+    gender: "",
+    nationalId: "",
+    contactNumber: "",
+    email: "",
+    department: "",
+    employeeId: "",
+    medicalRegistrationNumber: "",
+    yearsOfExperience: "",
+
+    // Work Informations
     hospitalName: "",
     address: "",
     city: "",
     postalCode: "",
     phoneNumber: "",
-    email: "",
+    workLocation: "",
+    shiftType: "",
+
+    // account setup Details
     password: "",
     confirmPassword: "",
 
-    // Legal and Administrative Documents
-    registrationCertificate: null as File | null,
-    businessRegistration: null as File | null,
-    articlesOfAssociation: null as File | null,
-    tinCertificate: null as File | null,
-
-    // Operational Details
-    services: "",
-    medicalStaff: "",
-    nursingStaff: "",
-    administrativeStaff: "",
-
-    // Facilities and Infrastructure
-    equipment: "",
-    floorPlan: null as File | null,
-
-    // Regulatory Compliance
-    inspectionReport: null as File | null,
-    mohApproval: null as File | null,
-
-    // Financial Information
-    paymentProof: null as File | null,
-    bankCertificate: null as File | null,
   });
 
   const handleChange = (
@@ -122,7 +113,7 @@ const Register = () => {
           <div className="inline-block p-3 rounded-full bg-primary/10 mb-2">
             <Hospital className="h-10 w-10 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold">Hospital Registration</h1>
+          <h1 className="text-2xl font-bold">Staff Registration</h1>
           <p className="text-muted-foreground">
             Complete the registration process to join our hospital portal.
           </p>
@@ -133,10 +124,8 @@ const Register = () => {
             <CardTitle>Registration - Step {step} of 5</CardTitle>
             <CardDescription>
               {step === 1 && "General Information"}
-              {step === 2 && "Legal and Administrative Documents"}
-              {step === 3 && "Operational Details"}
-              {step === 4 && "Facilities and Regulatory Compliance"}
-              {step === 5 && "Financial Information & Account Setup"}
+              {step === 2 && "Work Location & Details"}
+              {step === 3 && "Account set-up Details"}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -145,19 +134,81 @@ const Register = () => {
               {step === 1 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label htmlFor="hospitalName">Hospital Name*</label>
+                    <label htmlFor="fullName">Full Name *</label>
                     <Input
-                      id="hospitalName"
-                      name="hospitalName"
-                      placeholder="Enter your hospital's official name"
-                      value={formData.hospitalName}
+                      id="fullName"
+                      name="fullName"
+                      placeholder="Enter your full name"
+                      value={formData.fullName}
                       onChange={handleChange}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="address">Address*</label>
+                    <label htmlFor="address">Date of Birth *</label>
+                    <Input
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      placeholder="Enter your DOB"
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="city">Gender *</label>
+                      <Input
+                        id="gender"
+                        name="gender"
+                        placeholder="Female /Male / Other"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="postalCode">National ID *</label>
+                      <Input
+                        id="nationalId"
+                        name="nationalId"
+                        placeholder="National ID No"
+                        value={formData.nationalId}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="phoneNumber">Phone Number *</label>
+                    <Input
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      placeholder="Hospital contact number"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="email">Email Address *</label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="Official email address"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="address">Address *</label>
                     <Textarea
                       id="address"
                       name="address"
@@ -170,7 +221,7 @@ const Register = () => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="city">City*</label>
+                      <label htmlFor="city">City *</label>
                       <Input
                         id="city"
                         name="city"
@@ -181,7 +232,7 @@ const Register = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <label htmlFor="postalCode">Postal Code*</label>
+                      <label htmlFor="postalCode">Postal Code *</label>
                       <Input
                         id="postalCode"
                         name="postalCode"
@@ -192,131 +243,104 @@ const Register = () => {
                       />
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="phoneNumber">Phone Number*</label>
-                    <Input
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      placeholder="Hospital contact number"
-                      value={formData.phoneNumber}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="email">Email Address*</label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Official email address"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
                 </div>
               )}
 
-              {/* Step 2: Legal and Administrative Documents */}
+              {/* Step 2: Work Informations */}
               {step === 2 && (
                 <div className="space-y-4">
-                  {renderFileUpload("registrationCertificate", "Certificate of Registration*")}
-                  {renderFileUpload("businessRegistration", "Business Registration Certificate*")}
-                  {renderFileUpload("articlesOfAssociation", "Articles of Association (if applicable)")}
-                  {renderFileUpload("tinCertificate", "Tax Identification Number (TIN) Certificate*")}
+                <div className="space-y-2">
+                  <label htmlFor="services">Hospital Name *</label>
+                  <Input
+                    id="hospitalName"
+                    name="hospitalName"
+                    placeholder="Enter your hospital Name"
+                    value={formData.hospitalName}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-              )}
 
-              {/* Step 3: Operational Details */}
+                <div className="space-y-2">
+                  <label htmlFor="medicalStaff">Work Location *</label>
+                  <Textarea
+                    id="workLocation"
+                    name="workLocation"
+                    placeholder="Add the work location"
+                    value={formData.workLocation}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="nursingStaff">Shift Type*</label>
+                  <Input
+                    id="shiftType"
+                    name="shiftType"
+                    placeholder="Day Time / Night Time"
+                    value={formData.shiftType}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                    <label htmlFor="department">Department ID *</label>
+                    <Input
+                      id="department"
+                      name="department"
+                      placeholder="Department ID"
+                      value={formData.department}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="employeeId">Employee ID *</label>
+                    <Input
+                      id="employeeId"
+                      name="employeeId"
+                      type="employeeId"
+                      placeholder="Verified Employee ID"
+                      value={formData.employeeId}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="department">Medical Registration Number *</label>
+                    <Input
+                      id="medicalRegistrationNumber"
+                      name="medicalRegistrationNumber"
+                      placeholder="Medical Registration Number"
+                      value={formData.medicalRegistrationNumber}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="employeeId">Years Of Experience *</label>
+                    <Input
+                      id="yearsOfExperience"
+                      name="yearsOfExperience"
+                      type="yearsOfExperience"
+                      placeholder="Years Of Experience"
+                      value={formData.yearsOfExperience}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+              </div>
+            )}
+
+              {/* Step 3: Account Setup Details */}
               {step === 3 && (
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="services">Services Provided*</label>
-                    <Textarea
-                      id="services"
-                      name="services"
-                      placeholder="Describe the types of medical services offered (e.g., inpatient, outpatient)"
-                      value={formData.services}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="medicalStaff">Medical Staff Details*</label>
-                    <Textarea
-                      id="medicalStaff"
-                      name="medicalStaff"
-                      placeholder="List with qualifications and certifications"
-                      value={formData.medicalStaff}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="nursingStaff">Nursing Staff Details*</label>
-                    <Textarea
-                      id="nursingStaff"
-                      name="nursingStaff"
-                      placeholder="Details of nursing personnel"
-                      value={formData.nursingStaff}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="administrativeStaff">Administrative Staff Details*</label>
-                    <Textarea
-                      id="administrativeStaff"
-                      name="administrativeStaff"
-                      placeholder="Details of administrative personnel"
-                      value={formData.administrativeStaff}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Facilities and Regulatory Compliance */}
-              {step === 4 && (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="equipment">Equipment and Facilities*</label>
-                    <Textarea
-                      id="equipment"
-                      name="equipment"
-                      placeholder="Details of available medical equipment and facilities (e.g., beds, diagnostic tools)"
-                      value={formData.equipment}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  {renderFileUpload("floorPlan", "Floor Plan/Layout*")}
-                  
-                  <div className="pt-2 border-t">
-                    <h3 className="text-sm font-medium mb-2">Regulatory Compliance</h3>
-                  </div>
-                  {renderFileUpload("inspectionReport", "Inspection Report from PDHS*")}
-                  {renderFileUpload("mohApproval", "Ministry of Health Approval")}
-                </div>
-              )}
-
-              {/* Step 5: Financial Information & Account Setup */}
-              {step === 5 && (
-                <div className="space-y-4">
-                  <div className="pt-2 border-t mb-2">
-                    <h3 className="text-sm font-medium">Financial Information</h3>
-                  </div>
-                  {renderFileUpload("paymentProof", "Proof of Payment for Registration Fees*")}
-                  {renderFileUpload("bankCertificate", "Bank Certificate for Operational Expenses*")}
-
+        
                   <div className="pt-2 border-t mb-2">
                     <h3 className="text-sm font-medium">Account Setup</h3>
                   </div>
@@ -357,7 +381,7 @@ const Register = () => {
                     Back
                   </button>
                 )}
-                {step < 5 ? (
+                {step < 3 ? (
                   <button type="button" className="btn-primary" onClick={nextStep}>
                     Next
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -389,3 +413,120 @@ const Register = () => {
 };
 
 export default Register;
+
+// "use client";
+
+// import React, { useState } from "react";
+// import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+// import { Input } from "@nextui-org/react";
+// import { Textarea } from "@nextui-org/react";
+// // import Link from "next/link";
+// import { Upload, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
+// import { useToast } from "@/hooks/use-toast";
+// import { useRouter } from "next/navigation";
+
+// const StaffRegister = () => {
+//   const navigate = useRouter();
+//   const { toast } = useToast();
+//   const [step, setStep] = useState(1);
+//   const [isLoading, setIsLoading] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     fullName: "",
+//     dateOfBirth: "",
+//     gender: "",
+//     nationalId: "",
+//     contactNumber: "",
+//     email: "",
+//     department: "",
+//     employeeId: "",
+//     medicalRegistrationNumber: "",
+//     yearsOfExperience: "",
+//     hospitalName: "",
+//     address: "",
+//     city: "",
+//     postalCode: "",
+//     phoneNumber: "",
+//     workLocation: "",
+//     shiftType: "",
+//     password: "",
+//     confirmPassword: "",
+//   });
+
+//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({ ...prev, [name]: value }));
+//   };
+
+//   const nextStep = () => setStep((prev) => prev + 1);
+//   const prevStep = () => setStep((prev) => prev - 1);
+
+//   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault();
+//     setIsLoading(true);
+//     setTimeout(() => {
+//       setIsLoading(false);
+//       toast({ title: "Registration successful", description: "Staff registered successfully." });
+//       navigate.push("/Login");
+//     }, 2000);
+//   };
+
+//   return (
+//     <div className="min-h-screen flex items-center justify-center p-4">
+//       <div className="w-full max-w-2xl">
+//         <Card>
+//           <CardHeader>
+//             <CardTitle>Staff Registration - Step {step} of 3</CardTitle>
+//           </CardHeader>
+//           <form onSubmit={handleSubmit}>
+//             <CardContent className="space-y-4">
+//               {step === 1 && (
+//                 <>
+//                   <Input name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} required />
+//                   <Input name="dateOfBirth" type="date" value={formData.dateOfBirth} onChange={handleChange} required />
+//                   <Input name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} required />
+//                   <Input name="nationalId" placeholder="National ID" value={formData.nationalId} onChange={handleChange} required />
+//                   <Input name="contactNumber" placeholder="Contact Number" value={formData.contactNumber} onChange={handleChange} required />
+//                   <Input name="email" type="email" placeholder="Email" value={formData.email} onChange={handleChange} required />
+//                 </>
+//               )}
+
+//               {step === 2 && (
+//                 <>
+//                   <Input name="department" placeholder="Department" value={formData.department} onChange={handleChange} required />
+//                   <Input name="employeeId" placeholder="Employee ID" value={formData.employeeId} onChange={handleChange} required />
+//                   <Input name="medicalRegistrationNumber" placeholder="Medical Registration Number" value={formData.medicalRegistrationNumber} onChange={handleChange} required />
+//                   <Input name="yearsOfExperience" type="number" placeholder="Years of Experience" value={formData.yearsOfExperience} onChange={handleChange} required />
+//                 </>
+//               )}
+
+//               {step === 3 && (
+//                 <>
+//                   <Input name="hospitalName" placeholder="Hospital Name" value={formData.hospitalName} onChange={handleChange} required />
+//                   <Textarea name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+//                   <Input name="city" placeholder="City" value={formData.city} onChange={handleChange} required />
+//                   <Input name="postalCode" placeholder="Postal Code" value={formData.postalCode} onChange={handleChange} required />
+//                   <Input name="phoneNumber" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleChange} required />
+//                   <Input name="workLocation" placeholder="Work Location" value={formData.workLocation} onChange={handleChange} required />
+//                   <Input name="shiftType" placeholder="Shift Type" value={formData.shiftType} onChange={handleChange} required />
+//                   <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+//                   <Input name="confirmPassword" type="password" placeholder="Confirm Password" value={formData.confirmPassword} onChange={handleChange} required />
+//                 </>
+//               )}
+//             </CardContent>
+//             <CardFooter className="flex justify-between">
+//               {step > 1 && <button type="button" onClick={prevStep}><ArrowLeft className="mr-2 h-4 w-4" />Back</button>}
+//               {step < 3 ? (
+//                 <button type="button" onClick={nextStep}>Next<ArrowRight className="ml-2 h-4 w-4" /></button>
+//               ) : (
+//                 <button type="submit" disabled={isLoading}>{isLoading ? "Submitting..." : "Register"}<LockIcon className="ml-2 h-4 w-4" /></button>
+//               )}
+//             </CardFooter>
+//           </form>
+//         </Card>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default StaffRegister;
