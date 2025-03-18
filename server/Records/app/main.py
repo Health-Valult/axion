@@ -12,15 +12,12 @@ import asyncio
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
 
-from app.ax_types.observation import *
-from app.ax_types.allergyIntolerance import *
-from app.ax_types.medications import *
-from app.ax_types.immunization import *
-from app.ax_types.procedure import *
+
 
 from app.middleware.auth import Auth
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
+from app.shared.middleware.authentication import AuthenticateMiddleware
 from app.utils import load_to_redis
 from app.routes.GQL import Query
 
@@ -82,7 +79,7 @@ async def lifespan(app:FastAPI):
 app = FastAPI(lifespan=lifespan,title="record")
 
 
-       
+# aGts37rYk@fVrFJ
        
 
 schema = strawberry.Schema(Query)
@@ -93,7 +90,7 @@ graphql_app = GraphQLRouter(schema)
 
 app.include_router(graphql_app, prefix="/graphql")
 
-app.add_middleware(Auth,Mq=MQ)
+app.add_middleware(AuthenticateMiddleware)
 
 
 

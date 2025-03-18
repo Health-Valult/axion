@@ -1,11 +1,13 @@
-
-
 from typing import Optional
 from strawberry import Info
 import strawberry
-from app.ax_types.observation import Observation,ObservationStack
+from app.ax_types.observation import *
+from app.ax_types.allergyIntolerance import *
+from app.ax_types.medications import *
+from app.ax_types.immunization import *
+from app.ax_types.procedure import *
 
-
+from starlette.requests import Request
 @strawberry.type
 class Query:
 
@@ -38,9 +40,11 @@ class Query:
         info:Info,patient:str,code:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
         )-> ObservationStack:
         
-        request = info.context["request"]
+        request:Request = info.context["request"]
+
         query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-        observationAggregate = app.state.ObservationCollection.aggregate([
+
+        observationAggregate = request.app.state.ObservationCollection.aggregate([
                 {"$match": {
                     "patient": patient, 
                     "code": code, 
@@ -58,10 +62,10 @@ class Query:
         self,info:Info,patient:str
         ) -> AllergyIntoleranceStack:
         
-        
+        request:Request = info.context["request"]
         query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
         print(query)
-        allergyAggregate = app.state.AllergiesCollection.aggregate([
+        allergyAggregate = request.app.state.AllergiesCollection.aggregate([
                     {"$match": {
                         "patient": patient,  
                         }},
@@ -79,10 +83,10 @@ class Query:
         self, info:Info,patient:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
         ) -> MedicationStack:
         
-            
+            request:Request = info.context["request"]
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
-            medicationAggregate = app.state.MedicationsCollection.aggregate([
+            medicationAggregate = request.app.state.MedicationsCollection.aggregate([
                         {"$match": {
                             "patient": patient,  
                             }},
@@ -99,10 +103,10 @@ class Query:
         self,info:Info,patient:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
         ) -> ImmunizationStack:
         
-            
+            request:Request = info.context["request"]
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
-            immunizationAggregate = app.state.ImmunizationsCollection.aggregate([
+            immunizationAggregate = request.app.state.ImmunizationsCollection.aggregate([
                         {"$match": {
                             "patient": patient,  
                             }},
@@ -119,10 +123,10 @@ class Query:
         self, info:Info,patient:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
         ) -> ProcedureStack:
         
-            
+            request:Request = info.context["request"]
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
-            procedureAggregate = app.state.ProceduresCollection.aggregate([
+            procedureAggregate = request.app.state.ProceduresCollection.aggregate([
                         {"$match": {
                             "patient": patient,  
                             }},
