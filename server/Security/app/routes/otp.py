@@ -30,7 +30,7 @@ def send_otp(request:Request,cred:SendOtp):
         "type":type,
         "otp":otp
     }
-    state.Cache.set_item(name=name,payload=payload,ttl=2)
+    state.Cache.set_item(name=name,payload=payload)
     body = {
         "email":data,
         "subject":"Axion Verification OTP",
