@@ -1,4 +1,5 @@
 import hmac
+import logging
 import random
 from fastapi import APIRouter
 from fastapi import FastAPI
@@ -6,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.models.models import *
 from starlette.requests import Request
 from app.callback import authenticate_session
+logger = logging.getLogger("uvicorn")
 
 route = APIRouter()
 
@@ -50,12 +52,14 @@ def verify_otp(request:Request,cred:OTP):
    
     name = f"otp::{c_id}"
     otp_payload = state.state.Cache.get_item(name=name)
-
+    logger.warning(otp_payload)
     if otp_payload is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
 
     otp = otp_payload.get("otp")
-
+    if otp is None:
+        return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
+    
     if not hmac.compare_digest(otp,c_otp):
         return JSONResponse(status_code=200,content={"msg":"otp invalid"})
 
