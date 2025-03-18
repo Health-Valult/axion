@@ -39,6 +39,19 @@ services:
       - MAILJET_API_SECRET="e15296850e0392377884ea34f8a737f9"
       - MAILJET_FROM_EMAIL="healthvault.co@gmail.com"
 
+  record:
+    container_name: record
+    ports:
+      - 5000:5000
+    
+    build:
+      context: ./Records
+      dockerfile: Dockerfile
+    
+    depends_on:
+      mq:
+        condition: service_healthy
+
   mq:
     container_name: rabbitMQ
     image: rabbitmq:4.0-management

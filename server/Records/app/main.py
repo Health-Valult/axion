@@ -7,9 +7,7 @@ from fastapi import FastAPI,HTTPException
 from strawberry.fastapi import GraphQLRouter
 import strawberry
 import asyncio
-from strawberry import Info
-from typing import Optional
-import traceback
+
 
 from app.utils.reciever import recieveMQ
 from app.utils.sender import sendMQ
@@ -24,20 +22,11 @@ from app.middleware.auth import Auth
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
 from app.utils import load_to_redis
+from app.routes.GQL import Query
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
 
-DBClient = pymongo.MongoClient(URL)
-Database = DBClient.get_database("records_db")
-
-ObservationCollection = Database.get_collection("observations")
-AllergiesCollection = Database.get_collection("allergyIntolerance")
-MedicationsCollection = Database.get_collection("medications")
-ImmunizationsCollection = Database.get_collection("immunizations")
-ProceduresCollection = Database.get_collection("procedures")
-
-MQ = sendMQ("localhost","record")
 logger = logging.getLogger("uvicorn")
 # startup events
 @asynccontextmanager
@@ -108,13 +97,10 @@ app.add_middleware(Auth,Mq=MQ)
 
 
 
-"""@app.on_event("startup")
-async def startup_event():
-    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@localhost/","record"))"""
 
 
 if __name__ == '__main__':
-    uvicorn.run("app.main:app",port=8080,reload=True)
+    uvicorn.run("app.main:app",port=5000,reload=True)
 
 
 
