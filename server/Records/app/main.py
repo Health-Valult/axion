@@ -62,7 +62,7 @@ async def lifespan(app:FastAPI):
 
 
 # instantiating FastAPI server
-app = FastAPI(title="record")
+app = FastAPI(title="record",lifespan=lifespan)
 
 
 # aGts37rYk@fVrFJ
