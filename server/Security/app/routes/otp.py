@@ -49,7 +49,7 @@ def verify_otp(request:Request,cred:OTP):
     c_id = cred.tempID
    
     name = f"otp::{c_id}"
-    otp_payload = state.Cache.get_item(name=name)
+    otp_payload = state.state.Cache.get_item(name=name)
 
     if otp_payload is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
