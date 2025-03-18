@@ -1,4 +1,5 @@
 from typing import Optional
+import pymongo
 from strawberry import Info
 import strawberry
 from app.ax_types.observation import *
@@ -9,6 +10,19 @@ from app.ax_types.procedure import *
 
 from starlette.requests import Request
 from pymongo.collection import Collection
+
+URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+
+
+DBClient = pymongo.MongoClient(URL)
+Database = DBClient.get_database("users_db")
+ObservationCollection = Database.get_collection("observations")
+AllergiesCollection = Database.get_collection("allergyIntolerance")
+MedicationsCollection = Database.get_collection("medications")
+ImmunizationsCollection = Database.get_collection("immunizations")
+ProceduresCollection = Database.get_collection("procedures")
+
+
 @strawberry.type
 class Query:
 
@@ -20,7 +34,7 @@ class Query:
         print(collection.name)
         request = info.context["request"]
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        observationAggregate = request.app.state.ObservationCollection.aggregate([
+        observationAggregate = collection.aggregate([
                 {"$match": {
                     "patient": patient, 
                     "code": code, 
@@ -84,14 +98,18 @@ class Query:
     async def medications(
         self, info:Info,patient:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
         ) -> MedicationStack:
-        
+            
             request:Request = info.context["request"]
+            collection:Collection = request.app.state.MedicationsCollection
+            print(collection.name)
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
             print(type(request.app.state.MedicationsCollection))
-            medicationAggregate = request.app.state.MedicationsCollection.find(
-                        {"patient": patient},
-                        query|{"_id":0}
+            medicationAggregate = MedicationsCollection.find(
+                        {
+    'patient': 'PAT-2345-3453-4564-3455-6476', 
+    'code': '1535362'
+},
                     )
             print(type(medicationAggregate))
             for obs in medicationAggregate:
