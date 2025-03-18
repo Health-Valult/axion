@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
@@ -21,3 +22,8 @@ async def load_to_redis(app:FastAPI):
                 }
             )
 
+
+async def loader():
+    while True:
+        await load_to_redis(app=app)
+        await asyncio.sleep(10.0)
