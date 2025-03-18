@@ -93,7 +93,8 @@ class Query:
                             }},
                         {"$project": query|{"_id":0}} 
                     ])
-           
+            for obs in medicationAggregate:
+                  print(obs)
             res =  MedicationStack(
                     medications=[Medication(**obs) for obs in medicationAggregate]
                 )
