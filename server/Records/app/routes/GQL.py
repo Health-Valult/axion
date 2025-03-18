@@ -93,10 +93,11 @@ class Query:
                         {"$project": query|{"_id":0}} 
                     ])
            
-            return MedicationStack(
+            res =  MedicationStack(
                     medications=[Medication(**obs) for obs in medicationAggregate]
                 )
-
+            print(res)
+            return res
 
     @strawberry.field
     async def immunization(
