@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from app.shared.utils.MQ.sender import sendMQ
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Dependancy injection
 def Authenticate(request: Request):
@@ -24,8 +25,8 @@ def Authenticate(request: Request):
 
 # Middleware
 
-class AuthenticateMiddleware():
-    async def dispatch(request:Request, call_next):
+class AuthenticateMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self,request:Request, call_next):
 
         Mq:sendMQ = request.app.state.sender_task 
         token:str = request.headers.get('authorization')

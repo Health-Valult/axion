@@ -72,7 +72,7 @@ graphql_app = GraphQLRouter(schema)
 
 #app.include_router(graphql_app, prefix="/graphql")
 
-#app.add_middleware(AuthenticateMiddleware)
+app.add_middleware(AuthenticateMiddleware)
 
 
 
