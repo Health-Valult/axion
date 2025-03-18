@@ -8,6 +8,7 @@ from app.ax_types.immunization import *
 from app.ax_types.procedure import *
 
 from starlette.requests import Request
+from pymongo.collection import Collection
 @strawberry.type
 class Query:
 
@@ -15,7 +16,8 @@ class Query:
     async def observations(
             self,info:Info,patient:str,code:str,encounter:str
         ) -> Observation:
-        
+        collection:Collection = request.app.state.ObservationCollection
+        print(collection.name)
         request = info.context["request"]
         query={ selection.name:1 for selection in info.selected_fields[0].selections}
         observationAggregate = request.app.state.ObservationCollection.aggregate([

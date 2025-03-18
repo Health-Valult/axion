@@ -23,7 +23,7 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
-    app.state.sender_task = sendMQ("mq","record")
+    #app.state.sender_task = sendMQ("mq","record")
 
     # loader function
     #app.state.search_loader = asyncio.create_task(load_to_redis.loader())
@@ -31,7 +31,7 @@ async def lifespan(app:FastAPI):
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = pymongo.MongoClient(URL)
-    Database = DBClient.get_database("users_db")
+    Database = DBClient.get_database("records_db")
     app.state.ObservationCollection = Database.get_collection("observations")
     app.state.AllergiesCollection = Database.get_collection("allergyIntolerance")
     app.state.MedicationsCollection = Database.get_collection("medications")
@@ -72,7 +72,7 @@ app.include_router(graphql_app, prefix="/graphql")
 
 # main app
 if __name__ == '__main__':
-    uvicorn.run(app= "app.main:app",host= "0.0.0.0",port=5000,reload=True)
+    uvicorn.run(app= "app.main:app",port=5000,reload=True)
 
 
 
