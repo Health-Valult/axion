@@ -6,8 +6,8 @@ import strawberry
 @strawberry.type
 class Immunization:
     patientID: Optional[str]
-    Code: Optional[str]
-    Display: Optional[str]
+    code: Optional[str]
+    display: Optional[str]
     status: Optional[str]
     dosage: Optional[str]
     unit: Optional[str]
