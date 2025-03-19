@@ -86,7 +86,7 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
     
     if not password_is_valid:
         return JSONResponse(status_code=401, content={"details":"password is invalid"})
-    uuid_str = str(uuid.UUID(bytes = user.get("UserID")))
+    uuid_str = user.get("UserID")
     session_token = generateTokens(type="session",endpoint=endpoint,payload=uuid_str,key=private_key,exp=60)
     refresh_token = generateTokens(type="session",endpoint=endpoint,payload=uuid_str,key=refresh_private_key,exp=10080)
 
