@@ -48,12 +48,23 @@ class PatientQuery:
         patient = request.state.meta.get("uuid")
         collection:Collection = request.app.state.ObservationCollection
 
-        query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+        result={
+            "_id":0,
+            "patientID": 1,
+            "code": 1,
+            "display": 1,
+            "dosage": 1,
+            "route": 1,
+            "prescriber": 1,
+            "meta": 1
+        }
 
-        Aggregate:Cursor = collection.find(
-            {"patient": patient,"code":code},
-            query|{"_id":0}
-        )
+        query = {
+            "patient": patient,
+            "code":code
+        }
+
+        Aggregate:Cursor = collection.find(query,result)
        
         return ObservationStack(
             Observations=[Observation(**obs) for obs in Aggregate]
@@ -83,26 +94,29 @@ class PatientQuery:
        
 
     @strawberry.field
-    async def medications(
-        info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET
-        ) -> MedicationStack:
+    async def medications(info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> MedicationStack:
         
             request:Request = info.context["request"]
             patient = request.state.meta.get("uuid")
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             collection:Collection = request.app.state.MedicationsCollection
-            print(query)
-            medicationAggregate:Cursor = collection.find(
-                        {"patientID": patient},
-                        query|{"_id":0}
-                    )
+            query = {"patientID": patient}
 
-            for i in medicationAggregate:
-                  print(i)
+            result={
+                "_id":0,
+                "patientID": 1,
+                "code": 1,
+                "display": 1,
+                "dosage": 1,
+                "route": 1,
+                "prescriber": 1,
+                "meta": 1
+            }
 
+            medicationAggregate:Cursor = collection.find(query,result)
             return MedicationStack(
                     medications=[Medication(**obs) for obs in medicationAggregate]
                 )
+
 
     @strawberry.field
     async def immunization(
@@ -130,7 +144,7 @@ class PatientQuery:
             patient = request.state.meta.get("uuid")
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             collection:Collection = request.app.state.LabsCollection
-            labAggregate:Cursor = collection.find(
+            labAggregate:Cursor = c.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
