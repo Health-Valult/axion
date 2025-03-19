@@ -23,7 +23,7 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
-    #app.state.sender_task = sendMQ("mq","record")
+    app.state.sender_task = sendMQ("mq","record")
 
     # loader function
     #app.state.search_loader = asyncio.create_task(load_to_redis.loader())
