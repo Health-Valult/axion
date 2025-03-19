@@ -24,7 +24,7 @@ class PatientQuery:
             collection:Collection = request.app.state.LabsCollection
             query = {"patientID": patient}
             Aggregate:Cursor = collection.find(query,labsResult)
-            return LabStack(Procedures=[Lab(**obs) for obs in Aggregate])
+            return LabStack(labs=[Lab(**obs) for obs in Aggregate])
     
     @strawberry.field
     async def observation(info:Info,code:str,LabID:str) -> ObservationStack:
