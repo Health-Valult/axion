@@ -1,156 +1,162 @@
-'use client';
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { Provider } from 'react-redux';
-import { useSession, SessionProvider } from 'next-auth/react';
-import { usePathname, useRouter } from 'next/navigation';
+import { SessionProvider } from 'next-auth/react';
+// import { usePathname, useRouter } from 'next/navigation';
 import { store } from './store';
 import client from '@/lib/apolloClient';
 
 // Public routes that don't require authentication
-const publicRoutes = ['/login', '/signup'];
+// const publicRoutes = ['/login', '/signup'];
 
 // Create an inner component that uses the useSession hook
-const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
-	const { data: session, status } = useSession();
-	const router = useRouter();
-	const pathname = usePathname();
-	const isPublicRoute = publicRoutes.includes(pathname);
-	const [loadingTimedOut, setLoadingTimedOut] = useState(false);
-	// Track if we've already performed a redirect to prevent loops
-	const [hasRedirected, setHasRedirected] = useState(false);
+// const AuthWrapper = ({ children }: { children: React.ReactNode }) => {
+// 	const [session, setSession] = useState<Session | null>(null);
+// 	const router = useRouter();
 
-	console.log('AuthWrapper rendering with:', {
-		status,
-		pathname,
-		isPublicRoute,
-		sessionExists: !!session,
-		hasAccessToken: !!session?.accessToken,
-		loadingTimedOut,
-		hasRedirected,
-	});
+// 	useEffect(() => {
+// 		const fetchSession = async () => {
+// 			const authSession = await auth();
+// 			setSession(authSession);
+// 		};
+// 		fetchSession();
+// 	}, []);
+// 	const pathname = usePathname();
+// 	const isPublicRoute = publicRoutes.includes(pathname);
+// 	const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+// 	// Track if we've already performed a redirect to prevent loops
+// 	const [hasRedirected, setHasRedirected] = useState(false);
 
-	// Effect to handle loading timeout
-	useEffect(() => {
-		let timeoutId: NodeJS.Timeout;
+// 	console.log('AuthWrapper rendering with:', {
+// 		pathname,
+// 		isPublicRoute,
+// 		sessionExists: !!session,
+// 		hasAccessToken: !!session?.accessToken,
+// 		userEmail: session?.user?.email || 'none',
+// 		loadingTimedOut,
+// 		hasRedirected,
+// 	});
 
-		if (status === 'loading') {
-			console.log('Setting loading timeout');
-			// If still loading after 3 seconds, consider it timed out
-			timeoutId = setTimeout(() => {
-				console.log('Loading state timed out');
-				setLoadingTimedOut(true);
-			}, 3000);
-		} else {
-			setLoadingTimedOut(false);
-		}
+// 	// Effect to handle loading timeout
+// 	// useEffect(() => {
+// 	// 	let timeoutId: NodeJS.Timeout;
 
-		return () => {
-			if (timeoutId) {
-				clearTimeout(timeoutId);
-			}
-		};
-	}, [status]);
+// 	// 	if (status === 'loading') {
+// 	// 		console.log('Setting loading timeout');
+// 	// 		// If still loading after 3 seconds, consider it timed out
+// 	// 		timeoutId = setTimeout(() => {
+// 	// 			console.log('Loading state timed out');
+// 	// 			setLoadingTimedOut(true);
+// 	// 		}, 3000);
+// 	// 	} else {
+// 	// 		setLoadingTimedOut(false);
+// 	// 	}
 
-	// Effect to handle session errors
-	useEffect(() => {
-		if (session?.error === 'RefreshAccessTokenError' && !hasRedirected) {
-			console.log(
-				'RefreshAccessTokenError detected, redirecting to login'
-			);
-			setHasRedirected(true);
-			router.push('/login?error=RefreshAccessTokenError');
-		}
-	}, [session, router, hasRedirected]);
+// 	// 	return () => {
+// 	// 		if (timeoutId) {
+// 	// 			clearTimeout(timeoutId);
+// 	// 		}
+// 	// 	};
+// 	// }, [status]);
 
-	// Effect for authentication checks and redirects
-	useEffect(() => {
-		// Skip if pathname is not available or we've already redirected
-		if (!pathname || hasRedirected) {
-			console.log(
-				'Pathname not available or already redirected, skipping auth check'
-			);
-			return;
-		}
+// 	// Effect to handle session errors
 
-		// We'll proceed if either:
-		// 1. We have a definitive status (not loading)
-		// 2. OR loading has timed out
-		const shouldProceed = status !== 'loading' || loadingTimedOut;
+// 	// Effect for authentication checks and redirects
+// 	useEffect(() => {
+// 		// Skip if pathname is not available or we've already redirected
+// 		if (!pathname || hasRedirected) {
+// 			console.log(
+// 				'Pathname not available or already redirected, skipping auth check'
+// 			);
+// 			return;
+// 		}
 
-		if (!shouldProceed) {
-			console.log('Waiting for session to resolve or timeout');
-			return;
-		}
+// 		// We'll proceed if either:
+// 		// 1. We have a definitive status (not loading)
+// 		// 2. OR loading has timed out
+// 		const shouldProceed = status !== 'loading' || loadingTimedOut;
 
-		console.log('Performing auth check with:', {
-			status,
-			pathname,
-			isPublicRoute,
-			hasSession: !!session,
-			hasAccessToken: !!session?.accessToken,
-			loadingTimedOut,
-		});
+// 		if (!shouldProceed) {
+// 			console.log('Waiting for session to resolve or timeout');
+// 			return;
+// 		}
 
-		// For API routes, we skip redirection as they'll handle their own auth
-		if (pathname.startsWith('/api/')) {
-			console.log('Skipping redirection for API route');
-			return;
-		}
+// 		console.log('Performing auth check with:', {
+// 			status,
+// 			pathname,
+// 			isPublicRoute,
+// 			hasSession: !!session,
+// 			hasAccessToken: !!session?.accessToken,
+// 			userEmail: session?.user?.email || 'none',
+// 			loadingTimedOut,
+// 		});
 
-		const isAuthenticated =
-			status === 'authenticated' && !!session?.accessToken;
+// 		// For API routes, we skip redirection as they'll handle their own auth
+// 		if (pathname.startsWith('/api/')) {
+// 			console.log(
+// 				'API route detected, checking if request should be allowed'
+// 			);
 
-		// For unauthenticated users trying to access protected routes
-		if (!isAuthenticated && !isPublicRoute) {
-			console.log(
-				'No valid session detected for protected route, redirecting to login'
-			);
-			setHasRedirected(true);
-			router.push('/login');
-			return;
-		}
+// 			// For API routes, we should still check authentication
+// 			const isAuthenticated =
+// 				status === 'authenticated' && !!session?.accessToken;
 
-		// For authenticated users trying to access public routes
-		if (isAuthenticated && isPublicRoute) {
-			console.log(
-				'Authenticated user accessing public route, redirecting to dashboard'
-			);
-			setHasRedirected(true);
-			router.push('/');
-			return;
-		}
+// 			if (!isAuthenticated) {
+// 				console.log('API request with no valid session detected');
+// 				// For API routes, we won't redirect, but we'll let the component
+// 				// handle unauthorized access appropriately
+// 			}
 
-		console.log('No redirection needed');
-	}, [
-		status,
-		pathname,
-		isPublicRoute,
-		session,
-		router,
-		loadingTimedOut,
-		hasRedirected,
-	]);
+// 			return;
+// 		}
 
-	// Reset redirection state when pathname changes
-	useEffect(() => {
-		setHasRedirected(false);
-	}, [pathname]);
+// 		const isAuthenticated = !!session?.accessToken;
 
-	return children;
-};
+// 		// For unauthenticated users trying to access protected routes
+// 		if (!isAuthenticated && !isPublicRoute) {
+// 			console.log(
+// 				'No valid session detected for protected route, redirecting to login'
+// 			);
+// 			setHasRedirected(true);
+// 			router.push('/login');
+// 			return;
+// 		}
+
+// 		// For authenticated users trying to access public routes
+// 		if (isAuthenticated && isPublicRoute) {
+// 			console.log(
+// 				'Authenticated user accessing public route, redirecting to dashboard'
+// 			);
+// 			setHasRedirected(true);
+// 			router.push('/');
+// 			return;
+// 		}
+
+// 		console.log('No redirection needed');
+// 	}, [
+// 		pathname,
+// 		isPublicRoute,
+// 		session,
+// 		router,
+// 		loadingTimedOut,
+// 		hasRedirected,
+// 	]);
+
+// 	// Reset redirection state when pathname changes
+// 	useEffect(() => {
+// 		setHasRedirected(false);
+// 	}, [pathname]);
+
+// 	return children;
+// };
 
 // Main Providers component that wraps everything
 const Providers = ({ children }: { children: React.ReactNode }) => {
 	console.log('Providers component rendering');
 	return (
-		<SessionProvider>
-			<ApolloProvider client={client}>
-				<Provider store={store}>
-					<AuthWrapper>{children}</AuthWrapper>
-				</Provider>
-			</ApolloProvider>
-		</SessionProvider>
+		<ApolloProvider client={client}>
+			<Provider store={store}>{children}</Provider>
+		</ApolloProvider>
 	);
 };
 

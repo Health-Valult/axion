@@ -3,7 +3,7 @@
 import { Mail, KeyRound, ArrowRight, CircleAlert, Check } from 'lucide-react';
 import { Button } from './button';
 import { useActionState } from 'react';
-import { authenticate } from '@/lib/actions';
+// import { authenticate } from '@/lib/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 // import { getUserLocation, getUserIP } from '@/app/utils/geolocation-utils';
@@ -12,20 +12,20 @@ export default function LoginForm() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
 	const callbackUrl = searchParams.get('callbackUrl') || '/';
-	const [actionState, formAction, isPending] = useActionState(
-		authenticate,
-		undefined
-	);
+	// const [actionState, formAction, isPending] = useActionState(
+	// 	authenticate,
+	// 	undefined
+	// );
 
-	useEffect(() => {
-		// Debug the state
-		console.log('Current action state:', actionState);
+	// useEffect(() => {
+	// 	// Debug the state
+	// 	console.log('Current action state:', actionState);
 
-		if (actionState === 'success') {
-			console.log('Success detected, redirecting to:', '/');
-			router.replace('/');
-		}
-	}, [actionState, router]);
+	// 	if (actionState === 'success') {
+	// 		console.log('Success detected, redirecting to:', '/');
+	// 		router.replace('/');
+	// 	}
+	// }, [actionState, router]);
 
 	const [authError, setAuthError] = useState('');
 	const [userLocation, setUserLocation] = useState({
@@ -56,19 +56,84 @@ export default function LoginForm() {
 		fetchLocationData();
 	}, [searchParams]);
 
+	async function storeTokensInCookies(
+		sessionToken: string,
+		refreshToken: string
+	) {
+		try {
+			// Store the tokens in cookies via an API route
+			await fetch('/api/auth/set-cookies', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					session_token: sessionToken,
+					refresh_token: refreshToken,
+				}),
+			});
+		} catch (error) {
+			console.error('Error storing tokens:', error);
+			throw error;
+		}
+	}
+
 	// Custom action to include location and IP data
 	async function handleSubmit(formData: FormData) {
-		// Add location and IP to form data
-		formData.append('latitude', userLocation.Latitude.toString());
-		formData.append('longitude', userLocation.Longitude.toString());
-		formData.append('ipAddress', userIP);
+		try {
+			// Extract values from form
+			const email = formData.get('email') as string;
+			const password = formData.get('password') as string;
 
-		// Call the original form action
-		return formAction(formData);
+			// Create login data object
+			const loginData = {
+				Email: email,
+				Password: password,
+				Location: {
+					Latitude: userLocation.Latitude,
+					Longitude: userLocation.Longitude,
+				},
+				IpAddress: userIP,
+				AndroidId: '',
+			};
+
+			// Submit login request
+			const response = await fetch(`http://localhost:3000/api/proxy`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(loginData),
+				cache: 'no-store',
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				setAuthError(errorData.message || 'Login failed');
+				return;
+			}
+
+			const tokens = await response.json();
+
+			// Store tokens in cookies
+			await storeTokensInCookies(
+				tokens.session_token,
+				tokens.refresh_token
+			);
+
+			// Redirect to callback URL
+			router.replace(callbackUrl);
+		} catch (error) {
+			console.error('Login error:', error);
+			setAuthError('An error occurred during login');
+		}
 	}
 
 	return (
-		<form action={handleSubmit} className="space-y-3">
+		<form
+			onSubmit={(e) => {
+				e.preventDefault();
+				const formData = new FormData(e.currentTarget);
+				handleSubmit(formData);
+			}}
+			className="space-y-3"
+		>
 			<div className="flex-1 rounded-lg bg-gray-50 dark:bg-gray-900 px-6 pb-4 pt-8">
 				<h1 className="mb-3 text-2xl">Please log in to continue.</h1>
 				<div className="w-full">
@@ -114,7 +179,7 @@ export default function LoginForm() {
 				</div>
 				<input type="hidden" name="redirectTo" value={callbackUrl} />
 
-				<Button className="mt-4 w-full" aria-disabled={isPending}>
+				<Button className="mt-4 w-full" type="submit">
 					Log in{' '}
 					<ArrowRight className="ml-auto h-5 w-5 text-gray-50 dark:text-gray-950" />
 				</Button>
@@ -122,27 +187,7 @@ export default function LoginForm() {
 					className="flex h-8 items-end space-x-1"
 					aria-live="polite"
 					aria-atomic="true"
-				>
-					{(actionState || authError) && (
-						<>
-							{actionState === 'success' ? (
-								<>
-									<Check className="h-5 w-5 text-green-500" />
-									<p className="text-sm text-green-500">
-										Login successful!
-									</p>
-								</>
-							) : (
-								<>
-									<CircleAlert className="h-5 w-5 text-red-500" />
-									<p className="text-sm text-red-500">
-										{actionState || authError}
-									</p>
-								</>
-							)}
-						</>
-					)}
-				</div>
+				></div>
 			</div>
 		</form>
 	);

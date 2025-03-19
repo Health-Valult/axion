@@ -1,27 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-	const apiUrl = 'https://axiontestgateway.azure-api.net/axion/user/profile';
+export async function POST(request: NextRequest) {
+	const apiUrl = 'https://axiontestgateway.azure-api.net/axion/auth/send/otp';
 
 	try {
-		// Get the authorization header from the incoming request
-		const authHeader = request.headers.get('Authorization');
-
-		if (!authHeader) {
-			return NextResponse.json(
-				{ error: 'Authorization header is missing' },
-				{ status: 401 }
-			);
-		}
+		const body = await request.json(); // Read the body from the incoming request
 
 		console.log('Proxying request to:', apiUrl);
+		console.log('Request body:', body);
 
 		const response = await fetch(apiUrl, {
-			method: 'GET',
+			method: 'POST',
 			headers: {
-				Authorization: authHeader,
+				'Content-Type': 'application/json',
+				Accept: 'application/json',
 			},
-			// No body for GET request
+			body: JSON.stringify(body), // Forward the body as it is
 		});
 
 		if (!response.ok) {

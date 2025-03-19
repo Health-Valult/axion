@@ -20,7 +20,7 @@ import {
 	StepperSeparator,
 	StepperTrigger,
 } from './stepper';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
 	Select,
 	SelectContent,
@@ -32,6 +32,18 @@ import { Textarea } from './textarea';
 import { AxionLogo } from '@/app/components/SideBar';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+// New imports for email verification
+import { v4 as uuidv4 } from 'uuid';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { InputOtp } from '@heroui/input-otp';
 
 const nicRegex = /^([0-9]{12}|[0-9]{9}[vV])$/;
 const phoneRegex = /^[0-9]{10}$/;
@@ -85,9 +97,17 @@ const steps = [
 export function DoctorSignup() {
 	const [currentStep, setCurrentStep] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
-	// Track validation status of each step
 	const [validatedSteps, setValidatedSteps] = useState<number[]>([]);
 	const [renderKey, setRenderKey] = useState(0);
+
+	// New states for email verification
+	const [tempID] = useState(uuidv4());
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [otp, setOtp] = useState('');
+	const [isVerifying, setIsVerifying] = useState(false);
+	const [formData, setFormData] = useState<z.infer<typeof formSchema> | null>(
+		null
+	);
 
 	const router = useRouter();
 
@@ -109,10 +129,91 @@ export function DoctorSignup() {
 		},
 	});
 
-	const onSubmit = async (values: z.infer<typeof formSchema>) => {
+	const sendVerificationEmail = async (email: string) => {
 		try {
 			setIsLoading(true);
-			console.log('Submitting form data:', values);
+
+			const verificationData = {
+				type: 'email',
+				tempID: tempID,
+				data: email,
+			};
+
+			const response = await fetch('http://localhost:3000/api/proxy5', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+				},
+				body: JSON.stringify(verificationData),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				toast.error(
+					`Verification email failed: ${
+						errorData.message || 'Unknown error'
+					}`
+				);
+				throw new Error(errorData.message || 'Verification failed');
+			}
+
+			toast.success('Verification code sent to your email');
+			setIsDialogOpen(true);
+		} catch (error) {
+			toast.error('Error sending verification email: ' + error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const verifyOtp = async () => {
+		try {
+			setIsVerifying(true);
+
+			const verificationData = {
+				tempID: tempID,
+				otp: otp,
+			};
+
+			const response = await fetch('http://localhost:3000/api/proxy6', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'application/json',
+				},
+				body: JSON.stringify(verificationData),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				toast.error(
+					`OTP verification failed: ${
+						errorData.message || 'Invalid OTP'
+					}`
+				);
+				throw new Error(errorData.message || 'Verification failed');
+			}
+
+			toast.success('Email verified successfully');
+			setIsDialogOpen(false);
+
+			// Now submit the doctor registration
+			if (formData) {
+				await submitDoctorRegistration(formData);
+			}
+		} catch (error) {
+			toast.error('Error verifying OTP: ' + error);
+		} finally {
+			setIsVerifying(false);
+		}
+	};
+
+	const submitDoctorRegistration = async (
+		values: z.infer<typeof formSchema>
+	) => {
+		try {
+			setIsLoading(true);
 
 			// Prepare the data in the format expected by the API
 			const doctorData = {
@@ -130,9 +231,6 @@ export function DoctorSignup() {
 				Password: values.password,
 			};
 
-			// API endpoint
-			const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
 			const response = await fetch('/api/proxy', {
 				method: 'POST',
 				headers: {
@@ -144,7 +242,6 @@ export function DoctorSignup() {
 
 			if (!response.ok) {
 				const errorData = await response.json();
-				console.error('Registration failed:', errorData);
 				toast.error(
 					`Registration failed: ${
 						errorData.message || 'Unknown error'
@@ -154,7 +251,6 @@ export function DoctorSignup() {
 			}
 
 			const result = await response.json();
-			console.log('Registration successful:', result);
 			toast.success('Registration successful! Redirecting to login...');
 
 			// Redirect to login page on success
@@ -162,11 +258,18 @@ export function DoctorSignup() {
 				router.push('/login');
 			}, 1500);
 		} catch (error) {
-			toast('Error during registration:' + error);
-			// Handle error - you could set an error state here to display to the users
+			toast.error('Error during registration: ' + error);
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const onSubmit = async (values: z.infer<typeof formSchema>) => {
+		// Store form data for later use after OTP verification
+		setFormData(values);
+
+		// Start email verification flow
+		await sendVerificationEmail(values.email);
 	};
 
 	// Function to handle next button click
@@ -473,7 +576,7 @@ export function DoctorSignup() {
 							disabled={isLoading}
 						>
 							{isLoading
-								? 'Registering...'
+								? 'Processing...'
 								: 'Complete Registration'}
 						</Button>
 					</div>
@@ -526,10 +629,7 @@ export function DoctorSignup() {
 							<Button
 								type="button"
 								variant="outline"
-								onClick={
-									// setCurrentStep((prev) => prev - 1)
-									handleBack
-								}
+								onClick={handleBack}
 								disabled={currentStep === 0}
 							>
 								Previous
@@ -542,6 +642,41 @@ export function DoctorSignup() {
 						</div>
 					</form>
 				</Form>
+
+				{/* Email Verification Dialog */}
+				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+					<DialogContent className="sm:max-w-[425px]">
+						<DialogHeader>
+							<DialogTitle>Verify your email</DialogTitle>
+							<DialogDescription>
+								We have sent an OTP to your email. Please enter
+								it below to verify your account.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-4 py-4">
+							<div className="grid items-center gap-4">
+								<Label htmlFor="otp" className="text-center">
+									Enter OTP
+								</Label>
+								<InputOtp
+									length={6}
+									value={otp}
+									onValueChange={setOtp}
+									className="mx-auto"
+								/>
+							</div>
+						</div>
+						<DialogFooter>
+							<Button
+								type="button"
+								onClick={verifyOtp}
+								disabled={isVerifying || otp.length !== 6}
+							>
+								{isVerifying ? 'Verifying...' : 'Verify'}
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	);

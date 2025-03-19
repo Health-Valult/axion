@@ -22,7 +22,6 @@ import {
 } from '@nextui-org/react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { signOut } from '../../../auth';
 
 export const AxionLogo = ({
 	width,
@@ -209,10 +208,23 @@ const SideBar: React.FC<Component> = ({ children }) => {
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
 
-	const handleSignOut = async () => {
-		await signOut();
-		router.push('/');
-	};
+	async function handleLogout() {
+		try {
+			await fetch('/api/auth/logout', {
+				method: 'POST',
+			});
+
+			// Redirect to login page
+			router.push('/login');
+		} catch (error) {
+			console.error('Logout error:', error);
+		}
+	}
+
+	// const handleSignOut = async () => {
+	// 	await signOut();
+	// 	router.push('/');
+	// };
 
 	return (
 		<div
@@ -282,7 +294,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 								<DropdownItem
 									key="logout"
 									color="danger"
-									onPress={() => handleSignOut()}
+									onPress={() => handleLogout()}
 								>
 									Log Out
 								</DropdownItem>

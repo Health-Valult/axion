@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon, Trash2 } from 'lucide-react';
@@ -60,55 +62,55 @@ export function Notes({
 
 	const notesApiUrl = '/api/notes';
 
-	useEffect(() => {
-		const fetchInitialNotes = async () => {
-			try {
-				const response = await fetch(notesApiUrl);
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-				const data = await response.json();
-				if (Array.isArray(data)) {
-					setNotesList(data); // Assuming API returns an array of notes
-				} else {
-					toast('Error', {
-						description: 'API response is not an array.',
-					});
-				}
-			} catch (error) {
-				toast('Error', {
-					description: 'There was a problem fetching your notes.',
-				});
-			}
-		};
+	// useEffect(() => {
+	// 	const fetchInitialNotes = async () => {
+	// 		try {
+	// 			const response = await fetch(notesApiUrl);
+	// 			if (!response.ok) {
+	// 				throw new Error(`HTTP error! status: ${response.status}`);
+	// 			}
+	// 			const data = await response.json();
+	// 			if (Array.isArray(data)) {
+	// 				setNotesList(data); // Assuming API returns an array of notes
+	// 			} else {
+	// 				toast('Error', {
+	// 					description: 'API response is not an array.',
+	// 				});
+	// 			}
+	// 		} catch (error) {
+	// 			toast('Error', {
+	// 				description: 'There was a problem fetching your notes.',
+	// 			});
+	// 		}
+	// 	};
 
-		fetchInitialNotes();
-	}, []); // Empty dependency array to run only once on mount
+	// 	fetchInitialNotes();
+	// }, []); // Empty dependency array to run only once on mount
 
 	// Save notes to API on notesList changes
-	useEffect(() => {
-		const saveNotes = async () => {
-			try {
-				const response = await fetch(notesApiUrl, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(notesList), // Send the updated notesList
-				});
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
-				console.log('Notes saved successfully to API');
-			} catch (error) {
-				toast('Error', {
-					description: 'There was a problem connecting to database.',
-				});
-			}
-		};
+	// useEffect(() => {
+	// 	const saveNotes = async () => {
+	// 		try {
+	// 			const response = await fetch(notesApiUrl, {
+	// 				method: 'POST',
+	// 				headers: {
+	// 					'Content-Type': 'application/json',
+	// 				},
+	// 				body: JSON.stringify(notesList), // Send the updated notesList
+	// 			});
+	// 			if (!response.ok) {
+	// 				throw new Error(`HTTP error! status: ${response.status}`);
+	// 			}
+	// 			console.log('Notes saved successfully to API');
+	// 		} catch (error) {
+	// 			toast('Error', {
+	// 				description: 'There was a problem connecting to database.',
+	// 			});
+	// 		}
+	// 	};
 
-		saveNotes();
-	}, [notesList]); // Dependency array containing notesList - effect runs when notesList changes
+	// 	saveNotes();
+	// }, [notesList]); // Dependency array containing notesList - effect runs when notesList changes
 
 	let gridColumnsClass = 'grid-cols-1'; // Default to single column
 	if (notesList.length > 3 && notesList.length <= 6) {

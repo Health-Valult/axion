@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Patient } from '../models/Patient';
 import { AsyncSelect } from '@/components/ui/async-select';
