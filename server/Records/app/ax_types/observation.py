@@ -7,8 +7,8 @@ from app.ax_types.util import Json_type
 
 @strawberry.type
 class Observation:
-    encounter:Optional[str] = None
-    patient:Optional[str] = None
+    encounterID:Optional[str] = None
+    patientID:Optional[str] = None
     code:Optional[str] = None
     display:Optional[str] = None
     unit:Optional[str] = None

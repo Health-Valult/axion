@@ -7,9 +7,9 @@ from app.ax_types.util import Json_type,nd_Json_type
 
 @strawberry.type
 class Encounter:
-    patient:Optional[str] = None
+    patientID:Optional[str] = None
     id:Optional[str] = None
-    serviceProvider:Optional[str] = None
+    serviceProviderID:Optional[str] = None
     type:Optional[str] = None
     typeCode:Optional[str] = None
     reason:Optional[str] = None

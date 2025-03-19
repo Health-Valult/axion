@@ -36,7 +36,7 @@ class Status(Enum):
 
 @strawberry.type
 class AllergyIntolerance:
-    patient:Optional[str] = None
+    patientID:Optional[str] = None
     code:Optional[str] = None
     display:Optional[str] = None
     timestamp:Optional[str] = None
