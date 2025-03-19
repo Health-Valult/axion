@@ -1,24 +1,17 @@
 observationsResult={
     "_id":0,
+    "id":1,
     "patientID": 1,
+    "labID":1,
     "code": 1,
     "display": 1,
-    "dosage": 1,
-    "route": 1,
-    "prescriber": 1,
+    "unit": 1,
+    "value": 1,
+    "timestamp": 1,
     "meta": 1
 }
 
-observationStackResult={
-    "_id":0,
-    "patientID": 1,
-    "code": 1,
-    "display": 1,
-    "dosage": 1,
-    "route": 1,
-    "prescriber": 1,
-    "meta": 1
-}
+
 
 allergysResult={
     "_id":0,
