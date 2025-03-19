@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
-import {Bell, User} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Bell, User } from "lucide-react";
 import Image from "next/image";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import SidebarLayout from "@/app/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useLanguage } from "@/app/components/LanguageContext";
 import LanguageSwitch from '@/app/components/LanguageSwitch';
-import {useDarkMode} from "@/app/components/DarkModeContext";
+import { useDarkMode } from "@/app/components/DarkModeContext";
 import useAuth from "@/hooks/useAuth";
-import toast, {Toaster} from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function DashboardLayout() {
     return (
@@ -36,22 +36,38 @@ interface MedicalReport {
     date: string;
 }
 
-interface EmergencyInfo {
-    allergies: string[];
-    chronicIllnesses: string[];
-    emergencyContacts: string[];
+interface Meta {
+    created: string;
+    source: string;
+}
+
+interface Allergy {
+    display: string;
+    criticality: string;
+    severity: string;
+    category: string;
+    source: string;
+    verificationStatus: string;
+    meta: Meta;
+}
+
+interface Immunization {
+    patientID: string;
+    code: string;
+    display: string;
+    unit: string;
+    site: string;
+    timestamp: string;
+    meta: object;
+    dosage: string;
 }
 
 const Dashboard = () => {
     const { t } = useLanguage();
     const { darkMode } = useDarkMode();
-    const [healthInfo] = useState({
-        name: 'John Doe',
-        age: 32,
-        gender: "Male",
-        height: '5\'9"',
-        weight: '75kg',
-        bloodType: 'O+'
+    const [healthInfo, setHealthInfo] = useState({
+        name: '',
+        age: 21,
     });
     const [medications] = useState<Medication[]>([
         { name: 'Paracetamol', dosage: '500mg', schedule: 'Twice daily' },
@@ -61,11 +77,6 @@ const Dashboard = () => {
         { name: 'Complete Blood Count (CBC)', date: '2024-01-25' },
         { name: 'Lipid Profile Report', date: '2023-09-15' },
     ]);
-    const [emergencyInfo] = useState<EmergencyInfo>({
-        allergies: ['Panadol', 'Penicillin'],
-        chronicIllnesses: ['Diabetes', 'Hypertension'],
-        emergencyContacts: ['+1234567890', '+0987654321'],
-    });
     const notifications = [
         { id: 1, message: "Your appointment is scheduled for tomorrow at 10 AM." },
         { id: 2, message: "You have a new lab report available for viewing." },
@@ -74,13 +85,137 @@ const Dashboard = () => {
     const router = useRouter();
     const isAuthenticated = useAuth();
 
+    const token = sessionStorage.getItem("session_token");
+
+    const [allergies, setAllergies] = useState<Allergy[]>([]);
+    const [immunizations, setImmunizations] = useState<Immunization[]>([]);
+
+    const [selectedAllergy, setSelectedAllergy] = useState<Allergy | null>(null);
+    const [selectedImmunization, setSelectedImmunization] = useState<Immunization | null>(null);
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                const response = await fetch("api/get-user-data", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to fetch profile data");
+                }
+
+                const data = await response.json();
+
+                setHealthInfo({
+                    name: data.FirstName,
+                    age: 21,
+                });
+            } catch (error) {
+                console.error("Error fetching profile data:", error);
+                toast.error("Failed to load profile data.");
+            }
+        };
+
+        const fetchAllergies = async () => {
+            try {
+                const response = await fetch('/api/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query Allergys {
+                                allergys {
+                                    allergyIntolerances {
+                                        display
+                                        criticality
+                                        severity
+                                        category
+                                        source
+                                        verificationStatus
+                                        meta 
+                                    }
+                                }
+                            }`,
+                    }),
+                });
+
+                const { data } = await response.json();
+                if (data && data.allergys && data.allergys.allergyIntolerances) {
+                    setAllergies(data.allergys.allergyIntolerances);
+                }
+            } catch (error) {
+                console.error('Error fetching allergy data:', error);
+                toast.error("Failed to load allergies.");
+            }
+        };
+
+        const fetchImmunizations = async () => {
+            try {
+                const response = await fetch('/api/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query Immunization {
+                                immunization {
+                                    immunizations {
+                                        patientID
+                                        code
+                                        display
+                                        unit
+                                        site
+                                        timestamp
+                                        meta
+                                        dosage
+                                    }
+                                }
+                            }`,
+                    }),
+                });
+
+                const {data} = await response.json();
+                if (data && data.immunization && data.immunization.immunizations) {
+                    setImmunizations(data.immunization.immunizations);
+                }
+            } catch (error) {
+                console.error('Error fetching immunization data:', error);
+                toast.error("Failed to load immunizations.");
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchProfileData();
+            fetchAllergies();
+            fetchImmunizations();
+        }
+    }, [isAuthenticated, token]);
+
     if (!isAuthenticated) {
         return null;
     }
 
+    const handleAlertClick = (allergy: Allergy) => {
+        setSelectedAllergy(allergy);
+    };
+
+    const handleCardClick = (immunization: Immunization) => {
+        setSelectedImmunization(immunization);
+    };
+
     return (
         <div className="min-h-screen dark:bg-gray-950 p-6">
-            <Toaster/>
+            <Toaster />
             <div className="flex items-center justify-between py-4 px-8 bg-white dark:bg-gray-950 rounded-lg">
                 <div className="flex justify-center w-full">
                     <Image
@@ -119,52 +254,52 @@ const Dashboard = () => {
                             </PopoverContent>
                         </Popover>
                         <Tooltip>
-                        <TooltipTrigger>
-                            <Popover>
-                                <PopoverTrigger>
-                                    <User size={24} className="cursor-pointer" />
-                                </PopoverTrigger>
-                                <PopoverContent className="p-2 space-y-2 dark:bg-gray-950">
-                                    <Button variant="outline" className="w-full" onClick={() => router.push('/profile')}>
-                                        Profile
-                                    </Button>
-                                    <Button variant="destructive" className="w-full"
-                                            onClick={async () => {
-                                                try {
-                                                    const response = await fetch('/api/logout-proxy', {
-                                                        method: 'POST',
-                                                        headers: {
-                                                            'Content-Type': 'application/json',
-                                                            'Authorization': `Bearer ${sessionStorage.getItem("session_token")}`,
-                                                        },
-                                                    });
-                                                    if (response.ok) {
-                                                        toast.success("Logging out...")
-                                                        sessionStorage.removeItem("session_token");
-                                                        sessionStorage.removeItem("refresh_token");
-                                                        router.push("/auth");
-                                                    } else {
-                                                        toast.error("Logout failed")
-                                                        console.error("Logout failed:", await response.text());
+                            <TooltipTrigger>
+                                <Popover>
+                                    <PopoverTrigger>
+                                        <User size={24} className="cursor-pointer" />
+                                    </PopoverTrigger>
+                                    <PopoverContent className="p-2 space-y-2 dark:bg-gray-950">
+                                        <Button variant="outline" className="w-full" onClick={() => router.push('/profile')}>
+                                            Profile
+                                        </Button>
+                                        <Button variant="destructive" className="w-full"
+                                                onClick={async () => {
+                                                    try {
+                                                        const response = await fetch('/api/logout', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                                'Authorization': `Bearer ${token}`,
+                                                            },
+                                                        });
+                                                        if (response.ok) {
+                                                            toast.success("Logging out...")
+                                                            sessionStorage.removeItem("session_token");
+                                                            sessionStorage.removeItem("refresh_token");
+                                                            router.push("/auth");
+                                                        } else {
+                                                            toast.error("Logout failed")
+                                                            console.error("Logout failed:", await response.text());
+                                                        }
+                                                    } catch (error) {
+                                                        toast.error("Error during logout")
+                                                        console.error("Error during logout:", error);
                                                     }
-                                                } catch (error) {
-                                                    toast.error("Error during logout")
-                                                    console.error("Error during logout:", error);
-                                                }
-                                    }}>
-                                        Logout
-                                    </Button>
-                                </PopoverContent>
-                            </Popover>
-                        </TooltipTrigger>
-                        <TooltipContent>Profile</TooltipContent>
-                    </Tooltip>
+                                                }}>
+                                            Logout
+                                        </Button>
+                                    </PopoverContent>
+                                </Popover>
+                            </TooltipTrigger>
+                            <TooltipContent>Profile</TooltipContent>
+                        </Tooltip>
                     </TooltipProvider>
                     <LanguageSwitch />
                 </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-400 mt-6">{t.welcomeMessage}</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-400 mt-6">{t.welcomeMessage} {healthInfo.name}!</h1>
             <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950">
                 <CardHeader>
                     <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
@@ -175,10 +310,6 @@ const Dashboard = () => {
                     <ul className="text-black dark:text-white space-y-2">
                         <li>{t.name}: {healthInfo.name}</li>
                         <li>{t.age}: {healthInfo.age}</li>
-                        <li>{t.gender}: {healthInfo.gender}</li>
-                        <li>{t.height}: {healthInfo.height}</li>
-                        <li>{t.weight}: {healthInfo.weight}</li>
-                        <li>{t.bloodType}: {healthInfo.bloodType}</li>
                     </ul>
                 </CardContent>
             </Card>
@@ -208,74 +339,90 @@ const Dashboard = () => {
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.criticalAlerts}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">Allergies</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Alert variant="destructive" className="text-red-500">
-                            <AlertTitle>Allergic Alert</AlertTitle>
-                            <AlertDescription>Allergic to Panadol</AlertDescription>
-                        </Alert>
-                        <Alert className="mt-2 dark:bg-gray-950">
-                            <AlertTitle>Reminder</AlertTitle>
-                            <AlertDescription>Upcoming doctor visit on 2023-11-15</AlertDescription>
-                        </Alert>
+                        <div className="space-x-2 mt-4 justify-center">
+                            {allergies.length === 0 ? (
+                                <p className="text-center text-gray-500 dark:text-white">No allergies data available.</p>
+                            ) : (
+                                allergies.map((allergy, index) => (
+                                    <Dialog key={index}>
+                                        <DialogTrigger>
+                                            <Alert
+                                                className="text-red-500 mb-2 w-full max-w-lg p-4"
+                                                variant="destructive"
+                                                onClick={() => handleAlertClick(allergy)}
+                                            >
+                                                <AlertTitle>{allergy.display} - {allergy.severity}</AlertTitle>
+                                            </Alert>
+                                        </DialogTrigger>
+                                        {selectedAllergy === allergy && (
+                                            <DialogContent>
+                                                <DialogHeader>
+                                                    <DialogTitle>{allergy.display}</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-4">
+                                                    <p><strong>Criticality:</strong> {allergy.criticality}</p>
+                                                    <p><strong>Severity:</strong> {allergy.severity}</p>
+                                                    <p><strong>Category:</strong> {allergy.category}</p>
+                                                    <p><strong>Source:</strong> {allergy.source}</p>
+                                                    <p><strong>Verification Status:</strong> {allergy.verificationStatus}</p>
+                                                    <p><strong>Created:</strong> {new Date(allergy.meta?.created).toLocaleString() || "N/A"}</p>
+                                                    <p><strong>Source:</strong> {allergy.meta?.source || "N/A"}</p>
+                                                </div>
+                                            </DialogContent>
+                                        )}
+                                    </Dialog>
+                                ))
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.emergencyInfo}</CardTitle>
+                        <CardTitle className="text-purple-900">Immunizations</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="font-semibold text-red-500">Allergies</p>
-                        {emergencyInfo.allergies.map((allergy, index) => (
-                            <Badge key={index} variant="destructive" className="mr-1">{allergy}</Badge>
-                        ))}
-                        <p className="font-semibold mt-3">Chronic Illnesses</p>
-                        {emergencyInfo.chronicIllnesses.map((illness, index) => (
-                            <Badge key={index} className="mr-1">{illness}</Badge>
-                        ))}
-                        <p className="font-semibold mt-3">Emergency Contacts</p>
-                        {emergencyInfo.emergencyContacts.map((contact, index) => (
-                            <p key={index} className="text-sm">{contact}</p>
-                        ))}
-                    </CardContent>
-                </Card>
-            </div>
+                        {immunizations.length === 0 ? (
+                            <p className="text-center text-gray-500 dark:text-white">No immunizations data available.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {immunizations.map((immunization, index) => (
+                                    <Dialog key={index}>
+                                        <DialogTrigger>
+                                            <Card
+                                                className="cursor-pointer dark:border-gray-700 dark:bg-gray-950"
+                                                onClick={() => handleCardClick(immunization)}
+                                            >
+                                                <CardHeader>
+                                                    <CardTitle className="text-purple-900">{immunization.display} - {new Date(immunization.timestamp).toLocaleString()}</CardTitle>
+                                                </CardHeader>
+                                                {/*<CardContent>*/}
+                                                {/*    <p>{immunization.status}</p>*/}
+                                                {/*</CardContent>*/}
+                                            </Card>
+                                        </DialogTrigger>
 
-            <h2 className="text-2xl font-bold mt-8 mb-4 dark:text-gray-400">{t.emergencyFeatures}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
-                    <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.accessLogs}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>{t.accessLogsMsg}</p>
-                        <Button variant="outline" className="mt-4">{t.accessLogsBtn}</Button>
-                    </CardContent>
-                </Card>
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
-                    <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.backupStatus}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>{t.backupStatusMsg}</p>
-                        <Button className="mt-4">{t.backupStatusBtn}</Button>
-                    </CardContent>
-                </Card>
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
-                    <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.connectWithDoctor}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p>{t.connectWithDoctorMsg}</p>
-                        <Image
-                            src="/images/qr.png"
-                            alt="QR Code to connect with doctor"
-                            width={128}
-                            height={128}
-                            className="mx-auto mt-4"
-                        />
+                                        {selectedImmunization === immunization && (
+                                            <DialogContent className="max-w-lg dark:bg-gray-950">
+                                                <DialogHeader>
+                                                    <DialogTitle className="text-purple-900">{immunization.display}</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-2">
+                                                    {/*<p><strong>Status:</strong> {immunization.status}</p>*/}
+                                                    <p><strong>Dosage:</strong> {immunization.dosage} {immunization.unit}</p>
+                                                    <p><strong>Site:</strong> {immunization.site}</p>
+                                                    {/*<p><strong>Manufacturer:</strong> {immunization.manufacturer}</p>*/}
+                                                    <p><strong>Timestamp:</strong> {new Date(immunization.timestamp).toLocaleString()}</p>
+                                                </div>
+                                            </DialogContent>
+                                        )}
+                                    </Dialog>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

@@ -3,7 +3,7 @@ import React from "react";
 
 export const client = new ApolloClient({
     link: new HttpLink({
-        uri: "http://localhost:8000/graphql",
+        uri: "api/graphql",
     }),
     cache: new InMemoryCache(),
 });

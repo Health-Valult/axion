@@ -1,6 +1,6 @@
 {
-  "welcomeMessage": "மீண்டும் வரவேற்கிறோம், John Doe! உங்கள் ஆரோக்கியச் சுருக்கம் இதோ.",
-  "basicHealthInformation": "அடிப்படை ஆரோக்கியத் தகவல்",
+  "welcomeMessage": "வரவேற்கிறோம்",
+  "basicHealthInformation": "அடிப்படை ஆரோக்கியத்தகவல்",
   "name": "பெயர்",
   "age": "வயது",
   "gender": "பாலினம்",

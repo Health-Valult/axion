@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import Image from "next/image";
 import { FormProvider } from "@/app/components/FormContext";
+import {Button} from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import toast, {Toaster} from "react-hot-toast";
-// import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 interface FormData {
     firstName: string;
@@ -39,7 +40,7 @@ interface LoginFormErrors {
 }
 
 const Auth: React.FC = () => {
-    // const uuid = randomUUID();
+    const [uuid, setUuid] = useState('');
     const [isActive, setIsActive] = useState(false);
     const [value, setValue] = useState("");
     const [signUpStep, setSignUpStep] = useState(1);
@@ -61,6 +62,11 @@ const Auth: React.FC = () => {
 
     const handleRegister = () => setIsActive(true);
     const handleLogin = () => setIsActive(false);
+
+    useEffect(() => {
+        const generatedUuid = uuidv4();
+        setUuid(generatedUuid);
+    }, []);
 
     const validateLogin = (loginFormData: LoginFormData): LoginFormErrors => {
         const errors: LoginFormErrors = {};
@@ -150,7 +156,7 @@ const Auth: React.FC = () => {
         }
     }
 
-    const nextStep = () => {
+    const nextStep = async () => {
         if (signUpStep === 1) {
             const validationErrors = validateStep1(formData);
             if (Object.keys(validationErrors).length === 0) {
@@ -161,7 +167,32 @@ const Auth: React.FC = () => {
         } else if (signUpStep === 2) {
             const validationErrors = validateStep2(formData);
             if (Object.keys(validationErrors).length === 0) {
-                setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 3
+                // setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 3
+                try {
+                    // Send the POST request with the appropriate data
+                    const response = await fetch('/api/send-otp', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            tempID: uuid, // Using the generated UUID
+                            type: 'email', // Hardcoded type as 'email'
+                            data: "subajanani@gmail.com", // Use email or any other data for this step
+                        }),
+                    });
+
+                    if (response.ok) {
+                        setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to next step (Step 3)
+                    } else {
+                        const errorData = await response.json();
+                        console.log(errorData);
+                        toast.error("Something went wrong during registration");
+                    }
+                } catch (error) {
+                    console.error("Error during registration:", error);
+                    toast.error("Registration failed");
+                }
             } else {
                 setErrors(validationErrors);
             }
@@ -218,12 +249,12 @@ const Auth: React.FC = () => {
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         />
-                        <button
+                        <Button
                             className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
                             onClick={nextStep}
                         >
                             Next
-                        </button>
+                        </Button>
                     </FormProvider>
                 );
             case 2:
@@ -265,12 +296,12 @@ const Auth: React.FC = () => {
                         />
 
                         <div className="flex space-x-4 mt-4">
-                            <button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
+                            <Button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
-                            </button>
-                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={async () => await registerUser(formData)}>
+                            </Button>
+                            <Button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={async () => { await nextStep(); }}>
                                 Register
-                            </button>
+                            </Button>
                         </div>
                     </FormProvider>
                 );
@@ -289,9 +320,42 @@ const Auth: React.FC = () => {
                             </InputOTPGroup>
                         </InputOTP>
                         <div className="flex space-x-4 mt-4">
-                            <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={() => verifyOTP}>
+                            <Button
+                                className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch("/api/verify-otp", {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                            },
+                                            body: JSON.stringify({ tempID: uuid, otp: value as string }),
+                                        });
+
+                                        // Handle the response
+                                        if (response.ok) {
+                                            const responseData = await response.json();
+                                            // If successful, proceed to register the user
+                                            toast.success("OTP Verified successfully!");
+
+                                            // Register the user after OTP verification is successful
+                                            await registerUser(formData); // Ensure registerUser is properly implemented
+                                            return responseData;
+                                        } else {
+                                            // If response is not successful, show an error
+                                            const errorData = await response.json();
+                                            toast.error("OTP verification failed");
+                                            return errorData;
+                                        }
+                                    } catch (error) {
+                                        // Handle any errors (network issues, etc.)
+                                        console.error("Error during OTP verification:", error);
+                                        toast.error("Something went wrong. Please try again.");
+                                    }
+                                }}
+                            >
                                 Verify
-                            </button>
+                            </Button>
                         </div>
                     </FormProvider>
                 );
@@ -362,9 +426,9 @@ const Auth: React.FC = () => {
                             onChange={(e) => setLoginFormData({ ...loginFormData, password: e.target.value })}
                         />
                         <a href="#" className="text-sm text-blue-500 mb-4">Forget Your Password?</a>
-                        <button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  login()}>
+                        <Button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  login()}>
                             Sign In
-                        </button>
+                        </Button>
                     </FormProvider>
                 </div>
 
@@ -380,12 +444,12 @@ const Auth: React.FC = () => {
                                 ? "Enter your details to access the site."
                                 : "Register with your personal details to safely access your medical records."}
                         </p>
-                        <button
+                        <Button
                             className="bg-white text-purple-600 py-2 px-6 rounded-lg uppercase"
                             onClick={isActive ? handleLogin : handleRegister}
                         >
                             {isActive ? "Sign In" : "Sign Up"}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -395,7 +459,7 @@ const Auth: React.FC = () => {
 
 const registerUser = async (formData: FormData) => {
     try {
-        const response = await fetch(`/api/signup-proxy`, {
+        const response = await fetch(`/api/signup`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -432,7 +496,7 @@ const registerUser = async (formData: FormData) => {
 
 const loginUser = async (email: string, password: string) => {
     try {
-        const response = await fetch(`api/login-proxy`, {
+        const response = await fetch(`api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -477,31 +541,5 @@ const loginUser = async (email: string, password: string) => {
         toast.error("Login failed!");
     }
 };
-
-async function verifyOTP(otp: number, token: string) {
-    try {
-        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/verify/otp`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ otp }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            toast.success("OTP verified!");
-            console.log('OTP verified:', data.msg);
-        } else {
-            const errorData = await response.json();
-            toast.error("OTP verification failed!");
-            console.error('OTP verification failed:', errorData.msg);
-        }
-    } catch (error) {
-        toast.error("Error during OTP verification!");
-        console.error('Error during OTP verification:', error);
-    }
-}
 
 export default Auth;

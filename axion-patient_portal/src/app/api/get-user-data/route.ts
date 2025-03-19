@@ -1,8 +1,6 @@
 import fetch from 'node-fetch';
 
-export async function POST(request: Request) {
-    const apiUrl = "https://axiontestgateway.azure-api.net/axion/auth/logout";
-
+export async function GET(request: Request) {
     try {
         const authorizationHeader = request.headers.get('Authorization') || '';
 
@@ -14,10 +12,9 @@ export async function POST(request: Request) {
             return new Response(JSON.stringify({ error: 'Authorization token is missing or invalid' }), { status: 400 });
         }
 
-        const response = await fetch(apiUrl, {
-            method: 'POST',
+        const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${sessionToken}`,
             },
         });
@@ -31,7 +28,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error('Error in logout-proxy:', error);
+        console.error('Error in get-user-data:', error);
         return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
     }
 }

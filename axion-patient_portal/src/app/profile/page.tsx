@@ -285,7 +285,7 @@ function ProfileForm() {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
-                const response = await fetch("api/get-user-data-proxy", {
+                const response = await fetch("api/get-user-data", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -329,7 +329,7 @@ function ProfileForm() {
 
     const handleResetPassword = async (oldPassword: string, newPassword: string) => {
         try {
-            const response = await fetch("/api/reset-password-proxy", {
+            const response = await fetch("/api/reset-password", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -355,7 +355,7 @@ function ProfileForm() {
 
     const handleDeleteAccount = async (email: string, password: string) => {
         try {
-            const response = await fetch("/api/delete-account-proxy", {
+            const response = await fetch("/api/delete-account", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

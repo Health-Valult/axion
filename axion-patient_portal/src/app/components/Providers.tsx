@@ -4,8 +4,20 @@ import React from "react";
 import {LanguageProvider} from "@/app/components/LanguageContext";
 import {DarkModeProvider} from "@/app/components/DarkModeContext";
 import ApolloProviderWrapper from "@/lib/ApolloClient";
-import {SessionProvider} from "next-auth/react";
+// import {SessionProvider} from "next-auth/react";
 // import {usePathname, useRouter} from "next/navigation";
+
+export default function Providers({ children }: { children: React.ReactNode }) {
+    return (
+        <ApolloProviderWrapper>
+            <DarkModeProvider>
+                <LanguageProvider>
+                    {children}
+                </LanguageProvider>
+            </DarkModeProvider>
+        </ApolloProviderWrapper>
+    );
+}
 
 // const publicRoutes = ['/auth', '/forgot-password'];
 //
@@ -50,19 +62,3 @@ import {SessionProvider} from "next-auth/react";
 //     // Return children directly when the component renders
 //     return children;
 // };
-
-export default function Providers({ children }: { children: React.ReactNode }) {
-    return (
-        <SessionProvider>
-            <ApolloProviderWrapper>
-                <DarkModeProvider>
-                    <LanguageProvider>
-                        {/*<AuthWrapper>*/}
-                            {children}
-                        {/*</AuthWrapper>*/}
-                    </LanguageProvider>
-                </DarkModeProvider>
-            </ApolloProviderWrapper>
-        </SessionProvider>
-    );
-}

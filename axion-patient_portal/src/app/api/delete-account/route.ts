@@ -1,6 +1,8 @@
 import fetch from 'node-fetch';
 
 export async function POST(request: Request) {
+    const apiUrl = "https://axiontestgateway.azure-api.net/axion/user/profile/delete";
+
     try {
         const body = await request.json();
 
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
             return new Response(JSON.stringify({ error: 'Authorization token is missing or invalid' }), { status: 400 });
         }
 
-        const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/reset-password", {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error('Error in reset-password-proxy:', error);
+        console.error('Error in delete-account:', error);
         return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
     }
 }

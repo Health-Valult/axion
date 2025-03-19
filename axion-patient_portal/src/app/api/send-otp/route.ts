@@ -4,7 +4,7 @@ export async function POST(request: Request) {
     try {
         const body = await request.json();
 
-        const response = await fetch("https://axiontestgateway.azure-api.net/axion/auth/login/patient", {
+        const response = await fetch("https://axiontestgateway.azure-api.net/axion/auth/send/otp", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error('Error in login-proxy:', error);
+        console.error('Error in send-otp:', error);
         return new Response(JSON.stringify({ error: 'Server error' }), { status: 500 });
     }
 }
