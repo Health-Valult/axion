@@ -3,6 +3,8 @@ from typing import Optional
 import strawberry
 from typing import Optional,List
 
+from app.ax_types.util import Json_type
+
 
 @strawberry.enum
 class Criticality(Enum):
@@ -44,7 +46,7 @@ class AllergyIntolerance:
     active:Optional[bool] = None
     source:Optional[Source] = None
     verificationStatus:Optional[Status] = None
-    #meta:Optional[Json_type]= None
+    meta:Optional[Json_type]= None
 
 
 @strawberry.type

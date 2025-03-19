@@ -5,14 +5,14 @@ import strawberry
 
 @strawberry.type
 class Immunization:
-    patient: Optional[str]
-    vaccineCode: Optional[str]
-    vaccineDisplay: Optional[str]
+    patientID: Optional[str]
+    Code: Optional[str]
+    Display: Optional[str]
     status: Optional[str]
     dosage: Optional[str]
     unit: Optional[str]
     site: Optional[str]
-    occurrenceDateTime: Optional[str]
+    timestamp: Optional[str]
     manufacturer:Optional[str]
     meta: Optional[Json_type]  # type: ignore
 
