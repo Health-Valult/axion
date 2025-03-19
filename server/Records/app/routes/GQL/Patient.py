@@ -45,8 +45,7 @@ class PatientQuery:
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"labID":LabID}
         Aggregate:Cursor = collection.find(query,observationsResult)   
-        for i in Aggregate:
-            print(i)
+
         return ObservationStack(Observations=[Observation(**obs) for obs in Aggregate])
         
 
