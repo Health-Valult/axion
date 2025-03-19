@@ -9,25 +9,29 @@ from app.ax_types.procedure import *
 from app.ax_types.Labs import *
 
 from starlette.requests import Request
+
+from pymongo.cursor import Cursor
+from pymongo.collection import Collection
+
 @strawberry.type
 class PatientQuery:
 
     @strawberry.field
     async def observations(
         info:Info,LabTest:str
-        ) -> Observation:
+        ) -> ObservationStack:
         
         request = info.context["request"]
-
         patient = request.state.meta.get("uuid")
+        query = { selection.name:1 for selection in info.selected_fields[0].selections}
+        collection:Collection = request.app.state.ObservationCollection
 
-        query={ selection.name:1 for selection in info.selected_fields[0].selections}
-        observationAggregate = request.app.state.ObservationCollection.find(
+        Aggregate:Cursor = collection.find(
             {"patient": patient,"encounter":LabTest},
             query|{"_id":0}
         )
         
-        observationAggregateResult = next(observationAggregate,None)
+        observationAggregateResult = next(Aggregate,None)
         if observationAggregateResult is None:
             return None
         observationQueryResult = Observation(**observationAggregateResult)
@@ -42,16 +46,17 @@ class PatientQuery:
         
         request:Request = info.context["request"]
         patient = request.state.meta.get("uuid")
+        collection:Collection = request.app.state.ObservationCollection
 
         query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
 
-        observationAggregate = request.app.state.ObservationCollection.find(
+        Aggregate:Cursor = collection.find(
             {"patient": patient,"code":code},
             query|{"_id":0}
         )
        
         return ObservationStack(
-            Observations=[Observation(**obs) for obs in observationAggregate]
+            Observations=[Observation(**obs) for obs in Aggregate]
         )
        
 
@@ -62,9 +67,11 @@ class PatientQuery:
         
         request:Request = info.context["request"]
         patient = request.state.meta.get("uuid")
+        collection:Collection = request.app.state.AllergiesCollection
+
         query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
         print(query)
-        allergyAggregate = request.app.state.AllergiesCollection.find(
+        allergyAggregate:Cursor = collection.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
@@ -83,12 +90,15 @@ class PatientQuery:
             request:Request = info.context["request"]
             patient = request.state.meta.get("uuid")
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-
-            medicationAggregate = request.app.state.MedicationsCollection.find(
+            collection:Collection = request.app.state.MedicationsCollection
+            print(query)
+            medicationAggregate:Cursor = collection.find(
                         {"patientID": patient},
                         query|{"_id":0}
                     )
 
+            for i in medicationAggregate:
+                  print(i)
 
             return MedicationStack(
                     medications=[Medication(**obs) for obs in medicationAggregate]
@@ -100,10 +110,11 @@ class PatientQuery:
         ) -> ImmunizationStack:
         
             request:Request = info.context["request"]
-            patient = request.state.meta.get("uuid")
-            query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            immunizationAggregate = request.app.state.ImmunizationsCollection.find(
+            patient:dict = request.state.meta.get("uuid")
+            query:dict = { selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
+            collection:Collection = request.app.state.ImmunizationsCollection
+
+            immunizationAggregate:Cursor = collection.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
@@ -118,8 +129,8 @@ class PatientQuery:
             request:Request = info.context["request"]
             patient = request.state.meta.get("uuid")
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
-            print(query)
-            labAggregate = request.app.state.LabsCollection.find(
+            collection:Collection = request.app.state.LabsCollection
+            labAggregate:Cursor = collection.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
@@ -136,7 +147,7 @@ class PatientQuery:
             patient = request.state.meta.get("uuid")
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
             print(query)
-            procedureAggregate = request.app.state.ProceduresCollection.find(
+            procedureAggregate:Cursor = request.app.state.ProceduresCollection.find(
                         {"patient": patient},
                         query|{"_id":0}
                     )
