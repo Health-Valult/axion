@@ -99,7 +99,7 @@ class PatientQuery:
         }
 
         query = {
-            "patient": patient,
+            "patientID": patient,
  
         }
 
@@ -161,7 +161,9 @@ class PatientQuery:
             }
 
             Aggregate:Cursor = collection.find(query,result)
-       
+            for i in Aggregate:
+                  print(i)
+                  
             return ImmunizationStack(immunizations=[Immunization(**obs) for obs in Aggregate])
     
     @strawberry.field
