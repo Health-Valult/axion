@@ -15,4 +15,4 @@ class Lab:
 
 @strawberry.type
 class LabStack:
-    immunizations:List[Lab] # type: ignore
+    labs:List[Lab] # type: ignore
