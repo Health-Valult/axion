@@ -65,7 +65,7 @@ app = FastAPI(title="record",lifespan=lifespan)
 # aGts37rYk@fVrFJ
        
 patient_schema = strawberry.Schema(PatientQuery)
-patient_gql_router = GraphQLRouter(patient_schema,)#dependencies=[Depends(Authenticate)])
+patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenticate)])
 
 
 
