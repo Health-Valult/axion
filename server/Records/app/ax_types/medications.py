@@ -10,7 +10,7 @@ class Prescriber:
 
 @strawberry.type
 class Medication:
-    patient: Optional[str]
+    patientID: Optional[str]
     code: Optional[str]
     display: Optional[str]
     dosage: Optional[str]

@@ -102,6 +102,9 @@ class Medication(BaseModel):
     coding_system:str = "RxNorm"
     code:str
     display:str
+    dosage: str
+    route: str
+    prescriber: str
     meta:dict
 
 # ENCOUNTER
