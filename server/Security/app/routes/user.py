@@ -61,13 +61,13 @@ def get_profile(request:Request):
 
 
     if role == "patient":
-        return _get_profile(collection=p_collection,c_uuid=uuid.UUID(c_uuid),)
+        return _get_profile(collection=p_collection,c_uuid=c_uuid,)
     
     if role == "doctor":
-        return _get_profile(collection=d_collection,c_uuid=uuid.UUID(c_uuid),)
+        return _get_profile(collection=d_collection,c_uuid=c_uuid,)
 
     if role == "hospital":
-        return _get_profile(collection=h_collection,c_uuid=uuid.UUID(c_uuid),)
+        return _get_profile(collection=h_collection,c_uuid=c_uuid,)
     
 
 @route.post("/axion/user/profile/delete",tags=["secure"],dependencies=[Depends(Authenticate)])
