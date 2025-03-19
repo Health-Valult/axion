@@ -40,6 +40,7 @@ class ObservationModel(BaseModel):
     resourceType:str = Field("observation",frozen=True) 
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     patientID:str
+    labID:str
     coding_system:str = "LOINC"
     code:str
     display:str

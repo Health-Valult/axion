@@ -27,30 +27,29 @@ class PatientQuery:
             return LabStack(Procedures=[Lab(**obs) for obs in Aggregate])
     
     @strawberry.field
-    async def observations(info:Info,code:str,LabTest:str) -> ObservationStack:
+    async def observation(info:Info,code:str,LabID:str) -> ObservationStack:
         
         request:Request = info.context.get("request")
         patient = request.state.meta.get("uuid")
         collection:Collection = request.app.state.ObservationCollection
-        query = {"patientID": patient,}
+        query = {"patientID": patient,"LabID":LabID,"code":code}
         Aggregate:Cursor = collection.find_one(query,observationsResult)   
         observationQueryResult = Observation(**Aggregate)  
         return observationQueryResult
 
     @strawberry.field
-    async def observations(info:Info,code:str,LabTest:str) -> ObservationStack:
+    async def observationStack(info:Info,LabID:str) -> ObservationStack:
         
         request:Request = info.context.get("request")
         patient = request.state.meta.get("uuid")
         collection:Collection = request.app.state.ObservationCollection
-        query = {"patientID": patient,}
+        query = {"patientID": patient,"LabID":LabID}
         Aggregate:Cursor = collection.find_one(query,observationsResult)   
-        observationQueryResult = Observation(**Aggregate)  
-        return observationQueryResult
+        return ObservationStack(Observations=[Observation(**obs) for obs in Aggregate])
         
 
     @strawberry.field
-    async def observationStack(info:Info,code:str, start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET)-> ObservationStack:
+    async def observationGraph(info:Info,code:str, start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET)-> ObservationStack:
         
         request:Request = info.context.get("request")
         patient = request.state.meta.get("uuid")
@@ -74,31 +73,31 @@ class PatientQuery:
     @strawberry.field
     async def medications(info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> MedicationStack:
         
-            request:Request = info.context.get("request")
-            patient = request.state.meta.get("uuid")
-            collection:Collection = request.app.state.MedicationsCollection
-            query = {"patientID": patient}
-            Aggregate:Cursor = collection.find(query,medicationsResult)
-            return MedicationStack(medications=[Medication(**obs) for obs in Aggregate])
+        request:Request = info.context.get("request")
+        patient = request.state.meta.get("uuid")
+        collection:Collection = request.app.state.MedicationsCollection
+        query = {"patientID": patient}
+        Aggregate:Cursor = collection.find(query,medicationsResult)
+        return MedicationStack(medications=[Medication(**obs) for obs in Aggregate])
 
 
     @strawberry.field
     async def immunization(info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> ImmunizationStack:
         
-            request:Request = info.context.get("request")
-            patient = request.state.meta.get("uuid")
-            collection:Collection = request.app.state.ImmunizationsCollection
-            query = {"patientID": patient}        
-            Aggregate:Cursor = collection.find(query,immunizationResult)            
-            return ImmunizationStack(immunizations=[Immunization(**obs) for obs in Aggregate])
+        request:Request = info.context.get("request")
+        patient = request.state.meta.get("uuid")
+        collection:Collection = request.app.state.ImmunizationsCollection
+        query = {"patientID": patient}        
+        Aggregate:Cursor = collection.find(query,immunizationResult)            
+        return ImmunizationStack(immunizations=[Immunization(**obs) for obs in Aggregate])
     
 
     @strawberry.field
     async def procedures(info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> ProcedureStack:
         
-            request:Request = info.context.get("request")
-            patient = request.state.meta.get("uuid")
-            collection:Collection = request.app.state.ProceduresCollection
-            query = {"patientID": patient}
-            Aggregate:Cursor = collection.find(query,proceduresResult)
-            return ProcedureStack(Procedures=[Procedure(**obs) for obs in Aggregate])
+        request:Request = info.context.get("request")
+        patient = request.state.meta.get("uuid")
+        collection:Collection = request.app.state.ProceduresCollection
+        query = {"patientID": patient}
+        Aggregate:Cursor = collection.find(query,proceduresResult)
+        return ProcedureStack(Procedures=[Procedure(**obs) for obs in Aggregate])
