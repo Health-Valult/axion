@@ -1,5 +1,6 @@
 export interface Patient {
     id: string;
+    imageUrl: string | null;
     nationalId: string;
     name: string;
     age: number;

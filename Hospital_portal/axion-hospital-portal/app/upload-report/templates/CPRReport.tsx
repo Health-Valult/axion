@@ -25,7 +25,7 @@ const CPRFormFields: React.FC<CPRFormFieldsProps> = ({ cprData, onChange }) => {
             value={cprData.crpLevel}
             onChange={onChange}
             placeholder="5.0"
-            className="search-input"
+            className="search-input dark:bg-black dark:text-white"
             required
           />
         </div>

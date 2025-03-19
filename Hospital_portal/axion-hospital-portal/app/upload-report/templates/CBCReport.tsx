@@ -38,7 +38,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.hemoglobin}
             onChange={onChange}
             placeholder="14.0"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -53,7 +53,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.totalLeukocyteCount}
             onChange={onChange}
             placeholder="7.5"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -70,7 +70,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.neutrophils}
             onChange={onChange}
             placeholder="60"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -85,7 +85,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.lymphocytes}
             onChange={onChange}
             placeholder="30"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -100,7 +100,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.eosinophils}
             onChange={onChange}
             placeholder="3"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -117,7 +117,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.monocytes}
             onChange={onChange}
             placeholder="6"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -132,7 +132,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.basophils}
             onChange={onChange}
             placeholder="1"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -149,7 +149,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.plateletCount}
             onChange={onChange}
             placeholder="250"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -164,7 +164,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.totalRBCCount}
             onChange={onChange}
             placeholder="5.0"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -181,7 +181,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.hematocrit}
             onChange={onChange}
             placeholder="42"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -196,7 +196,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.meanCorpuscularVolume}
             onChange={onChange}
             placeholder="90"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -213,7 +213,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.meanCellHemoglobin}
             onChange={onChange}
             placeholder="30"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -228,7 +228,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
             value={cbcData.meanCellHemoglobinConcentration}
             onChange={onChange}
             placeholder="34"
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>

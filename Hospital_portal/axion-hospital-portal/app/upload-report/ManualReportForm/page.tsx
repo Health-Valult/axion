@@ -171,7 +171,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   }
 
   return (
-    <Card className="glass-card fade-in delay-100 max-w-3xl mx-auto">
+    <Card className="glass-card fade-in delay-100 max-w-3xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <CardHeader>
         <CardTitle className="text-2xl">Create Report Manually</CardTitle>
         <CardDescription>Select a report type and enter the details</CardDescription>
@@ -184,13 +184,13 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
               name="reportType"
               value={selectedReport}
               onChange={(e) => setSelectedReport(e.target.value)}
-              className="search-input"
+              className="search-input bg-white text-black dark:bg-black dark:text-white"
               required
             >
               <option value="">Select a report type</option>
               {reportTemplates.map((template) => (
                 <option key={template.id} value={template.id}>{template.name}</option>
-              ))}
+              ))} 
             </select>
           </div>
 

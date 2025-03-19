@@ -11,7 +11,7 @@ interface LabReportsProps {
 
 const LabReports = ({ patient, onUploadReport }: LabReportsProps) => {
   return (
-    <Card className="glass-card hover-lift lg:col-span-3">
+    <Card className="glass-card hover-lift lg:col-span-3 bg-white text-black dark:bg-black dark:text-white">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Laboratory Reports</CardTitle>

@@ -6,7 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ToastProvider, ToastViewport } from "@/components/ui/toast";
+import { Toaster } from "sonner";
 import Image from "next/image";
 import "../app/globals.css";
 
@@ -39,7 +39,7 @@ const links = [
 //   },
   {
     label: "Settings",
-    href: "/Login",
+    href: "/settings",
     icon: "",
   },
 
@@ -258,12 +258,10 @@ export default function RootLayout({
 			</SidebarBody>
 			</Sidebar>
 			
-			<ToastProvider>
-			<div className="flex-1 overflow-y-auto p-4"> {/* This is the main content area */}
+			<div className="flex-1 overflow-y-auto p-4 bg-white text-black dark:bg-black dark:text-white"> {/* This is the main content area */}
 			{children}
 			</div>
-			<ToastViewport />
-			</ToastProvider>
+			<Toaster position="top-center"/>
 		</div>
 		</body>
 	  </html>

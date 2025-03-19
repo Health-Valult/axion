@@ -1,11 +1,9 @@
 "use client"
 
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@nextui-org/react";
 //import { Label } from "@nextui-org/react";
-import { Textarea } from "@nextui-org/react";
 import Link  from "next/link";
 import { Hospital, Upload, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -73,15 +71,19 @@ const Register = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     // This would be replaced with actual registration logic
     setTimeout(() => {
       setIsLoading(false);
+      
+      // Save the form data to localStorage
+      localStorage.setItem("profileData", JSON.stringify(formData));
+  
       toast({
         title: "Registration successful",
         description: "Your account has been created. You can now log in.",
       });
-      navigate.push("/Login");
+      navigate.push("/profile"); // Redirect to the Profile page
     }, 2000);
   };
 
@@ -107,7 +109,7 @@ const Register = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12 bg-white text-black dark:bg-black dark:text-white">
       <div className="w-full max-w-3xl space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-block p-3 rounded-full bg-primary/10 mb-2">
@@ -119,7 +121,7 @@ const Register = () => {
           </p>
         </div>
 
-        <Card>
+        <Card className="dark:bg-black dark:text-white">
           <CardHeader>
             <CardTitle>Registration - Step {step} of 5</CardTitle>
             <CardDescription>
@@ -209,9 +211,10 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <label htmlFor="address">Address *</label>
-                    <Textarea
+                    <Input
                       id="address"
                       name="address"
+                      type="text"
                       placeholder="Full street address"
                       value={formData.address}
                       onChange={handleChange}
@@ -262,8 +265,8 @@ const Register = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="medicalStaff">Work Location *</label>
-                  <Textarea
+                  <label htmlFor="workLocation">Work Location *</label>
+                  <Input
                     id="workLocation"
                     name="workLocation"
                     placeholder="Add the work location"
@@ -273,7 +276,7 @@ const Register = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-">
                   <label htmlFor="nursingStaff">Shift Type*</label>
                   <Input
                     id="shiftType"

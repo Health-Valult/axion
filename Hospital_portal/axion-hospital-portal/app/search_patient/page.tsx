@@ -161,12 +161,12 @@ const SearchPatient = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 md:p-12 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-screen p-6 md:p-12 space-y-8 max-w-7xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <header className="text-center space-y-2 fade-in">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground dark:text-white">
           Search Patient
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-lg dark:text-white">
           Search for patients using their National ID
         </p>
       </header>
@@ -179,7 +179,7 @@ const SearchPatient = () => {
         />
       
         {patient && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in bg-white text-black dark:bg-black dark:text-white">
             <PatientDetails patient={patient} />
             <MedicalHistory patient={patient} />
             <LabReports patient={patient} onUploadReport={handleUploadReport} />

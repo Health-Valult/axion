@@ -12,7 +12,7 @@ interface SearchFormProps {
 
 const SearchForm = ({ searchQuery, isSearching, onSearchQueryChange, onSubmit }: SearchFormProps) => {
   return (
-    <Card className="glass-card fade-in delay-100 max-w-2xl mx-auto">
+    <Card className="glass-card fade-in delay-100 max-w-2xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <CardHeader>
         <CardTitle className="text-2xl">Patient Lookup</CardTitle>
         <CardDescription>Enter the National ID to find patient records</CardDescription>
@@ -25,7 +25,7 @@ const SearchForm = ({ searchQuery, isSearching, onSearchQueryChange, onSubmit }:
               placeholder="Enter National ID"
               value={searchQuery}
               onChange={(e) => onSearchQueryChange(e.target.value)}
-              className="search-input"
+              className="search-input bg-white text-black dark:bg-black dark:text-white dark:border-white"
             />
             <button type="submit" disabled={isSearching} className="btn-primary whitespace-nowrap">
               {isSearching ? (

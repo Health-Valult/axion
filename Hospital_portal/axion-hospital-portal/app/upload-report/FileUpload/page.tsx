@@ -49,7 +49,7 @@ export default function FileUploadForm({ patientId }: FileUploadFormProps) {
   };
 
   return (
-    <Card className="glass-card fade-in delay-100 max-w-3xl mx-auto">
+    <Card className="glass-card fade-in delay-100 max-w-3xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <CardHeader>
         <CardTitle className="text-2xl">Upload NDJSON File</CardTitle>
         <CardDescription>

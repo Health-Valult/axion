@@ -17,7 +17,7 @@ export default function ReportUploadMethod() {
 
 
   return (
-    <div className="min-h-screen p-6 md:p-12 space-y-8 max-w-7xl mx-auto">
+    <div className="min-h-screen p-6 md:p-12 space-y-8 max-w-7xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <header className="text-center space-y-2 fade-in">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground">
             Upload Report
@@ -27,7 +27,7 @@ export default function ReportUploadMethod() {
           </p>
       </header>
       <div className="grid md:grid-cols-2 gap-6 fade-in delay-100">
-        <Card className="glass-card hover-lift cursor-pointer" onClick={() => onSelectMethod("file")}>
+        <Card className="glass-card hover-lift cursor-pointer bg-white text-black dark:bg-black dark:text-white" onClick={() => onSelectMethod("file")}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 p-4 rounded-full">
               <FileUp className="h-10 w-10 text-primary" />
@@ -53,7 +53,7 @@ export default function ReportUploadMethod() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card hover-lift cursor-pointer" onClick={() => onSelectMethod("manual")}>
+        <Card className="glass-card hover-lift cursor-pointer bg-white text-black dark:bg-black dark:text-white" onClick={() => onSelectMethod("manual")}>
           <CardHeader className="text-center">
             <div className="mx-auto bg-primary/10 p-4 rounded-full">
               <FileText className="h-10 w-10 text-primary" />

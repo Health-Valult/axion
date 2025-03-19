@@ -24,7 +24,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
   if (!reportType) return null;
 
   return (
-    <div className="space-y-6 bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border border-gray-300">
+    <div className="space-y-6 bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border border-gray-300 dark:bg-black dark:text-white">
       {/* Report Header */}
       <div className="text-center border-b-2 pb-4">
         <h1 className="text-3xl font-bold uppercase">{reportType} Report</h1>
@@ -40,15 +40,15 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
         <table className="w-full border-collapse border border-gray-300 text-sm">
           <tbody>
             <tr className="border border-gray-300">
-              <td className="p-2 border border-gray-300 font-medium bg-gray-100">Patient ID:</td>
-              <td className="p-2 border border-gray-300">{patient?.nationalId ?? "N/A"}</td>
+              <td className="p-2 border border-gray-300 font-medium bg-gray-100 dark:bg-black dark:text-white">Patient ID:</td>
+              <td className="p-2 border border-gray-300">{reportData?.nationalId ?? "N/A"}</td>
             </tr>
             <tr className="border border-gray-300">
-              <td className="p-2 border border-gray-300 font-medium bg-gray-100">Patient Name:</td>
+              <td className="p-2 border border-gray-300 font-medium bg-gray-100 dark:bg-black dark:text-white">Patient Name:</td>
               <td className="p-2 border border-gray-300">{patient?.name ?? "N/A"}</td>
             </tr>
             <tr className="border border-gray-300">
-              <td className="p-2 border border-gray-300 font-medium bg-gray-100">Age:</td>
+              <td className="p-2 border border-gray-300 font-medium bg-gray-100 dark:bg-black dark:text-white">Age:</td>
               <td className="p-2 border border-gray-300">{patient?.age ?? "N/A"}</td>
             </tr>
           </tbody>
@@ -62,7 +62,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
           <tbody>
             {["practitioner", "clinic", "recorder"].map((key) => (
               <tr key={key} className="border border-gray-300">
-                <td className="p-2 font-medium bg-gray-100 border border-gray-300 capitalize">
+                <td className="p-2 font-medium bg-gray-100 border border-gray-300 capitalize dark:bg-black dark:text-white">
                   {key.replace(/_/g, " ")}:
                 </td>
                 <td className="p-2 border border-gray-300">{reportData?.[key] ?? "N/A"}</td>
@@ -81,7 +81,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
               .filter(([key]) => !["date", "time", "practitioner", "clinic", "recorder"].includes(key))
               .map(([key, value]) => (
                 <tr key={key} className="border border-gray-300">
-                  <td className="p-2 font-medium bg-gray-100 border border-gray-300 capitalize">
+                  <td className="p-2 font-medium bg-gray-100 border border-gray-300 capitalize dark:bg-black dark:text-white">
                     {key.replace(/_/g, " ")}:
                   </td>
                   <td className="p-2 border border-gray-300">{value ?? "N/A"}</td>
@@ -105,7 +105,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
           onClick={onSave}
           disabled={isSaving}
           className={`px-4 py-2 text-white rounded-lg flex items-center ${
-            isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            isSaving ? "bg-gray-400 cursor-not-allowed" : "bg-purple-600 hover:bg-blue-700"
           }`}
         >
           {isSaving ? "Saving..." : <>

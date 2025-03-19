@@ -12,7 +12,7 @@ const MedicalHistory = ({ patient }: MedicalHistoryProps) => {
   if (!patient.medicalHistory) return null;
   
   return (
-    <Card className="glass-card hover-lift">
+    <Card className="glass-card hover-lift bg-white text-black dark:bg-black dark:text-white">
       <CardHeader>
         <CardTitle>Medical History</CardTitle>
       </CardHeader>

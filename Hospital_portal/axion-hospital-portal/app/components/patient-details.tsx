@@ -10,7 +10,7 @@ interface PatientDetailsProps {
 
 const PatientDetails = ({ patient }: PatientDetailsProps) => {
   return (
-    <Card className="glass-card hover-lift lg:col-span-2">
+    <Card className="glass-card hover-lift lg:col-span-2 bg-white text-black dark:bg-black dark:text-white">
       <CardContent className="p-0">
         <div className="flex flex-col md:flex-row">
           <div className="p-6 md:w-1/3 flex justify-center items-start pt-8">
@@ -42,7 +42,7 @@ const PatientDetails = ({ patient }: PatientDetailsProps) => {
               </div>
               
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <User className="h-4 w-4 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground w-40">Age:</p>
                 <p className="text-sm">{patient.age} years</p>
               </div>

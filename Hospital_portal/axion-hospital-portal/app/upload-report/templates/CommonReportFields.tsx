@@ -1,5 +1,6 @@
 "use client"
 
+
 import React from "react";
 import { Calendar, Clock, User, Hospital, FileText } from "lucide-react";
 
@@ -40,7 +41,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
             name="date"
             value={reportData.date}
             onChange={onInputChange}
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -55,7 +56,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
             name="time"
             value={reportData.time}
             onChange={onInputChange}
-            className="search-input"
+            className="search-input bg-white text-black dark:bg-black dark:text-white"
             required
           />
         </div>
@@ -72,7 +73,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
           value={reportData.practitioner}
           onChange={onInputChange}
           placeholder="Dr. John Smith"
-          className="search-input"
+          className="search-input bg-white text-black dark:bg-black dark:text-white"
           required
         />
       </div>
@@ -88,7 +89,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
           value={reportData.clinic}
           onChange={onInputChange}
           placeholder="City Medical Center"
-          className="search-input"
+          className="search-input bg-white text-black dark:bg-black dark:text-white"
           required
         />
       </div>
@@ -104,7 +105,7 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
           value={reportData.recorder}
           onChange={onInputChange}
           placeholder="Your name"
-          className="search-input"
+          className="search-input bg-white text-black dark:bg-black dark:text-white"
           required
         />
       </div>
@@ -119,8 +120,8 @@ const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
           name="instructions"
           value={reportData.instructions}
           onChange={onInputChange}
-          placeholder="Your name"
-          className="search-input"
+          placeholder="Key Notes"
+          className="search-input bg-white text-black dark:bg-black dark:text-white"
           required
         />
       </div>
