@@ -11,7 +11,7 @@ hasher = PasswordHasher()
 
 def _delete_profile(collection:Collection,c_uuid:UUID,email:str,pw:str):
     currunt = collection.aggregate([
-            {"$match": {"UserID":bson.Binary.from_uuid(c_uuid)}},
+            {"$match": {"UserID":c_uuid}},
             {"$project": {"_id":0,"Password":1,"Email":1}} 
         ])
     data = next(currunt,None)

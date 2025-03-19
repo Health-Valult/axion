@@ -8,7 +8,7 @@ from pymongo.collection import Collection
 
 def _get_profile(collection:Collection,c_uuid:UUID,):
     currunt = collection.aggregate([
-            {"$match": {"UserID":bson.Binary.from_uuid(c_uuid)}},
+            {"$match": {"UserID":c_uuid}},
             {"$project": {
                 "_id":0,
                 "NIC":1,
