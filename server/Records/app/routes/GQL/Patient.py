@@ -85,7 +85,7 @@ class PatientQuery:
             query={ selection.name:1 for selection in info.selected_fields[0].selections[0].selections}
 
             medicationAggregate = request.app.state.MedicationsCollection.find(
-                        {"patient": patient},
+                        {"patientID": patient},
                         query|{"_id":0}
                     )
 
