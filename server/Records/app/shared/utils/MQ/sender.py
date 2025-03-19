@@ -2,11 +2,12 @@ import json
 import logging
 import time
 from pika import BlockingConnection,ConnectionParameters
-from pika.exceptions import AMQPConnectionError
+from pika.exceptions import AMQPConnectionError,ChannelWrongStateError
 from pika import BasicProperties
 from json import dumps
 import uuid
 from typing import Literal
+
 
 logger = logging.getLogger("uvicorn")
 
@@ -63,9 +64,13 @@ class sendMQ:
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
 
     def send_and_await(self,Qname:str,task:str,body:dict):
-
-        return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
-
+        while True:
+            try:
+                return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
+                break
+            except ChannelWrongStateError:
+                self.channel = self.connection.channel()
+                continue
 
         msg_obj = {
             "sender":self.service,
