@@ -44,7 +44,7 @@ class PatientQuery:
         patient = request.state.meta.get("uuid")
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"labID":LabID}
-        Aggregate:Cursor = collection.find_one(query,observationsResult)   
+        Aggregate:Cursor = collection.find(query,observationsResult)   
         return ObservationStack(Observations=[Observation(**obs) for obs in Aggregate])
         
 
