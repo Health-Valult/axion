@@ -49,7 +49,7 @@ async def websocket_endpoint(websocket: WebSocket,):
 
     try:
         while True:
-           text = await websocket.receive_text()  
+           text = await websocket.receive_json()  
            print(text)
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
