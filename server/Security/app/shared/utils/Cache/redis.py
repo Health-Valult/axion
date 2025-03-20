@@ -96,11 +96,12 @@ class redis_AX:
             if message['type'] == 'message':
                 data = message.get("data").decode("utf-8")
                 response = RedRequest.model_validate_json(data)
+                print("u got here")
                 return response
                 
             if time.time() - start_time > timeout:
                 print("Timeout reached, stopping listener.")
-                break
+                return 
     
 
     def disconnect(self):
