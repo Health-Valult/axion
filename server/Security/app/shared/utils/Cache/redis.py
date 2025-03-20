@@ -96,7 +96,8 @@ class redis_AX:
         start_time = time.time()
         timeout = 5
         print("u got here 1")
-        for message in waiting_channel.get_message():
+        while time.time() - start_time > timeout:
+            message = waiting_channel.get_message()
             print(f"{message}:234")
             message = json.loads(message)
             if message['type'] == 'message':
@@ -105,9 +106,6 @@ class redis_AX:
                 print("u got here")
                 return response
                 
-            if time.time() - start_time > timeout:
-                print("Timeout reached, stopping listener.")
-                break 
         
         raise Exception("error is her")
 
