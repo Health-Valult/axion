@@ -83,7 +83,7 @@ class redis_AX:
     def autoComplete(self,test:str):
         start_range = f"[{test}"  
         end_range = f"[{test}\xff"
-        result = self.r.zrangebylex("nic_autocomplete", start_range, end_range, start=0)
+        result = self.r.zrangebylex("nic_autocomplete", start_range, end_range, start=0,num=5)
         return result
 
     def scarletSender_is_waiting(self,channel:str,body:Body):
