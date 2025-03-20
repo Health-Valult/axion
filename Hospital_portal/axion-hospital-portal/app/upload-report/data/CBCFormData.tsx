@@ -16,12 +16,6 @@ export const CBCReportTemplate = {
 };
 
 export const UFRTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     quantity: "",
     color: "",
     transparency: "",
@@ -40,22 +34,10 @@ export const UFRTemplate = {
 }
 
 export const CRPReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     crpLevel: "",
 }
 
 export const LFTReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     serumBilirubinTotal: "",
     serumBilirubinDirect: "",
     serumBilirubinIndirect: "",
@@ -69,32 +51,14 @@ export const LFTReportTemplate = {
 }
 
 export const FBSReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     fastingBloodSugar: "",
 }
 
 export const SerumCreatinineReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     serumCreatinine: "",
 }
 
 export const SerumElectrolytesReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     sodium: "",
     potassium: "",
     chloride: "",
@@ -104,12 +68,6 @@ export const SerumElectrolytesReportTemplate = {
 }
 
 export const LipidProfileReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     totalCholesterol: "",
     triglycerides: "",
     hdl: "",
@@ -122,33 +80,15 @@ export const LipidProfileReportTemplate = {
 }
 
 export const HbA1cReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     hba1c: "",
     estimatedAvgGlucose: "",
 }
 
 export const ESRReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     esr: "",
 }
 
 export const TFTReportTemplate = {
-    patientName: "",
-    referredBy: "",
-    age: "",
-    gender:"",
-    date: "",
-    investigations: "",
     tsh: "",
     t3: "",
     t4: "",

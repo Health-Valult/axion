@@ -162,11 +162,12 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
       <ReportPreview
         patient={patient}
         reportType={selectedReport}
-        reportData={{ ...dynamicReportData, date: `${reportData.date} ${reportData.time}` }}
+        reportData={{ ...dynamicReportData, ...reportData }}
         isSaving={isSaving}
         onBack={handleBackToForm}
         onSave={proceedToSave}
       />
+
     );
   }
 

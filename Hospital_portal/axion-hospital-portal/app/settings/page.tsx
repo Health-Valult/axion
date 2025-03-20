@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Bell, Moon, Globe, Lock, Shield } from 'lucide-react';
 import Switch from "@/components/ui/switch";
+import { useRouter } from "next/navigation";
 
 const Settings = () => {
+  const router = useRouter();
   const [notifications, setNotifications] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [twoFactor, setTwoFactor] = useState(false);
-  const [passwordProtection, setPasswordProtection] = useState(false);
+  // const [twoFactor, setTwoFactor] = useState(false);
+  // const [passwordProtection, setPasswordProtection] = useState(false);
 
   // Apply dark mode globally to <html> when toggled
   useEffect(() => {
@@ -67,26 +69,20 @@ const Settings = () => {
       <Card className="glass-card p-6 bg-white text-black dark:bg-black dark:text-white">
         <h3 className="text-lg font-semibold mb-6">Security</h3>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Lock className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">Two-Factor Authentication</p>
-                <p className="text-sm text-muted-foreground">Add an extra layer of security</p>
-              </div>
-            </div>
-            <Switch checked={twoFactor} onCheckedChange={setTwoFactor} />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-5 w-5 text-muted-foreground" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Shield className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Password Protection</p>
                 <p className="text-sm text-muted-foreground">Require password for sensitive actions</p>
               </div>
             </div>
-            <Switch checked={passwordProtection} onCheckedChange={setPasswordProtection} />
+            <button
+              onClick={() => router.push("/Login/reset-password")}
+              className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-blue-700"
+            >
+              Reset Password
+            </button>
           </div>
         </div>
       </Card>

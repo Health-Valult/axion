@@ -4,7 +4,8 @@ export const CommonReportData = {
   practitioner: "",
   clinic: "",
   recorder: "",
-  attachPdf: "",
+  attachpdf:"",
   instructions:"",
   pdfFile: File,
+  
 };

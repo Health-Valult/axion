@@ -18,7 +18,7 @@ const PatientDetails = ({ patient }: PatientDetailsProps) => {
               <User className="h-16 w-16 text-primary" />
               {patient.id === "p123456" && (
                 <img 
-                  src="/path-to-your-image.jpg" 
+                  src={patient.imageUrl ?? undefined} 
                   alt={patient.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />

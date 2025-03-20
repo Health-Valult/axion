@@ -3,7 +3,7 @@
 import React from "react";
 
 export interface CPRFormData {
-    crpLevel: "",
+    crpLevel: string;
 }
 
 interface CPRFormFieldsProps {
@@ -21,11 +21,11 @@ const CPRFormFields: React.FC<CPRFormFieldsProps> = ({ cprData, onChange }) => {
           </label>
           <input
             type="text"
-            name="hemoglobin"
+            name="crpLevel"
+            className="search-input"
             value={cprData.crpLevel}
             onChange={onChange}
             placeholder="5.0"
-            className="search-input dark:bg-black dark:text-white"
             required
           />
         </div>
