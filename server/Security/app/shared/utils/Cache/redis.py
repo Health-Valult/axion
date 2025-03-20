@@ -67,7 +67,17 @@ class redis_AX:
         return self.r.hgetall(name=name)
 
 
- 
+    def scarletSender(self,channel:str,body:Body):
+        print("sending...")
+        message = RedRequest(
+            sender=self.service,
+            reciver=channel,
+            id=str(uuid.uuid4()),
+            body=body.model_dump()
+        )
+
+        self.r.publish(channel, message.model_dump_json())
+        print(f"Published: {message}")
 
 
     def scarletSender_is_waiting(self,channel:str,body:Body):
@@ -80,11 +90,11 @@ class redis_AX:
             body=body.model_dump()
         )
 
-        self.r.publish(channel, message.model_dump_json())
+        
 
         waiting_channel = self.r.pubsub()
         waiting_channel.subscribe(temp_channel)
-        time.sleep(0.25)
+        time.sleep(0.1)
         self.r.publish(channel, message.model_dump_json())
         start_time = time.time()
         timeout = 5
