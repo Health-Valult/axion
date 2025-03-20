@@ -19,7 +19,7 @@ class sendMQ:
         for attempt in range(retries):
             try:
                 logger.info("connecting to 🐇MQ...")
-                self.connection = BlockingConnection(ConnectionParameters(host=host,heartbeat=0))
+                self.connection = BlockingConnection(ConnectionParameters(host=host,heartbeat=60))
                 break
                 
             except AMQPConnectionError:   
@@ -64,13 +64,16 @@ class sendMQ:
         self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
 
     def send_and_await(self,Qname:str,task:str,body:dict):
-        while True:
+        retries = 3
+        for _ in range(retries):
             try:
                 return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
                 break
             except ChannelWrongStateError:
                 self.channel = self.connection.channel()
                 continue
+        else:
+            raise Exception("unable to declae return queue")
 
         msg_obj = {
             "sender":self.service,

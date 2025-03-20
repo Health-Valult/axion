@@ -1,12 +1,11 @@
+from typing import Union
 from pydantic import BaseModel
 
+
+
+
 class CBCReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     hemoglobin: str
     totalLeukocyteCount: str
     neutrophils: str
@@ -23,12 +22,7 @@ class CBCReportTemplate(BaseModel) :
 
 
 class UFRTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     quantity: str
     color: str
     transparency: str
@@ -47,22 +41,12 @@ class UFRTemplate(BaseModel) :
 
 
 class CRPReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     crpLevel: str
 
 
 class LFTReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     serumBilirubinTotal: str
     serumBilirubinDirect: str
     serumBilirubinIndirect: str
@@ -76,32 +60,17 @@ class LFTReportTemplate(BaseModel) :
 
 
 class FBSReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     fastingBloodSugar: str
 
 
 class SerumCreatinineReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     serumCreatinine: str
 
 
 class SerumElectrolytesReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     sodium: str
     potassium: str
     chloride: str
@@ -111,12 +80,7 @@ class SerumElectrolytesReportTemplate(BaseModel) :
 
 
 class LipidProfileReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     totalCholesterol: str
     triglycerides: str
     hdl: str
@@ -129,36 +93,42 @@ class LipidProfileReportTemplate(BaseModel) :
 
 
 class HbA1cReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     hba1c: str
     estimatedAvgGlucose: str
 
 
 class ESRReportTemplate(BaseModel) :
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+
     esr: str
 
 
 class TFTReportTemplate(BaseModel) :
+
+    tsh: str
+    t3: str
+    t4: str
+
+class BaseMetaTemplate(BaseModel):
     patientName: str
     referredBy: str
     age: str
     gender:str
     date: str
     investigations: str
-    tsh: str
-    t3: str
-    t4: str
-
+class BaseReportTemplate(BaseModel):
+    mata:BaseMetaTemplate
+    results: Union[
+        CBCReportTemplate,
+        UFRTemplate,
+        LFTReportTemplate,
+        CRPReportTemplate,
+        FBSReportTemplate,
+        SerumCreatinineReportTemplate,
+        SerumElectrolytesReportTemplate,
+        LipidProfileReportTemplate,
+        HbA1cReportTemplate,
+        ESRReportTemplate,
+        TFTReportTemplate]
 
 

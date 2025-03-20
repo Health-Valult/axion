@@ -26,3 +26,5 @@ async def upload_report(type:str,report:Annotated[Union[
         TFTReportTemplate
         ]]): # type: ignore
     pass
+
+route.post()
