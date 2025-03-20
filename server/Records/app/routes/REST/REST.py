@@ -3,7 +3,6 @@ from typing import Annotated, Union
 import uuid
 from fastapi.responses import JSONResponse
 from starlette.requests import Request
-from app.callback.authenticate_session import authenticate_session
 from app.models.upload_models import *
 from fastapi import APIRouter,FastAPI,Depends, WebSocketDisconnect
 from pymongo.collection import Collection
@@ -32,17 +31,3 @@ async def upload_report(type:str,report:Annotated[Union[
 @route.post(path="records/upload/{type}")
 async def verify_doctor():
     pass
-
-
-@route.websocket("/records/search",)
-async def websocket_endpoint(websocket: WebSocket,):
-    print("reached")
-    await websocket.accept()
-    print(f"WebSocket Client Connected: {websocket.client}")
-
-    try:
-        while True:
-            await websocket.receive_text()  
-    except WebSocketDisconnect:
-        print(f"WebSocket Disconnected: {websocket.client}")
-        connected_clients.remove(websocket)
