@@ -80,9 +80,9 @@ class redis_AX:
         self.r.publish(channel, message.model_dump_json())
         print(f"Published: {message}")
 
-    def autoComplete(self,test:str):
+    def autoComplete(self,text:str):
 
-        result = self.r.scan_iter(test)
+        result = self.r.scan(0, match=f"{text}*", count=5)[1]
         return result
 
     def scarletSender_is_waiting(self,channel:str,body:Body):
