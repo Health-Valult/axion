@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@nextui-org/react";
 //import { Label } from "@nextui-org/react";
 import Link  from "next/link";
-import { Hospital, Upload, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
+import { Hospital, Upload, ArrowRight, ArrowLeft, Lock as LockIcon, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,8 @@ const Register = () => {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [uuid, setUuid] = useState(""); // Store unique ID for OTP verification
 
   const [formData, setFormData] = useState({
     // General Information
@@ -87,6 +89,68 @@ const Register = () => {
     }, 2000);
   };
 
+  // Function to send OTP
+  const sendOtp = async () => {
+    
+      if (!formData.email || !formData.email.includes("@")) {
+        toast({ title: "Error", description: "Please enter a valid email!", variant: "destructive" });
+        return;
+      }
+      
+    setIsLoading(true);
+    try {
+      const uuidGenerated = crypto.randomUUID(); // Generate unique ID
+      setUuid(uuidGenerated);
+
+      const response = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tempID: uuidGenerated,
+          type: 'email',
+          data: formData.email, // Use the user's email
+        }),
+      });
+
+      if (response.ok) {
+        toast({ title: "OTP Sent", description: "A 6-digit OTP has been sent to your email." });
+        setStep(4); // Move to OTP verification step
+      } else {
+        const errorData = await response.json();
+        console.log(errorData);
+        toast({ title: "Error", description: "Failed to send OTP. Try again later.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast({ title: "Error", description: "Something went wrong!", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempID: uuid, otp }),
+      });
+
+      if (response.ok) {
+        toast({ title: "OTP Verified", description: "Your email has been verified successfully." });
+        navigate.push("/profile"); // Redirect to Profile
+      } else {
+        toast({ title: "Invalid OTP", description: "Please enter the correct OTP.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast({ title: "Error", description: "OTP verification failed!", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderFileUpload = (
     id: string,
     label: string,
@@ -128,6 +192,7 @@ const Register = () => {
               {step === 1 && "General Information"}
               {step === 2 && "Work Location & Details"}
               {step === 3 && "Account set-up Details"}
+              {step === 4 && "Email Verification"}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -375,40 +440,37 @@ const Register = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <div className="flex justify-between w-full">
-                {step > 1 && (
-                  <button type="button" className="btn-primary" onClick={prevStep}>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </button>
-                )}
-                {step < 3 ? (
-                  <button type="button" className="btn-primary" onClick={nextStep}>
-                    Next
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </button>
-                ) : (
-                    <button type="submit" className="btn-primary" disabled={isLoading}>
-                    {isLoading ? "Submitting..." : "Complete Registration"}
-                    {!isLoading && <LockIcon className="ml-2 h-4 w-4" />}
-                  </button>
-                )}
+            {/* Step 4: OTP Verification */}
+            {step === 4 && (
+              <div className="space-y-4">
+                <label>Enter OTP *</label>
+                <Input id="otp" name="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required />
               </div>
-              {step === 1 && (
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Already have an account?{" "}
-                  <Link
-                    href="/Login"
-                    className="text-primary hover:underline font-medium"
-                  >
-                    Sign in
-                  </Link>
-                </p>
+            )}
+          </CardContent>
+
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="flex justify-between w-full">
+              {step > 1 && step < 4 && (
+                <button type="button" className="btn-primary" onClick={prevStep}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                </button>
               )}
-            </CardFooter>
-          </form>
+              {step < 3 ? (
+                <button type="button" className="btn-primary" onClick={nextStep}>
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
+                </button>
+              ) : step === 3 ? (
+                <button type="button" className="btn-primary" onClick={sendOtp} disabled={isLoading}>
+                  {isLoading ? "Sending OTP..." : "Send OTP"} <LockIcon className="ml-2 h-4 w-4" />
+                </button>
+              ) : (
+                <button type="button" className="btn-primary" onClick={verifyOtp} disabled={isLoading}>
+                  {isLoading ? "Verifying..." : "Verify OTP"} <ShieldCheck className="ml-2 h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </CardFooter>
         </Card>
       </div>
     </div>
@@ -417,7 +479,7 @@ const Register = () => {
 
 export default Register;
 
-// "use client";
+{/* {/* // "use client";
 
 // import React, { useState } from "react";
 // import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -428,14 +490,14 @@ export default Register;
 // import { useToast } from "@/hooks/use-toast";
 // import { useRouter } from "next/navigation";
 
-// const StaffRegister = () => {
-//   const navigate = useRouter();
+// const StaffRegister = () => { */}
+{/* //   const navigate = useRouter();
 //   const { toast } = useToast();
 //   const [step, setStep] = useState(1);
 //   const [isLoading, setIsLoading] = useState(false);
 
-//   const [formData, setFormData] = useState({
-//     fullName: "",
+//   const [formData, setFormData] = useState({ */}
+{/* //     fullName: "",
 //     dateOfBirth: "",
 //     gender: "",
 //     nationalId: "",
@@ -457,18 +519,18 @@ export default Register;
 //   });
 
 //   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({ ...prev, [name]: value }));
+//     const { name, value } = e.target; */}
+{/* //     setFormData((prev) => ({ ...prev, [name]: value }));
 //   };
 
 //   const nextStep = () => setStep((prev) => prev + 1);
 //   const prevStep = () => setStep((prev) => prev - 1);
 
-//   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
+//   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { */}
+{/* //     e.preventDefault();
 //     setIsLoading(true);
-//     setTimeout(() => {
-//       setIsLoading(false);
+//     setTimeout(() => { */}
+{/* //       setIsLoading(false);
 //       toast({ title: "Registration successful", description: "Staff registered successfully." });
 //       navigate.push("/Login");
 //     }, 2000);
@@ -532,4 +594,4 @@ export default Register;
 //   );
 // };
 
-// export default StaffRegister;
+// export default StaffRegister; */}

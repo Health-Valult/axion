@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@nextui-org/react";
 import Link from "next/link";
-import { Hospital, Lock } from "lucide-react";
+import { Hospital, Lock, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
@@ -14,19 +14,46 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [location, setLocation] = useState<string | null>(null);
   const navigate = useRouter();
   const { toast } = useToast();
 
   // Function to validate email
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   // Function to validate password
-  const validatePassword = (password: string) => {
-    return password.length >= 8;
-  };
+  const validatePassword = (password: string) => password.length >= 8;
+
+  // Get User's Geolocation
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await response.json();
+            if (data.display_name) {
+              setLocation(data.display_name);
+            } else {
+              setLocation(`Lat: ${latitude}, Lon: ${longitude}`);
+            }
+          } catch (error) {
+            console.error("Error fetching location:", error);
+            setLocation(`Lat: ${latitude}, Lon: ${longitude}`);
+          }
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLocation("Location access denied");
+        }
+      );
+    } else {
+      setLocation("Geolocation not supported");
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +86,7 @@ const Login = () => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ Email: email, Password: password })
+        body: JSON.stringify({ Email: email, Password: password, Location: location })
       });
 
       const data = await response.json();
@@ -67,7 +94,7 @@ const Login = () => {
       if (response.ok) {
         toast({
           title: "Login successful",
-          description: "You have been logged in successfully.",
+          description: `You have been logged in successfully from ${location}.`,
         });
         navigate.push("/search_patient");
       } else {
@@ -152,6 +179,16 @@ const Login = () => {
                   className="bg-white text-black"
                 />
                 {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+              </div>
+
+              {/* Display Location Info */}
+              <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
+                <MapPin className="mr-2 h-5 w-5 text-primary" />
+                {location ? (
+                  <p>Logging in from: {location}</p>
+                ) : (
+                  <p>Fetching location...</p>
+                )}
               </div>
             </CardContent>
 
