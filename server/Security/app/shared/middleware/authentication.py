@@ -25,6 +25,7 @@ def Authenticate(request: Request):
     
     if rabbitResponse is None:
         raise HTTPException(status_code=500, detail="Authentication service did not respond")
+    
     response:dict = rabbitResponse.body
     
     status = response.task

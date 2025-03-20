@@ -2,7 +2,7 @@ import json
 import time
 from pydantic import BaseModel
 import redis
-import redis.asyncio as Rio
+
 from datetime import datetime,timezone,timedelta
 from typing import Literal,Optional
 import uuid
@@ -93,13 +93,14 @@ class redis_AX:
 
         waiting_channel = self.r.pubsub()
         waiting_channel.subscribe(temp_channel)
-        time.sleep(0.1)
+        time.sleep(0.5)
         start_time = time.time()
         timeout = 5
         print("u got here 1")
         while time.time() - start_time > timeout:
-            message = waiting_channel.get_message()
             print(f"{message}:234")
+            message = waiting_channel.get_message()
+            
 
             if message['type'] == 'message':
                 data = message.get("data").decode("utf-8")
