@@ -106,7 +106,10 @@ class redis_AX:
             
             if message:   
                 
-                print(f"{message} i i")
+                data = message.get("data").decode("utf-8")
+                response = RedRequest.model_validate_json(data)
+                print("u got here")
+                return response
                     
                 
         
