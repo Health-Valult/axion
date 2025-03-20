@@ -40,7 +40,7 @@ async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
     #app.state.sender_task = sendMQ("mq","security")
-    app.state.consumer_task = asyncio.create_task(RedReciver("redis://localhost",'security',callback_security))
+    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'security',callback_security))
     
     # database connection startup
     logger.info("connecting to DB 🍃...")
@@ -52,7 +52,7 @@ async def lifespan(app:FastAPI):
     
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://localhost",10,host="security").connect()
+    app.state.Cache = redis_AX("redis://cache",10,host="security").connect()
 
     # loading refresh token
     with open('./app/data/keys/refresh_private.pem', 'r') as file:
