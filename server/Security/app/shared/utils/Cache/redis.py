@@ -102,7 +102,7 @@ class redis_AX:
             message = waiting_channel.get_message()
             
 
-            if message['type'] == 'message':
+            if message.get("type") == 'message':
                 data = message.get("data").decode("utf-8")
                 response = RedRequest.model_validate_json(data)
                 print("u got here")
