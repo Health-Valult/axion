@@ -1,6 +1,7 @@
 import time
 from pydantic import BaseModel
 import redis
+import redis.asyncio as Rio
 from datetime import datetime,timezone,timedelta
 from typing import Literal,Optional
 import uuid
@@ -94,7 +95,7 @@ class redis_AX:
         start_time = time.time()
         timeout = 5
         print("u got here 1")
-        for message in waiting_channel.listen():
+        for message in waiting_channel.get_message():
             if message['type'] == 'message':
                 data = message.get("data").decode("utf-8")
                 response = RedRequest.model_validate_json(data)
