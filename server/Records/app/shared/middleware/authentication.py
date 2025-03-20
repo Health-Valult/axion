@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-
+from app.shared.utils.Cache.redis import redis_AX
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
@@ -13,7 +13,7 @@ class Body(BaseModel):
 # Dependancy injection
 def Authenticate(request: Request):
     
-    Mq:sendMQ = mq
+    Mq:redis_AX = request.app.state.Cache 
     token:str = request.headers.get('authorization')
     if token is None:
         raise HTTPException(status_code=401, detail="No session token sent")
@@ -42,10 +42,10 @@ def Authenticate(request: Request):
 
 # Middleware
 
-class AuthenticateMiddleware(BaseHTTPMiddleware):
+"""class AuthenticateMiddleware(BaseHTTPMiddleware):
     async def dispatch(self,request:Request, call_next):
 
-        Mq:sendMQ = request.app.state.sender_task 
+        Mq = request.app.state.Cache
         token:str = request.headers.get('authorization')
 
         if token is None:
@@ -62,4 +62,4 @@ class AuthenticateMiddleware(BaseHTTPMiddleware):
 
         response: Response = await call_next(request)
 
-        return response
+        return response"""
