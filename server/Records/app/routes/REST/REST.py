@@ -37,14 +37,10 @@ async def verify_doctor():
 @route.websocket("/",)
 async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
-    c_uuid,role = await Authenticate_WS(webSocket=websocket)
+   
     await websocket.accept()
 
-    connected_clients[c_uuid] = {
-        "time":datetime.datetime.now(datetime.timezone.utc),
-        "role":role,
-        "socket":websocket
-        }
+
     print(f"WebSocket Client Connected: {websocket.client}")
 
     try:
