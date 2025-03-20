@@ -9,14 +9,12 @@ class Body(BaseModel):
     task:str
     body:dict
 
-
 class RedRequest(BaseModel):
     sender:str
     reciver:str
     id:str
     returnChannel:Optional[str]
     body:Body
-
 
 class RedResponse(BaseModel):
     sender:str
@@ -42,6 +40,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
                 task = "verifiedToken",
                 body = response
             )
+            print(request.returnChannel)
             redisax.scarletSender(request.returnChannel,body=body)
 
 async def RedReciver(host:str,channel:str,executer:Callable):
