@@ -84,7 +84,7 @@ class redis_AX:
             reciver=channel,
             id=str(uuid.uuid4()),
             returnChannel=temp_channel,
-            body=body
+            body=body.model_dump()
         )
 
         self.r.publish(channel, message.model_dump_json())
@@ -97,7 +97,7 @@ class redis_AX:
                 data = message.get("data").decode("utf-8")
                 response = RedRequest.model_validate_json(data)
                 return response
-            
+                
             if time.time() - start_time > timeout:
                 print("Timeout reached, stopping listener.")
                 break
@@ -107,9 +107,3 @@ class redis_AX:
         self.r.close()
 
 
-bo = Body(
-    task="sessionAuth",
-    body={
-        "token":"Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJheGlvbjo6c2VjdXJpdHk6OmF1dGg6OmxvZ2luOjpwYXRpZW50OjpzZXNzaW9uIiwic3ViIjoiMmNkOTkxNmYtNjdlMi01ZWExLTk5NzEtN2E0ODgyMzljODNmIiwiaWF0IjoxNzQyMzYxMzM3LCJuYmYiOjE3NDIzNjEzMzcsImV4cCI6MTc0MjM2NDkzNywicm9sZSI6InBhdGllbnQifQ.YDclN7K6yQBk_43zRRrdPTJxtLyy3freAmoilUCh9CGvdgvmdQoaTKPgeUKMCn1NnIcbbCkbIC1s7dwyH6YTJA1Atnm5qIU6rClV0Y4xDY7uOQ7BReZFPPoN2DK-APRxevRMxwplVmxed9M-2g8tKWucNjVZKRt0Ic4wAI3nDfUWgZfV2UGIlELWkFJ-qKKHdfwyiu4RKklP0GH0Um5WnS---qe3vtU9WgL4xXXI8Gry_B7ZeRd_LWOtQr0UXMbH44tohAXpotBHYo95vA0Xmr2GIGmSkE1Et1OSQ8sLFlGRbsI8puSVQ1Hfh6nNSNDwb3jtcRzaOEJVRz_xBU8jhQ"
-    }
-)
