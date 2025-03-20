@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 from typing import Annotated, Union
 import uuid
@@ -50,7 +51,13 @@ async def websocket_endpoint(websocket: WebSocket,):
 
     try:
         while True:
-           text = await websocket.receive_json()  
-           logger.warning(text)
+            text = await websocket.receive_json()  
+            logger.warning(text)
+            dci = {
+                "res":"then go jump"
+            }
+            jdic = json.loads(dci)
+            websocket.send_json(jdic)
+
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
