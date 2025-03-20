@@ -38,5 +38,3 @@ def scarletSender(host:str,channel:str):
     print(f"Published: {message}")
     
 
-
-scarletSender("localhost",'security')
