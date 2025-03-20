@@ -31,7 +31,6 @@ async def callback_security(request:RedRequest) -> None:
     if callable(runner):
         try:
             result = runner(request.body.body)
-            print(result)
             return result
   
         except Exception as e:

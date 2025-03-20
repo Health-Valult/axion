@@ -33,7 +33,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
         message:dict = await channel.get_message(ignore_subscribe_messages=True)
         if message is not None:
             data:str = message.get("data").decode("utf-8")
-            print(data)
+            
             request = RedRequest.model_validate_json(data)
             response = await executer(request)
             body = Body(

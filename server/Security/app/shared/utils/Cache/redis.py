@@ -68,6 +68,7 @@ class redis_AX:
 
 
     def scarletSender(self,channel:str,body:Body):
+        print("sending...")
         message = RedRequest(
             sender=self.service,
             reciver=channel,
