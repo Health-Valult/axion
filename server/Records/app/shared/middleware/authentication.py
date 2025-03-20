@@ -1,10 +1,10 @@
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from app.shared.utils.MQ.sender import sendMQ
+
 from starlette.middleware.base import BaseHTTPMiddleware
 
-mq = sendMQ("mq","record")
+
 
 class Body(BaseModel):
     task:str
