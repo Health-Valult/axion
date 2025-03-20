@@ -97,7 +97,7 @@ class redis_AX:
         start_time = time.time()
         timeout = 5
         print("u got here 1")
-        while time.time() - start_time > timeout:
+        while time.time() - start_time < timeout:
             print(f"{message}:234")
             message = waiting_channel.get_message()
             
