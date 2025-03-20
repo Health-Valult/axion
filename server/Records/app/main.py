@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 import logging
 import warnings
@@ -11,6 +12,7 @@ from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
 from app.shared.middleware.authentication import Authenticate
 from app.routes.GQL.Patient import PatientQuery
+from app.utils import load_to_redis
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -26,7 +28,7 @@ async def lifespan(app:FastAPI):
 
 
     # loader function
-    #app.state.search_loader = asyncio.create_task(load_to_redis.loader())
+    app.state.search_loader = asyncio.create_task(load_to_redis.loader())
 
     # database connection startup
     logger.info("connecting to DB 🍃...")

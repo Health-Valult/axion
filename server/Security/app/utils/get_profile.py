@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from pymongo.collection import Collection
 
 
-endpoints = {"doctors" : {
+endpoints = {"doctor" : {
     "_id":0,
     "FullName":1,
     "NIC":1,
@@ -31,6 +31,6 @@ endpoints = {"doctors" : {
 
 def _get_profile(collection:Collection,c_uuid:UUID,endpoint:Literal["patient","doctor","hospital"]):
     currunt = collection.find_one({"UserID":c_uuid}, endpoints.get(endpoint))
-    data = currunt
-    return JSONResponse(status_code=200, content=data)
+    
+    return JSONResponse(status_code=200, content=currunt)
 

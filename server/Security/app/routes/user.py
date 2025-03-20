@@ -55,7 +55,7 @@ def get_profile(request:Request):
     d_collection:Collection = state.state.DoctorsCollection
     h_collection:Collection = state.state.HospitalCollection
 
-    cache = state.state.Cache
+
 
     c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
 
