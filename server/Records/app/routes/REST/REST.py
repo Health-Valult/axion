@@ -34,8 +34,8 @@ async def verify_doctor():
     pass
 
 
-@route.websocket("/")
-async def records_search_endpoint(websocket: WebSocket,):
+@route.websocket("/",)
+async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
     c_uuid,role = await Authenticate_WS(webSocket=websocket)
     await websocket.accept()
@@ -49,11 +49,7 @@ async def records_search_endpoint(websocket: WebSocket,):
 
     try:
         while True:
-            text = await websocket.receive_text()  
-            print(text)
-
-
-
+            await websocket.receive_text()  
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
         connected_clients.remove(websocket)
