@@ -1,3 +1,4 @@
+import json
 import time
 from pydantic import BaseModel
 import redis
@@ -96,6 +97,8 @@ class redis_AX:
         timeout = 5
         print("u got here 1")
         for message in waiting_channel.get_message():
+            print(message)
+            message = json.loads(message)
             if message['type'] == 'message':
                 data = message.get("data").decode("utf-8")
                 response = RedRequest.model_validate_json(data)
