@@ -1,33 +1,42 @@
+"use client";
+
 import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Image from "next/image";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useDarkMode } from "@/app/components/DarkModeContext";
 
 interface Report {
-    report: {
-        id: number;
-        name: string;
-        date: string;
-    };
+    id: string;
+    display: string;
+    timestamp: string;
+}
+
+interface ReportCardProps {
+    report: Report;
     onClick: () => void;
 }
 
-const ReportCard: React.FC<Report> = ({ report, onClick }) => {
+const ReportCard: React.FC<ReportCardProps> = ({ report, onClick }) => {
+    const { darkMode } = useDarkMode();
+
     return (
         <Card
-            className="w-full bg-white dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer"
-            onClick={() => onClick()}
+            className="w-full bg-white dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer mb-4"
+            onClick={onClick}
         >
             <CardHeader className="p-4 items-center">
                 <Image
-                    src="/images/medical-report-icon.jpg"
-                    alt={report.name}
+                    src={darkMode ? "/images/medical-report-icon-black.jpg" : "/images/medical-report-icon.jpg"}
+                    alt={report.display}
                     width={96}
                     height={96}
                     className="object-cover rounded-lg"
                 />
-                <CardTitle className="text-lg font-semibold text-center text-black dark:text-orange-300 mt-2">{report.name}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-center text-black dark:text-orange-300 mt-2">
+                    {report.display}
+                </CardTitle>
                 <CardDescription className="text-black dark:text-white text-sm text-center">
-                    {new Date(report.date).toLocaleDateString()}
+                    {new Date(report.timestamp).toLocaleDateString()}
                 </CardDescription>
             </CardHeader>
         </Card>

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import SidebarLayout from "@/app/components/Layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { useLanguage } from "@/app/components/LanguageContext";
@@ -55,11 +54,11 @@ interface Immunization {
     patientID: string;
     code: string;
     display: string;
+    dosage: string;
     unit: string;
     site: string;
     timestamp: string;
     meta: object;
-    dosage: string;
 }
 
 const Dashboard = () => {
@@ -85,8 +84,7 @@ const Dashboard = () => {
     const router = useRouter();
     const isAuthenticated = useAuth();
 
-    const token = sessionStorage.getItem("session_token");
-
+    const [token, setToken] = useState<string | null>(null);
     const [allergies, setAllergies] = useState<Allergy[]>([]);
     const [immunizations, setImmunizations] = useState<Immunization[]>([]);
 
@@ -94,6 +92,9 @@ const Dashboard = () => {
     const [selectedImmunization, setSelectedImmunization] = useState<Immunization | null>(null);
 
     useEffect(() => {
+        const token = sessionStorage.getItem("session_token");
+        setToken(token);
+
         const fetchProfileData = async () => {
             try {
                 const response = await fetch("api/get-user-data", {
@@ -279,11 +280,15 @@ const Dashboard = () => {
                                                             sessionStorage.removeItem("refresh_token");
                                                             router.push("/auth");
                                                         } else {
-                                                            toast.error("Logout failed")
+                                                            sessionStorage.removeItem("session_token");
+                                                            sessionStorage.removeItem("refresh_token");
+                                                            router.push("/auth");
                                                             console.error("Logout failed:", await response.text());
                                                         }
                                                     } catch (error) {
-                                                        toast.error("Error during logout")
+                                                        sessionStorage.removeItem("session_token");
+                                                        sessionStorage.removeItem("refresh_token");
+                                                        router.push("/auth");
                                                         console.error("Error during logout:", error);
                                                     }
                                                 }}>
@@ -342,39 +347,40 @@ const Dashboard = () => {
                         <CardTitle className="text-purple-900 dark:text-orange-300">Allergies</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-x-2 mt-4 justify-center">
+                        <div>
                             {allergies.length === 0 ? (
                                 <p className="text-center text-gray-500 dark:text-white">No allergies data available.</p>
                             ) : (
-                                allergies.map((allergy, index) => (
-                                    <Dialog key={index}>
-                                        <DialogTrigger>
-                                            <Alert
-                                                className="text-red-500 mb-2 w-full max-w-lg p-4"
-                                                variant="destructive"
-                                                onClick={() => handleAlertClick(allergy)}
-                                            >
-                                                <AlertTitle>{allergy.display} - {allergy.severity}</AlertTitle>
-                                            </Alert>
-                                        </DialogTrigger>
-                                        {selectedAllergy === allergy && (
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>{allergy.display}</DialogTitle>
-                                                </DialogHeader>
-                                                <div className="space-y-4">
-                                                    <p><strong>Criticality:</strong> {allergy.criticality}</p>
-                                                    <p><strong>Severity:</strong> {allergy.severity}</p>
-                                                    <p><strong>Category:</strong> {allergy.category}</p>
-                                                    <p><strong>Source:</strong> {allergy.source}</p>
-                                                    <p><strong>Verification Status:</strong> {allergy.verificationStatus}</p>
-                                                    <p><strong>Created:</strong> {new Date(allergy.meta?.created).toLocaleString() || "N/A"}</p>
-                                                    <p><strong>Source:</strong> {allergy.meta?.source || "N/A"}</p>
-                                                </div>
-                                            </DialogContent>
-                                        )}
-                                    </Dialog>
-                                ))
+                                <ul className="space-y-2"> {/* space between items */}
+                                    {allergies.map((allergy, index) => (
+                                        <Dialog key={index}>
+                                            <DialogTrigger>
+                                                <li
+                                                    className="cursor-pointer text-sm w-full p-2 bg-gray-100 dark:bg-gray-800 dark:text-white rounded"
+                                                    onClick={() => handleAlertClick(allergy)} // Handle click
+                                                >
+                                                    {allergy.display} {/* Allergy display name */}
+                                                </li>
+                                            </DialogTrigger>
+                                            {selectedAllergy === allergy && (
+                                                <DialogContent>
+                                                    <DialogHeader>
+                                                        <DialogTitle>{allergy.display}</DialogTitle>
+                                                    </DialogHeader>
+                                                    <div className="space-y-4">
+                                                        <p><strong>Criticality:</strong> {allergy.criticality}</p>
+                                                        <p><strong>Severity:</strong> {allergy.severity}</p>
+                                                        <p><strong>Category:</strong> {allergy.category}</p>
+                                                        <p><strong>Source:</strong> {allergy.source}</p>
+                                                        <p><strong>Verification Status:</strong> {allergy.verificationStatus}</p>
+                                                        <p><strong>Created:</strong> {new Date(allergy.meta?.created).toLocaleString() || "N/A"}</p>
+                                                        <p><strong>Source:</strong> {allergy.meta?.source || "N/A"}</p>
+                                                    </div>
+                                                </DialogContent>
+                                            )}
+                                        </Dialog>
+                                    ))}
+                                </ul>
                             )}
                         </div>
                     </CardContent>
@@ -382,46 +388,38 @@ const Dashboard = () => {
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle className="text-purple-900">Immunizations</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">Immunizations</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {immunizations.length === 0 ? (
                             <p className="text-center text-gray-500 dark:text-white">No immunizations data available.</p>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <ul className="space-y-2">
                                 {immunizations.map((immunization, index) => (
                                     <Dialog key={index}>
                                         <DialogTrigger>
-                                            <Card
-                                                className="cursor-pointer dark:border-gray-700 dark:bg-gray-950"
+                                            <li
+                                                className="cursor-pointer text-sm w-full p-2 bg-gray-100 dark:bg-gray-800 dark:text-white rounded"
                                                 onClick={() => handleCardClick(immunization)}
                                             >
-                                                <CardHeader>
-                                                    <CardTitle className="text-purple-900">{immunization.display} - {new Date(immunization.timestamp).toLocaleString()}</CardTitle>
-                                                </CardHeader>
-                                                {/*<CardContent>*/}
-                                                {/*    <p>{immunization.status}</p>*/}
-                                                {/*</CardContent>*/}
-                                            </Card>
+                                                {immunization.display}
+                                            </li>
                                         </DialogTrigger>
-
                                         {selectedImmunization === immunization && (
                                             <DialogContent className="max-w-lg dark:bg-gray-950">
                                                 <DialogHeader>
                                                     <DialogTitle className="text-purple-900">{immunization.display}</DialogTitle>
                                                 </DialogHeader>
                                                 <div className="space-y-2">
-                                                    {/*<p><strong>Status:</strong> {immunization.status}</p>*/}
                                                     <p><strong>Dosage:</strong> {immunization.dosage} {immunization.unit}</p>
                                                     <p><strong>Site:</strong> {immunization.site}</p>
-                                                    {/*<p><strong>Manufacturer:</strong> {immunization.manufacturer}</p>*/}
-                                                    <p><strong>Timestamp:</strong> {new Date(immunization.timestamp).toLocaleString()}</p>
+                                                    <p><strong>Administered On:</strong> {new Date(immunization.timestamp).toLocaleString()}</p>
                                                 </div>
                                             </DialogContent>
                                         )}
                                     </Dialog>
                                 ))}
-                            </div>
+                            </ul>
                         )}
                     </CardContent>
                 </Card>

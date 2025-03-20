@@ -425,7 +425,6 @@ const Auth: React.FC = () => {
                             value={loginFormData.password}
                             onChange={(e) => setLoginFormData({ ...loginFormData, password: e.target.value })}
                         />
-                        <a href="#" className="text-sm text-blue-500 mb-4">Forget Your Password?</a>
                         <Button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase mt-4" onClick={() =>  login()}>
                             Sign In
                         </Button>
@@ -526,9 +525,6 @@ const loginUser = async (email: string, password: string) => {
             const { session_token, refresh_token } = data;
             sessionStorage.setItem("session_token", session_token);
             sessionStorage.setItem("refresh_token", refresh_token);
-
-            // document.cookie = `session_token=${session_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=3600`;
-            // document.cookie = `refresh_token=${refresh_token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=2592000`;
 
             window.location.href = "/";
         } else {

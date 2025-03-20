@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/app/components/LanguageContext";
+import {useDarkMode} from "@/app/components/DarkModeContext";
 
 interface Meta {
     created: string;
@@ -20,6 +21,7 @@ interface Medicine {
 
 const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
     const { t } = useLanguage();
+    const { darkMode } = useDarkMode();
 
     return (
         <div>
@@ -29,7 +31,7 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
                         className="p-4 bg-white dark:bg-gray-950 shadow-md rounded-lg flex items-center space-x-4 border dark:border-gray-700 cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 mb-5"
                     >
                         <Image
-                            src="/images/medicine/medicine.png"
+                            src={darkMode ? "/images/medicine/medicine-black.jpg" : "/images/medicine/medicine.png"}
                             alt={medicine.display}
                             width={56}
                             height={56}

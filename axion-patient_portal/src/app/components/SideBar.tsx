@@ -4,9 +4,11 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { MoreVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {usePathname} from "next/navigation";
+import { usePathname } from "next/navigation";
 import ModeSwitch from "@/app/components/ModeSwitch";
+import {useDarkMode} from "@/app/components/DarkModeContext";
 
+// Define the SidebarContext
 interface SidebarContextProps {
     expanded: boolean;
     activeItem: string;
@@ -25,11 +27,46 @@ interface SidebarItemProps {
 
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
+// Define the Sidebar component
 function Sidebar({ children }: SidebarProps) {
+    const { darkMode } = useDarkMode();
+
     const [expanded, setExpanded] = useState(false);
     const [activeItem, setActiveItem] = useState<string>("");
+    const [userData, setUserData] = useState<{ name: string; email: string } | null>(null); // New state for user data
     const path = usePathname();
 
+    // Fetch user profile data when the component mounts
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                const response = await fetch("api/get-user-data", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to fetch profile data");
+                }
+
+                const data = await response.json();
+                setUserData({
+                    name: data.FirstName,
+                    email: data.Email,
+                });
+            } catch (error) {
+                console.error("Error fetching profile data:", error);
+            }
+        };
+
+        fetchProfileData();
+    }, []);
+
+    // Update the sidebar active item based on the pathname
     useEffect(() => {
         setExpanded(false);
 
@@ -54,23 +91,24 @@ function Sidebar({ children }: SidebarProps) {
             </SidebarContext.Provider>
 
             <div className="border-t flex p-3 items-center">
-                <div/>
-                <Image src="/user-icon.jpg" width={40} height={40} className="w-10 h-10 rounded-md" alt="User Avatar" />
+                <div />
+                <Image src={darkMode ? "/user-icon-black.jpg" : "/user-icon.jpg"} width={40} height={40} className="w-10 h-10 rounded-md" alt="User Avatar" />
                 <div className="overflow-hidden transition-all w-0 group-hover:w-52 ml-3">
-                    <h4 className="font-semibold text-black dark:text-white">John Doe</h4>
-                    <span className="text-xs text-black dark:text-white">johndoe@gmail.com</span>
+                    <h4 className="font-semibold text-black dark:text-white">{userData?.name}</h4>
+                    <span className="text-xs text-black dark:text-white">{userData?.email}</span>
                 </div>
                 <Link href="/profile">
                     <MoreVertical size={20} className="ml-auto hidden group-hover:block dark:text-white" />
                 </Link>
             </div>
-            <ModeSwitch expanded={expanded}/>
+            <ModeSwitch expanded={expanded} />
         </aside>
     );
 }
 
 export default React.memo(Sidebar);
 
+// SidebarItem component
 export function SidebarItem({ icon, text, href }: SidebarItemProps) {
     const context = useContext(SidebarContext);
 

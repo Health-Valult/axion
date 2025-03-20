@@ -1,77 +1,209 @@
 "use client";
 
-import React, { useState } from "react";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, ArrowUpDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { jsPDF } from "jspdf";
+import { useLanguage } from "@/app/components/LanguageContext";
+import ReportCard from "@/app/components/ReportCard";
+import ReportModal from "@/app/components/ReportModal";
+import { useDarkMode } from "@/app/components/DarkModeContext";
+import useAuth from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-import { useLanguage } from "@/app/components/LanguageContext";
-import ReportCard from "@/app/components/ReportCard";
-import ReportModal from "@/app/components/ReportModal";
+import {ArrowUpDown, CalendarIcon} from "lucide-react";
+import { format } from "date-fns";
 import SidebarLayout from "@/app/components/Layout";
-import Image from "next/image";
-import {useDarkMode} from "@/app/components/DarkModeContext";
-import useAuth from "@/hooks/useAuth";
+
+// Define types for GraphQL response
+interface Report {
+    id: string;
+    display: string;
+    timestamp: string;
+    meta: string;
+}
+
+interface Observation {
+    id: string;
+    patientID: string;
+    labID: string;
+    code: string;
+    display: string;
+    unit: string;
+    value: string;
+    timestamp: string;
+    meta: string;
+}
+
+interface GraphQLResponse {
+    data: {
+        Labs: { labs: Report[] };
+        observationStack: { Observations: Observation[] };
+    };
+}
 
 export default function ReportsLayout() {
     return (
         <SidebarLayout>
-            <ReportsPage />
+            <ReportPage />
         </SidebarLayout>
     );
 }
 
-interface Report {
-    id: number;
-    name: string;
-    date: string;
-}
+const ReportPage: React.FC = () => {
+    const { t } = useLanguage();
+    const { darkMode } = useDarkMode();
+    const isAuthenticated = useAuth();
 
-const reportsData: Report[] = [
-    { id: 1, name: "Complete Blood Count (CBC)", date: "2024-01-25" },
-    { id: 2, name: "Urine Full Report (UFR)", date: "2024-01-28" },
-    { id: 3, name: "C-Reactive Protein (CRP) Report", date: "2024-02-10" },
-    { id: 4, name: "Liver Function Test (LFT) Report", date: "2024-02-29" },
-    { id: 5, name: "Fasting Blood Sugar (FBS) Report", date: "2024-01-25"},
-    { id: 6, name: "Serum Creatinine Report", date: "2024-02-10" },
-    { id: 7, name: "Serum Electrolytes Report", date: "2024-03-01" },
-    { id: 8, name: "Lipid Profile Test (LPT) Report", date: "2023-11-11" },
-    { id: 9, name: "HbA1c Report", date: "2024-03-15" },
-    { id: 10, name: "Erythrocyte Sedimentation Rate (ESR) Report", date: "2024-01-31" },
-    { id: 11, name: "Thyroid Function Test (TFT) Report", date: "2024-01-01" },
-];
-
-function ReportsPage() {
-    const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [reports, setReports] = useState<Report[]>([]); // Available reports
+    const [selectedReport, setSelectedReport] = useState<Report | null>(null); // Selected report
+    const [observations, setObservations] = useState<Observation[]>([]); // Observations data
     const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-    const [filterDate, setFilterDate] = useState<Date | undefined>();
-    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+    const [filterDate, setFilterDate] = useState<Date | undefined>(undefined);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
     const yearOptions = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i);
 
-    const { t } = useLanguage();
-    const { darkMode } = useDarkMode();
+    // Fetch the available reports
+    useEffect(() => {
+        if (!isAuthenticated) return;
 
-    const sortedReports = [...reportsData].sort((a, b) => {
+        const fetchReports = async () => {
+            try {
+                const response = await fetch("/api/graphql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': `Bearer ${sessionStorage.getItem("session_token")}`,
+                    },
+                    body: JSON.stringify({
+                        query: `
+                            query Labs {
+                                Labs {
+                                    labs {
+                                        id
+                                        patientID
+                                        code
+                                        display
+                                        timestamp
+                                        meta
+                                    }
+                                }
+                            }
+                        `,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch reports");
+                }
+
+                const { data }: GraphQLResponse = await response.json();
+                setReports(data.Labs.labs || []);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError("Error fetching data");
+                setLoading(false);
+            }
+        };
+
+        fetchReports();
+    }, [isAuthenticated]);
+
+    // Fetch observations for the selected report using the LabID
+    const fetchObservations = async (labID: string) => {
+        try {
+            const response = await fetch("/api/graphql", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("session_token")}`,
+                },
+                body: JSON.stringify({
+                    query: `
+                        query ObservationStack($LabID: String!) {
+                            observationStack(LabID: $LabID) {
+                                Observations {
+                                    id
+                                    patientID
+                                    labID
+                                    code
+                                    display
+                                    unit
+                                    value
+                                    timestamp
+                                    meta
+                                }
+                            }
+                        }
+                    `,
+                    variables: {
+                        LabID: labID,
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch observations");
+            }
+
+            const { data }: GraphQLResponse = await response.json();
+            setObservations(data.observationStack.Observations || []);
+        } catch (err) {
+            console.error(err);
+            setError("Error fetching observations");
+        }
+    };
+
+    // Function to generate PDF of observations
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        doc.text(`${selectedReport?.display}`, 10, 10);
+        let yPosition = 20;
+        doc.text("Observation Name", 10, yPosition);
+        doc.text("Result", 100, yPosition);
+        doc.text("Unit", 150, yPosition);
+        yPosition += 10;
+        observations.forEach((obs) => {
+            doc.text(obs.display, 10, yPosition);
+            doc.text(obs.value, 100, yPosition);
+            doc.text(obs.unit, 150, yPosition);
+            yPosition += 10;
+        });
+        doc.save(`${selectedReport?.display}.pdf`);
+    };
+
+    // Sorting and date filtering handling
+    const handleSortChange = () => {
+        setSortOrder(sortOrder === "newest" ? "oldest" : "newest");
+    };
+
+    // Sort reports based on the selected sort order
+    const sortedReports = [...reports].sort((a, b) => {
         return sortOrder === "newest"
-            ? new Date(b.date).getTime() - new Date(a.date).getTime()
-            : new Date(a.date).getTime() - new Date(b.date).getTime();
+            ? new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            : new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
     });
 
+    // Filter reports based on the selected date
     const filteredReports = filterDate
-        ? sortedReports.filter(report => report.date === format(filterDate, "yyyy-MM-dd"))
+        ? sortedReports.filter(report => {
+            const reportDate = new Date(report.timestamp);
+            return reportDate.toISOString().split("T")[0] === format(filterDate, "yyyy-MM-dd");
+        })
         : sortedReports;
 
-    const isAuthenticated = useAuth(); // This will redirect to login if not authenticated
+    if (loading) {
+        return <p>Loading...</p>;
+    }
 
-    if (!isAuthenticated) {
-        return null;  // If not authenticated, nothing will be rendered
+    if (error) {
+        return <p>Error Fetching Data</p>;
     }
 
     return (
@@ -89,12 +221,8 @@ function ReportsPage() {
 
             <div className="flex justify-between items-center mb-4">
                 <div />
-
                 <div className="flex items-center space-x-4 dark:bg-gray-950">
-                    <Button
-                        variant="outline"
-                        onClick={() => setSortOrder(sortOrder === "newest" ? "oldest" : "newest")}
-                    >
+                    <Button variant="outline" onClick={handleSortChange}>
                         <ArrowUpDown className="mr-2" />
                         {sortOrder === "newest" ? `${t.newestFirst}` : `${t.oldestFirst}`}
                     </Button>
@@ -103,17 +231,14 @@ function ReportsPage() {
                         <PopoverTrigger asChild>
                             <Button
                                 variant="outline"
-                                className={cn(
-                                    "w-[200px] justify-start text-left font-normal dark:text-white",
-                                    !filterDate && "text-muted-foreground"
-                                )}
+                                className="w-[200px] justify-start text-left font-normal dark:text-white"
                             >
                                 <CalendarIcon className="mr-2 h-4 w-4 dark:text-white" />
                                 {filterDate ? format(filterDate, "PPP") : `${t.pickDate}`}
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                            <div className="flex items-center justify-between px-3 py-2 bg-gray-100  dark:bg-gray-950 border-b">
+                            <div className="flex items-center justify-between px-3 py-2 bg-gray-100 dark:bg-gray-950 border-b">
                                 <span className="font-semibold">Year:</span>
                                 <Select
                                     onValueChange={(value) => {
@@ -161,17 +286,25 @@ function ReportsPage() {
                         <ReportCard
                             key={report.id}
                             report={report}
-                            onClick={() => setSelectedReport(report)}
+                            onClick={() => {
+                                setSelectedReport(report);
+                                fetchObservations(report.id); // Fetch observations when a report is clicked
+                            }}
                         />
                     ))
                 ) : (
-                    <p className="text-gray-500 text-center col-span-full">{t.noReportsFound}</p>
+                    <p>No reports found</p>
                 )}
             </div>
 
             {selectedReport && (
-                <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)} />
+                <ReportModal
+                    report={selectedReport}
+                    observations={observations}
+                    onClose={() => setSelectedReport(null)} // Close modal when the report is deselected
+                    generatePDF={generatePDF}
+                />
             )}
         </div>
     );
-}
+};
