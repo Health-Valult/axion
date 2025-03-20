@@ -70,7 +70,7 @@ class redis_AX:
             sender=self.service,
             reciver=channel,
             id=str(uuid.uuid4()),
-            body=body
+            body=body.model_dump()
         )
 
         self.r.publish(channel, message.model_dump_json())

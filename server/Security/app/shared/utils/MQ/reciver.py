@@ -1,9 +1,10 @@
 from asyncio import Future
 import logging
 from aio_pika import connect
-from typing import Callable
+from typing import Callable, Optional
 from redis.asyncio import Redis
 from pydantic import BaseModel
+from app.shared.utils.Cache.redis import redis_AX
 class Body(BaseModel):
     task:str
     body:dict
@@ -13,7 +14,9 @@ class RedRequest(BaseModel):
     sender:str
     reciver:str
     id:str
+    returnChannel:Optional[str]
     body:Body
+
 
 class RedResponse(BaseModel):
     sender:str
@@ -24,6 +27,8 @@ class RedResponse(BaseModel):
 
 logger = logging.getLogger("uvicorn")
 
+redisax = redis_AX("redis://cache",10,service="security").connect()
+
 import redis.asyncio as redis
 async def reader(channel: redis.client.PubSub,executer:Callable):
     while True:
@@ -33,7 +38,12 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             print(data)
             request = RedRequest.model_validate_json(data)
             response = await executer(request)
-            print(response)
+            body = Body(
+                task = "verifiedToken",
+                body = response
+            )
+            redisax.scarletSender(request.returnChannel,body=body)
+
 async def RedReciver(host:str,channel:str,executer:Callable):
 
     
