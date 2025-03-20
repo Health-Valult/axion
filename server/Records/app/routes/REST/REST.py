@@ -32,3 +32,15 @@ async def upload_report(type:str,report:Annotated[Union[
 async def verify_doctor():
     pass
 """
+
+@route.websocket("/",)
+async def websocket_endpoint(websocket: WebSocket,):
+    print("reached")
+    await websocket.accept()
+    print(f"WebSocket Client Connected: {websocket.client}")
+
+    try:
+        while True:
+            await websocket.receive_text()  
+    except WebSocketDisconnect:
+        print(f"WebSocket Disconnected: {websocket.client}")

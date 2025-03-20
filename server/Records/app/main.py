@@ -70,17 +70,7 @@ app = FastAPI(title="record",lifespan=lifespan)
 patient_schema = strawberry.Schema(PatientQuery)
 patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenticate)])
 
-app.websocket("/records/search",)
-async def websocket_endpoint(websocket: WebSocket,):
-    print("reached")
-    await websocket.accept()
-    print(f"WebSocket Client Connected: {websocket.client}")
 
-    try:
-        while True:
-            await websocket.receive_text()  
-    except WebSocketDisconnect:
-        print(f"WebSocket Disconnected: {websocket.client}")
         
 
 #doctor_schema = strawberry.Schema(Query)
