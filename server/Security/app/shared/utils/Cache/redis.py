@@ -69,10 +69,12 @@ class redis_AX:
 
     def scarletSender(self,channel:str,body:Body):
         print("sending...")
+        temp_channel = "no response"
         message = RedRequest(
             sender=self.service,
             reciver=channel,
             id=str(uuid.uuid4()),
+            returnChannel=temp_channel,
             body=body.model_dump()
         )
         print("sending....")
