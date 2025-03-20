@@ -98,16 +98,15 @@ class redis_AX:
         timeout = 5
         print("u got here 1")
         while time.time() - start_time < timeout:
-            print(f"{message}:234")
             message = waiting_channel.get_message()
             
             if message:   
-                if message.get("type") == 'message':
-                    data = message.get("data").decode("utf-8")
-                    response = RedRequest.model_validate_json(data)
-                    print("u got here")
-                    waiting_channel.unsubscribe(temp_channel)
-                    return response
+                
+                data = message.get("data").decode("utf-8")
+                response = RedRequest.model_validate_json(data)
+                print("u got here")
+                waiting_channel.unsubscribe(temp_channel)
+                return response
                 
         
 
