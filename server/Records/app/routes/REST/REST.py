@@ -27,4 +27,6 @@ async def upload_report(type:str,report:Annotated[Union[
         ]]): # type: ignore
     pass
 
-route.post()
+@route.post(path="records/upload/{type}")
+async def verify_doctor():
+    pass

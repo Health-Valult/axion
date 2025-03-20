@@ -3,10 +3,13 @@ from fastapi.responses import JSONResponse
 from app.shared.utils.MQ.sender import sendMQ
 from starlette.middleware.base import BaseHTTPMiddleware
 
+mq = sendMQ("mq","record")
+
+
 # Dependancy injection
 def Authenticate(request: Request):
     
-    Mq:sendMQ = request.app.state.sender_task 
+    Mq:sendMQ = mq
     token:str = request.headers.get('authorization')
     if token is None:
         raise HTTPException(status_code=401, detail="No session token sent")
