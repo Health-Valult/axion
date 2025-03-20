@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import Annotated, Union
 import uuid
 from fastapi.responses import JSONResponse
@@ -11,7 +12,7 @@ from fastapi.websockets import WebSocket
 
 route = APIRouter()
 connected_clients:dict = {}
-
+logger = logging.getLogger("uvicorn")
 """@route.post(path="records/upload/{type}")
 async def upload_report(type:str,report:Annotated[Union[
         CBCReportTemplate,
@@ -50,6 +51,6 @@ async def websocket_endpoint(websocket: WebSocket,):
     try:
         while True:
            text = await websocket.receive_json()  
-           print(text)
+           logger.warning(text)
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
