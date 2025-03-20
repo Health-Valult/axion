@@ -12,7 +12,7 @@ from fastapi.websockets import WebSocket
 route = APIRouter()
 connected_clients:dict = {}
 
-@route.post(path="records/upload/{type}")
+"""@route.post(path="records/upload/{type}")
 async def upload_report(type:str,report:Annotated[Union[
         CBCReportTemplate,
         UFRTemplate,
@@ -31,3 +31,4 @@ async def upload_report(type:str,report:Annotated[Union[
 @route.post(path="records/upload/{type}")
 async def verify_doctor():
     pass
+"""
