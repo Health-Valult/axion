@@ -22,6 +22,9 @@ def Authenticate(request: Request):
     )
     
     rabbitResponse = Mq.scarletSender_is_waiting("security",body)
+    
+    if rabbitResponse is None:
+        raise HTTPException(status_code=500, detail="Authentication service did not respond")
     response:dict = rabbitResponse.body
     
     status = response.task
