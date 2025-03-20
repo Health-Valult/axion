@@ -57,7 +57,7 @@ async def websocket_endpoint(websocket: WebSocket,):
                 "res":"then go jump"
             }
             jdic = json.dumps(dci)
-            websocket.send_json(jdic)
+            await websocket.send_json(jdic)
 
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
