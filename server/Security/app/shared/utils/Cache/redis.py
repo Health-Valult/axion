@@ -1,4 +1,3 @@
-import json
 import time
 from pydantic import BaseModel
 import redis
@@ -117,9 +116,3 @@ class redis_AX:
 
     def disconnect(self):
         self.r.close()
-
-
-"""data = message.get("data").decode("utf-8")
-                    response = RedRequest.model_validate_json(data)
-                    print("u got here")
-                    return response"""

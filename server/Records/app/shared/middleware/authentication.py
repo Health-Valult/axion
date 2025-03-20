@@ -1,10 +1,14 @@
 from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from app.shared.utils.MQ.sender import sendMQ
 from starlette.middleware.base import BaseHTTPMiddleware
 
 mq = sendMQ("mq","record")
 
+class Body(BaseModel):
+    task:str
+    body:dict
 
 # Dependancy injection
 def Authenticate(request: Request):
@@ -14,14 +18,24 @@ def Authenticate(request: Request):
     if token is None:
         raise HTTPException(status_code=401, detail="No session token sent")
     
-    rabbitResponse:dict = Mq.send_and_await("security","sessionAuth",{"token":token})[0]
-    response:dict = rabbitResponse.get("response")
+    body = Body(
+        task="sessionAuth",
+        body={
+            "token":token
+        }
+    )
     
-    status = response.get("task")
+    rabbitResponse = Mq.scarletSender_is_waiting("security",body)
+    
+    if rabbitResponse is None:
+        raise HTTPException(status_code=500, detail="Authentication service did not respond")
+    
+    response:dict = rabbitResponse.body
+    status = response.task
     if status != "verifiedToken":
         raise HTTPException(status_code=401, detail="session token expired or invalid")
     
-    request.state.meta = response.get("body")
+    request.state.meta = response.body
     
     return request
 

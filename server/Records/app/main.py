@@ -9,7 +9,7 @@ import strawberry
 from app.utils.sender import sendMQ
 from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
-from app.shared.middleware.authentication import Authenticate, AuthenticateMiddleware
+from app.shared.middleware.authentication import Authenticate
 from app.routes.GQL.Patient import PatientQuery
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
@@ -44,7 +44,7 @@ async def lifespan(app:FastAPI):
 
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://cache:6379",10).connect()
+    app.state.Cache = redis_AX("redis://cache",10,service="records").connect()
 
     logger.info(app.state)
 
