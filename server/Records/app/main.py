@@ -13,6 +13,7 @@ from app.shared.utils.Cache.redis import redis_AX
 from app.shared.middleware.authentication import Authenticate
 from app.routes.GQL.Patient import PatientQuery
 from app.utils import load_to_redis
+from app.routes.REST.REST import route as w_route
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
@@ -76,7 +77,7 @@ patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenti
 
 app.include_router(patient_gql_router, prefix="/graphql/patient")
 #app.include_router(doctor_gql_router, prefix="/graphql/doctor")
-
+app.include_router(w_route)
 #app.add_middleware(AuthenticateMiddleware)
 
 # main app
