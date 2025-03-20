@@ -11,7 +11,7 @@ connected_clients:dict = {}
 @route.websocket("/",)
 async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
-    websocket.accept()
+    await websocket.accept()
     print(f"WebSocket Client Connected: {websocket.client}")
 
     try:
