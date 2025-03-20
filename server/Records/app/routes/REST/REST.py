@@ -34,13 +34,11 @@ async def verify_doctor():
     pass
 
 
-@route.websocket("/",)
+@route.websocket("/records/search",)
 async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
    
     await websocket.accept()
-
-
     print(f"WebSocket Client Connected: {websocket.client}")
 
     try:
