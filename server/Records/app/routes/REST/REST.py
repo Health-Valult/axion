@@ -34,7 +34,7 @@ async def verify_doctor():
     pass
 
 
-@route.websocket("records/search")
+@route.websocket("/")
 async def records_search_endpoint(websocket: WebSocket,):
     print("reached")
     c_uuid,role = await Authenticate_WS(webSocket=websocket)
