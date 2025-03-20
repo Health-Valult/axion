@@ -101,12 +101,13 @@ class redis_AX:
             message = waiting_channel.get_message()
             
             if message:   
-                print(message)
-                data = message.get("data").decode("utf-8")
-                response = RedRequest.model_validate_json(data)
-                print("u got here")
-                waiting_channel.unsubscribe(temp_channel)
-                return response
+                if message.get("type") == 'message':
+                    print(message)
+                    data = message.get("data").decode("utf-8")
+                    response = RedRequest.model_validate_json(data)
+                    print("u got here")
+                    waiting_channel.unsubscribe(temp_channel)
+                    return response
                 
         
 
