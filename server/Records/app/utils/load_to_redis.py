@@ -18,7 +18,7 @@ async def load_to_redis(app:FastAPI):
         
         if not cache.exists(nic):
             cache.hset(
-                name=documents.get("NIC"),
+                name=f"user::search::{documents.get("NIC")}",
                 mapping={
                     "name":documents.get("FirstName"),
                     "id":documents.get("UserID")
