@@ -97,6 +97,7 @@ class redis_AX:
         waiting_channel.subscribe(temp_channel)
         time.sleep(0.1)
         self.r.publish(channel, message.model_dump_json())
+        print(f"Published: {message}")
         start_time = time.time()
         timeout = 5
         print("u got here 1")
