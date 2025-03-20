@@ -10,10 +10,8 @@ from pymongo.collection import Collection
 hasher = PasswordHasher()
 
 def _delete_profile(collection:Collection,c_uuid:str,email:str,pw:str):
-    currunt = collection.aggregate([
-            {"$match": {"UserID":c_uuid}},
-            {"$project": {"_id":0,"Password":1,"Email":1}} 
-        ])
+    currunt = collection.find_one({"UserID":c_uuid},{"_id":0,"Password":1,"Email":1})
+    print(currunt)
     data = next(currunt,None)
     hash,email_db = data.get("Password"),data.get("NIC")
     try:    
