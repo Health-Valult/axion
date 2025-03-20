@@ -37,7 +37,6 @@ async def verify_doctor():
 @route.websocket("/records/search",)
 async def websocket_endpoint(websocket: WebSocket,):
     print("reached")
-   
     await websocket.accept()
     print(f"WebSocket Client Connected: {websocket.client}")
 
