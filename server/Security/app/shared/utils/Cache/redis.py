@@ -89,9 +89,10 @@ class redis_AX:
 
         self.r.publish(channel, message.model_dump_json())
         waiting_channel = self.r.pubsub()
-        
+        waiting_channel.subscribe(temp_channel)
         start_time = time.time()
         timeout = 5
+        print("u got here 1")
         for message in waiting_channel.listen():
             if message['type'] == 'message':
                 data = message.get("data").decode("utf-8")
