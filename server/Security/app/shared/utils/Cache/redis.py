@@ -88,6 +88,7 @@ class redis_AX:
         )
 
         self.r.publish(channel, message.model_dump_json())
+
         waiting_channel = self.r.pubsub()
         waiting_channel.subscribe(temp_channel)
         start_time = time.time()
@@ -102,8 +103,9 @@ class redis_AX:
                 
             if time.time() - start_time > timeout:
                 print("Timeout reached, stopping listener.")
-                return 
-    
+                break 
+        
+        raise Exception("error is her")
 
     def disconnect(self):
         self.r.close()
