@@ -4,12 +4,12 @@ from app.shared.utils.Cache.redis import redis_AX
 from authlib.jose.errors import ExpiredTokenError
 import os
 
-def authenticate_session(bearerToken:str,Red:redis_AX=None,refresh_token:bool=False):
+def authenticate_session(body:dict,Red:redis_AX=None,refresh_token:bool=False):
 
     try:    
 
         key = os.path.join("app","data","keys","refresh_public.pem") if refresh_token else os.path.join("app","data","keys","public.pem")
-
+        bearerToken = body.get("token")
         with open(key,"r") as file:
             key = file.read()
 

@@ -10,9 +10,7 @@ services:
       context: ./Security
       dockerfile: Dockerfile
 
-    depends_on:
-      - mq
-      - cache
+ 
 
   notification:
     container_name: notification
@@ -22,10 +20,7 @@ services:
     build:
       context: ./Notification
       dockerfile: Dockerfile
-    
-    depends_on:
-      mq:
-        condition: service_healthy
+ 
   
     
     environment:
@@ -48,21 +43,18 @@ services:
       context: ./Records
       dockerfile: Dockerfile
     
-    depends_on:
-      mq:
-        condition: service_healthy
+    
 
-  mq:
-    container_name: rabbitMQ
-    image: rabbitmq:4.0-management
-    ports:
-      - 5672:5672
-      - 15672:15672
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  #mq:
+   # container_name: rabbitMQ
+   # image: rabbitmq:4.0-management
+   # ports:
+   #   - 5672:5672
+   #   - 15672:15672
+   # healthcheck:
+    #  test: ["CMD", "rabbitmqctl", "status"]
+   ##   timeout: 5s
+    #  retries: 5
   
   cache:
     container_name: redis

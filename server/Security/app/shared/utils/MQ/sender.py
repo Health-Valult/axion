@@ -6,93 +6,37 @@ from pika.exceptions import AMQPConnectionError
 from pika import BasicProperties
 from json import dumps
 import uuid
-from typing import Literal
+from typing import Callable, Literal
+
+from redis import Redis
+
+from app.shared.utils.MQ.reciver import RedRequest, RedResponse,Body
 
 logger = logging.getLogger("uvicorn")
 
-class sendMQ:
-
-    def __init__(self,host:str,service:str):
-        self.service = service
-        retries = 5
-        for attempt in range(retries):
-            try:
-                logger.info("connecting to 🐇MQ...")
-                self.connection = BlockingConnection(ConnectionParameters(host=host,heartbeat=0))
-                break
-                
-            except AMQPConnectionError:   
-                logger.info("unable to connect to rabbitMQ")
-                time.sleep(1) 
-                continue
-        self.channel = self.connection.channel()
-        
 
 
 
-    def send(self,Qname:str,task:str,body:dict,type:Literal["request","response"],status:Literal["success","error"] = None, declare:bool=True):
+def scarletSender(host:str,channel:str):
 
+    connection = Redis(host=host,retry_on_timeout=True)
     
-        if type == "request":
-            msg_obj = {
-                "sender":self.service,
-                "reciver":Qname,
-                "id":f"{self.service}-{uuid.uuid4()}",
-                "response":{
-                    "task":task,
-                    "body":body
-                }
-            }
-
-        if type == "response" and status != None:
-            msg_obj = {
-                "sender":self.service,
-                "reciver":Qname,
-                "id":f"{self.service}-{uuid.uuid4()}",
-                "status":status,
-                "response":{
-                    "task":task,
-                    "body":body
-                }
-            },
-
-
-        msg = dumps(msg_obj).encode("utf-8")
-        if declare:
-            self.channel.queue_declare(queue=Qname)
-        self.channel.basic_publish(exchange='', routing_key=Qname, body=msg)
-
-    def send_and_await(self,Qname:str,task:str,body:dict):
-
-        return_q = self.channel.queue_declare(queue='',exclusive=True).method.queue
-
-
-        msg_obj = {
-            "sender":self.service,
-            "reciver":Qname,
-            "id":f"{self.service}-{uuid.uuid4()}",
-            "request":{
-                "task":task,
-                "body":body
-            }
+    bo = Body(
+        task="sessionAuth",
+        body={
+            "token":"Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJheGlvbjo6c2VjdXJpdHk6OmF1dGg6OmxvZ2luOjpwYXRpZW50OjpzZXNzaW9uIiwic3ViIjoiMmNkOTkxNmYtNjdlMi01ZWExLTk5NzEtN2E0ODgyMzljODNmIiwiaWF0IjoxNzQyMzYxMzM3LCJuYmYiOjE3NDIzNjEzMzcsImV4cCI6MTc0MjM2NDkzNywicm9sZSI6InBhdGllbnQifQ.YDclN7K6yQBk_43zRRrdPTJxtLyy3freAmoilUCh9CGvdgvmdQoaTKPgeUKMCn1NnIcbbCkbIC1s7dwyH6YTJA1Atnm5qIU6rClV0Y4xDY7uOQ7BReZFPPoN2DK-APRxevRMxwplVmxed9M-2g8tKWucNjVZKRt0Ic4wAI3nDfUWgZfV2UGIlELWkFJ-qKKHdfwyiu4RKklP0GH0Um5WnS---qe3vtU9WgL4xXXI8Gry_B7ZeRd_LWOtQr0UXMbH44tohAXpotBHYo95vA0Xmr2GIGmSkE1Et1OSQ8sLFlGRbsI8puSVQ1Hfh6nNSNDwb3jtcRzaOEJVRz_xBU8jhQ"
         }
+    )
+    message = RedRequest(
+        sender="qwerty",
+        reciver="qwerty",
+        id="23467845890",
+        body=bo
+    )
 
-        msg = dumps(msg_obj).encode("utf-8")
-        self.channel.queue_declare(queue=Qname)
-        self.channel.basic_publish(exchange='', routing_key=Qname, body=msg, properties=BasicProperties(
-            reply_to=return_q
-        ))
+    connection.publish(channel, message.model_dump_json())
+    print(f"Published: {message}")
+    
 
-        timeout = 5
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            method_frame, properties, body = self.channel.basic_get(queue=return_q, auto_ack=True)
-            if method_frame:
-                
-                return(json.loads(body))
-                    
-            time.sleep(0.1)  
-        
 
-    def terminate_session(self):
-        self.connection.close()
+scarletSender("localhost",'security')

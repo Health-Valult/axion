@@ -11,10 +11,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # utilities
-from app.shared.utils.MQ.reciver import recieveMQ
-from app.shared.utils.MQ.sender import sendMQ
+from app.shared.utils.MQ.reciver import RedReciver
+from app.shared.utils.MQ.sender import scarletSender
 from app.shared.utils.Cache.redis import redis_AX
-from app.shared.middleware.logging import Logging
+#from app.shared.middleware.logging import Logging
 
 # routes
 from app.routes.signUp import route as s_route
@@ -39,9 +39,9 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
 
     # rabbitMQ connection startup
-    app.state.sender_task = sendMQ("mq","security")
-    app.state.consumer_task = asyncio.create_task(recieveMQ("amqp://guest:guest@mq/",'security',callback_security))
-
+    #app.state.sender_task = sendMQ("mq","security")
+    app.state.consumer_task = asyncio.create_task(RedReciver("redis://localhost",'security',callback_security))
+    
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = MongoClient(URL)
@@ -52,7 +52,7 @@ async def lifespan(app:FastAPI):
     
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://cache:6379",10).connect()
+    app.state.Cache = redis_AX("redis://localhost",10,host="security").connect()
 
     # loading refresh token
     with open('./app/data/keys/refresh_private.pem', 'r') as file:
@@ -79,7 +79,7 @@ app.include_router(l_route)
 app.include_router(u_route)
 app.include_router(o_route)
 
-app.add_middleware(Logging)
+#app.add_middleware(Logging)
 origins = [
     "http://localhost.tiangolo.com",
     "https://localhost.tiangolo.com",
