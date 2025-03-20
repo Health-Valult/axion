@@ -54,8 +54,8 @@ async def websocket_endpoint(websocket: WebSocket,):
         while True:
             text = await websocket.receive_json()  
             logger.warning(text)
-            prefix = json.loads(text)
-            res = Cache.autoComplete(prefix.get("packet"))
+            
+            res = Cache.autoComplete(text.get("packet"))
             response = {
                 "msg":res
             }
