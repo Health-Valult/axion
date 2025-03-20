@@ -26,7 +26,7 @@ async def load_to_redis(app:FastAPI):
             )
 
 
-async def loader():
+async def loader(app):
     while True:
         await load_to_redis(app=app)
         await asyncio.sleep(10.0)

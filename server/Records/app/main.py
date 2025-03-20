@@ -28,7 +28,7 @@ async def lifespan(app:FastAPI):
 
 
     # loader function
-    app.state.search_loader = asyncio.create_task(load_to_redis.loader())
+    app.state.search_loader = asyncio.create_task(load_to_redis.loader(app=app))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")
