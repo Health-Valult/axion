@@ -80,11 +80,10 @@ class redis_AX:
         self.r.publish(channel, message.model_dump_json())
         print(f"Published: {message}")
 
-    def autoComplete(self,text:str):
-
-        result = self.r.scan(0, match=f"user::search::{text}*", count=5)[1]
-        return result
-
+    def autoComplete(self, text: str):
+        all_keys = self.r.keys(f"user::search::{text}*")  # Get all matching keys
+        return all_keys[:5]
+    
     def scarletSender_is_waiting(self,channel:str,body:Body):
         temp_channel = f"temp_channel_{uuid.uuid4().hex}"
         message = RedRequest(
