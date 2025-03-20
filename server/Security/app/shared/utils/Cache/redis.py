@@ -75,7 +75,7 @@ class redis_AX:
             id=str(uuid.uuid4()),
             body=body.model_dump()
         )
-
+        print("sending....")
         self.r.publish(channel, message.model_dump_json())
         print(f"Published: {message}")
 
