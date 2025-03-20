@@ -15,8 +15,9 @@ async def load_to_redis(app:FastAPI):
     logger.info("indexing to 🟥is")
     for documents in patients:
         nic = documents.get("NIC")
-        
-        if not cache.exists(nic):
+        exi = cache.exists(f"user::search::{documents.get("NIC")}")
+        logger.info(f"{nic}:{exi}")
+        if not exi:
             cache.hset(
                 name=f"user::search::{documents.get("NIC")}",
                 mapping={

@@ -82,7 +82,7 @@ class redis_AX:
 
     def autoComplete(self,text:str):
 
-        result = self.r.scan(0, match=f"{text}*", count=5)[1]
+        result = self.r.scan(0, match=f"user::search::{text}*", count=5)[1]
         return result
 
     def scarletSender_is_waiting(self,channel:str,body:Body):
