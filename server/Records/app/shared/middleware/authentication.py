@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Request, Response
+from fastapi import HTTPException, Request, Response, WebSocket, WebSocketException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from app.shared.utils.Cache.redis import redis_AX
@@ -39,6 +39,30 @@ def Authenticate(request: Request):
     
     return request
 
+
+async def Authenticate_WS(webSocket: WebSocket):
+    
+    Mq:redis_AX = webSocket.app.state.Cache 
+    token:str = webSocket.headers.get('authorization')
+    if token is None:
+        await webSocket.close()
+        raise WebSocketException(code=1008, reason="session token expired or invalid")
+    body = Body(
+        task="sessionAuth",
+        body={
+            "token":token
+        }
+    )
+    rabbitResponse:dict = Mq.scarletSender_is_waiting("security",body)
+    response:dict = rabbitResponse.body
+    status = response.task
+    if status != "verifiedToken":
+        await webSocket.close()
+        raise WebSocketException(code=1008, reason="session token expired or invalid")
+    body:dict = response.body
+    
+    
+    return body.get("uuid"), body.get("role")
 
 # Middleware
 
