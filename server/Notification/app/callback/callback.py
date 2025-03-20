@@ -7,7 +7,7 @@ from .callback_send_sms import _send_sms
 from .callback_send_ws_notification import _send_ws_notification
 
 
-MQ = sendMQ("mq","notification")
+
 
 functions = {
     "send-email":send_email,
