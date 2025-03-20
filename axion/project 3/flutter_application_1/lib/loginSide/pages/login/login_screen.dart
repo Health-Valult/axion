@@ -10,7 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _connectivityService = ConnectivityService();
   bool _isLoading = false;
   String? _error;
+  bool _obscurePassword = true; // State variable to toggle password visibility
 
   @override
   void dispose() {
@@ -33,9 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    if (!_loginForm.currentState!.validate()) {
-      return;
-    }
+    if (!_loginForm.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
@@ -63,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
           // Wait a short moment for token to be saved
           await Future.delayed(const Duration(milliseconds: 100));
           isLoggedIn = true;
-          if (!mounted) return;
           context.go('/home');
         } else {
           setState(() {
@@ -98,139 +96,152 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo and welcome message
-            Padding(
-              padding: const EdgeInsets.only(bottom: 60.0),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 50.0),
-                    child: Hero(
-                      tag: 'logo',
-                      child: SvgPicture.asset(
-                        "assets/img/Logo.svg",
-                        width: 100,
-                        height: 100,
-                        semanticsLabel: 'Red dash paths',
-                      ),
-                    ),
-                  ),
-                  Text(
-                    "Welcome Back",
-                    style: GoogleFonts.montserrat(
-                      textStyle: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Login form
-            Form(
-              key: _loginForm,
-              child: Column(
-                children: [
-                  if (_error != null)
+        child: SingleChildScrollView( // Enables scrolling if needed
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo and welcome message
+              Padding(
+                padding: const EdgeInsets.only(bottom: 60.0),
+                child: Column(
+                  children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.error.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
+                      padding: const EdgeInsets.only(bottom: 50.0),
+                      child: Hero(
+                        tag: 'logo',
+                        child: SvgPicture.asset(
+                          "assets/img/Logo.svg",
+                          width: 100,
+                          height: 100,
+                          semanticsLabel: 'Red dash paths',
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              color: theme.colorScheme.error,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _error!,
-                                style: TextStyle(
-                                  color: theme.colorScheme.error,
-                                  fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      "Welcome Back",
+                      style: GoogleFonts.montserrat(
+                        textStyle: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Login form
+              Form(
+                key: _loginForm,
+                child: Column(
+                  children: [
+                    if (_error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: theme.colorScheme.error,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  _error!,
+                                  style: TextStyle(
+                                    color: theme.colorScheme.error,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 30.0),
-                    child: LoginTextFieald(
-                      controller: _emailController,
-                      label: "Email",
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Please enter a valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 40.0),
-                    child: LoginTextFieald(
-                      controller: _passwordController,
-                      label: "Password",
-                      isPassword: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
-                        }
-                        if (value.length < 8) {
-                          return 'Password must be at least 8 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 40.0),
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : LoginButton(
-                            onPressed: (BuildContext context) async {
-                              await _handleLogin();
-                            },
+                            ],
                           ),
-                  ),
-                  SizedBox(
-                    width: 100,
-                    height: 100,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : () {
-                        // TODO: Implement biometric authentication
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
-                          const Color.fromRGBO(21, 23, 28, 1),
-                        ),
-                        foregroundColor: MaterialStateProperty.all(
-                          const Color.fromRGBO(21, 23, 28, 1),
                         ),
                       ),
-                      child: SvgPicture.asset("assets/img/biometricAuth.svg"),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 30.0),
+                      child: LoginTextFieald(
+                        controller: _emailController,
+                        label: "Email",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40.0),
+                      child: LoginTextFieald(
+                        controller: _passwordController,
+                        label: "Password",
+                        isPassword: _obscurePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 8) {
+                            return 'Password must be at least 8 characters';
+                          }
+                          return null;
+                        },
+                        // Suffix icon to toggle password visibility
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40.0),
+                      child: _isLoading
+                          ? const CircularProgressIndicator()
+                          : LoginButton(
+                              onPressed: (BuildContext context) async {
+                                await _handleLogin();
+                              },
+                            ),
+                    ),
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : () {
+                          // TODO: Implement biometric authentication
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                            const Color.fromRGBO(21, 23, 28, 1),
+                          ),
+                          foregroundColor: MaterialStateProperty.all(
+                            const Color.fromRGBO(21, 23, 28, 1),
+                          ),
+                        ),
+                        child: SvgPicture.asset("assets/img/biometricAuth.svg"),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,97 +1,190 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:flutter_application_1/models/base_report.dart';
-import 'package:flutter_application_1/models/report.dart';
-import 'package:flutter_application_1/pages/downloaded_reports_page.dart';
-import 'package:flutter_application_1/widgets/report_card.dart';
-import 'package:flutter_application_1/services/graphql_queries.dart';
+import '../models/base_report.dart';
+import '../models/report.dart';
+import '../services/graphql_queries.dart';
+import '../widgets/report_card.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({Key? key}) : super(key: key);
+
   @override
   State<ReportsPage> createState() => _ReportsPageState();
 }
 
-class _ReportsPageState extends State<ReportsPage> {
-  int _selectedYear = DateTime.now().year;
-  DateTime? _selectedDate;
-  List<Report>? _reports;
-  bool _isLoading = false;
+class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStateMixin {
+  List<BaseReport> _reports = [];
+  List<BaseReport> _filteredReports = [];
+  bool _isLoading = true;
   String? _error;
+  DateTime? _selectedDate;
+  bool _hasInitialized = false;
+  bool _isSearchVisible = false;
+  late AnimationController _searchAnimationController;
+  late Animation<double> _searchAnimation;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _fetchReports();
+    _searchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _searchAnimation = CurvedAnimation(
+      parent: _searchAnimationController,
+      curve: Curves.easeInOut,
+    );
+    _searchController.addListener(_filterReports);
+  }
+
+  @override
+  void dispose() {
+    _searchAnimationController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearchVisible = !_isSearchVisible;
+      if (_isSearchVisible) {
+        _searchAnimationController.forward();
+      } else {
+        _searchAnimationController.reverse();
+        _searchController.clear();
+      }
+    });
+  }
+
+  void _filterReports() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredReports = List.from(_reports);
+      } else {
+        _filteredReports = _reports.where((report) {
+          return report.title.toLowerCase().contains(query);
+        }).toList();
+      }
+      
+      // Apply date filter if selected
+      if (_selectedDate != null) {
+        _filteredReports = _filteredReports.where((report) =>
+          report.dateTime.year == _selectedDate!.year &&
+          report.dateTime.month == _selectedDate!.month &&
+          report.dateTime.day == _selectedDate!.day
+        ).toList();
+      }
+    });
+  }
+
+  void _updateDateFilter(DateTime? date) {
+    setState(() {
+      _selectedDate = date;
+      _filterReports(); // Re-apply filters
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_hasInitialized) {
+      _fetchReports();
+      _hasInitialized = true;
+    }
   }
 
   Future<void> _fetchReports() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final GraphQLClient client = GraphQLProvider.of(context).value;
-
-      final result = await client.query(
+      print('\n=== Fetching Lab Reports ===');
+      final client = GraphQLProvider.of(context).value;
+      final labsResult = await client.query(
         QueryOptions(
-          document: gql(GraphQLQueries.getPatientData),
-          variables: {
-            'patient': null,  // Fetch all reports
-          },
+          document: gql(GraphQLQueries.getLabs),
           fetchPolicy: FetchPolicy.noCache,
         ),
       );
 
-      if (result.hasException) {
-        throw result.exception!;
-      }
+      if (!mounted) return;
 
-      // Process procedures (reports)
-      final procedures = result.data?['procedures']['Procedures'] as List?;
-      if (procedures == null) {
-        throw Exception('No procedures data found');
-      }
-
-      // Convert procedures to Reports using the generic Report model
-      final reports = procedures.map((proc) => Report.fromProcedure(proc)).toList();
-
-      // Fetch observations for each report
-      for (var report in reports) {
-        final obsResult = await client.query(
-          QueryOptions(
-            document: gql(GraphQLQueries.getObservationsByEncounter),
-            variables: {
-              'patient': report.patient,
-              'encounter': report.encounter,
-            },
-          ),
-        );
-
-        if (!obsResult.hasException && obsResult.data != null) {
-          final observations = obsResult.data!['observations'] as List?;
-          if (observations != null) {
-            report.observations = observations.map((obs) => {
-              'id': obs['id'],
-              'code': obs['code'],
-              'display': obs['display'],
-              'value': obs['value'],
-              'unit': obs['unit'],
-              'timestamp': obs['timestamp'],
-              'meta': obs['meta'],
-            }).toList();
-          }
+      if (labsResult.hasException) {
+        print('\n❌ Labs Query Failed');
+        final error = labsResult.exception!;
+        print('Error Type: ${error.runtimeType}');
+        
+        if (error.linkException != null) {
+          print('Link Exception: ${error.linkException}');
+          print('Server Response: ${error.linkException?.originalException}');
+          print('Status Code: ${error.linkException?.originalStackTrace}');
+          print('Message: ${error.graphqlErrors.map((e) => e.message).join(", ")}');
         }
+        print('❌ GraphQL Error: $error');
+        throw error;
       }
+
+      print('\n✅ Labs Query Successful');
+      print('Response Data:');
+      print(labsResult.data);
+
+      final labsData = labsResult.data;
+      if (labsData == null) {
+        throw Exception('No data received from server');
+      }
+
+      final labsMap = labsData['Labs'] as Map<String, dynamic>?;
+      if (labsMap == null) {
+        throw Exception('Invalid response format: missing Labs field');
+      }
+
+      final labsList = labsMap['labs'] as List<dynamic>?;
+      if (labsList == null) {
+        throw Exception('Invalid response format: missing labs list');
+      }
+
+      final reports = labsList.map((lab) {
+        // Safely extract and validate required fields
+        final id = lab['id'] as String?;
+        if (id == null) throw Exception('Lab missing required field: id');
+
+        final timestamp = lab['timestamp'] as String?;
+        if (timestamp == null) throw Exception('Lab missing required field: timestamp');
+
+        final dateTime = DateTime.tryParse(timestamp);
+        if (dateTime == null) throw Exception('Invalid timestamp format: $timestamp');
+
+        return Report(
+          id: id,
+          dateTime: dateTime,
+          code: lab['code'] as String? ?? '',
+          display: lab['display'] as String? ?? 'Unknown Test',
+          meta: lab['meta'] as Map<String, dynamic>? ?? {},
+          observations: [],
+        );
+      }).toList();
+
+      if (!mounted) return;
 
       setState(() {
         _reports = reports;
+        _filteredReports = reports;
         _isLoading = false;
+        _error = null;
       });
+
+      print('\nProcessed ${reports.length} reports successfully');
     } catch (e) {
+      if (!mounted) return;
+      
+      print('\n❌ Error fetching reports: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -99,180 +192,166 @@ class _ReportsPageState extends State<ReportsPage> {
     }
   }
 
-  List<DateTime> _getDatesInYear() {
-    final yearReports = _reports?.where((r) => r.dateTime.year == _selectedYear).toList() ?? [];
-    final uniqueDates = <DateTime>{};
-    for (final r in yearReports) {
-      uniqueDates.add(DateTime(r.dateTime.year, r.dateTime.month, r.dateTime.day));
-    }
-    return uniqueDates.toList()..sort((a, b) => a.compareTo(b));
-  }
-
-  List<Report> _getDisplayedReports() {
-    final yearReports = _reports?.where((r) => r.dateTime.year == _selectedYear).toList() ?? [];
-    if (_selectedDate == null) return yearReports;
-    return yearReports.where((r) =>
-      r.dateTime.month == _selectedDate!.month &&
-      r.dateTime.day == _selectedDate!.day
-    ).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.reports),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.download_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
-                );
-              },
-            ),
-          ],
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final displayedReports = _getDisplayedReports();
-    final datesInYear = _getDatesInYear();
+    final appLocalizations = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode ? Colors.grey[850]! : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.reports),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: _pickYear,
-          ),
-          IconButton(
-            icon: const Icon(Icons.download_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DownloadedReportsPage()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: _error != null
-        ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Error: $_error'),
-                ElevatedButton(
-                  onPressed: _fetchReports,
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          )
-        : Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Text(
-                      '$_selectedYear',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const Spacer(),
-                    if (_selectedDate != null)
-                      TextButton(
-                        onPressed: () => setState(() => _selectedDate = null),
-                        child: const Text('Clear Date Filter'),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Error: $_error'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _fetchReports,
+                        child: const Text('Retry'),
                       ),
-                  ],
-                ),
-              ),
-              if (datesInYear.isNotEmpty)
-                SizedBox(
-                  height: 60,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: datesInYear.length,
-                    itemBuilder: (context, index) {
-                      final date = datesInYear[index];
-                      final isSelected = _selectedDate != null &&
-                          _selectedDate!.month == date.month &&
-                          _selectedDate!.day == date.day;
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                        child: FilterChip(
-                          label: Text(DateFormat('MMM d').format(date)),
-                          selected: isSelected,
-                          onSelected: (selected) => setState(() {
-                            _selectedDate = selected ? date : null;
-                          }),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchReports,
+                  child: SafeArea(
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          child: Column(
+                            children: [
+                              // Top capsule with Reports text and buttons
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Calendar button
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: IconButton(
+                                        icon: const Icon(Icons.calendar_today, size: 22),
+                                        padding: const EdgeInsets.all(12),
+                                        onPressed: () async {
+                                          final DateTime? picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: _selectedDate ?? DateTime.now(),
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime.now(),
+                                          );
+                                          if (picked != null) {
+                                            _updateDateFilter(picked);
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    // Reports text
+                                    Expanded(
+                                      child: Text(
+                                        appLocalizations.reports,
+                                        textAlign: TextAlign.center,
+                                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                              color: textColor,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ),
+                                    // Search button
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: IconButton(
+                                        icon: AnimatedIcon(
+                                          icon: AnimatedIcons.menu_close,
+                                          progress: _searchAnimation,
+                                        ),
+                                        padding: const EdgeInsets.all(12),
+                                        onPressed: _toggleSearch,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Search bar
+                              SizeTransition(
+                                sizeFactor: _searchAnimation,
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: cardColor,
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search reports...',
+                                      border: InputBorder.none,
+                                      hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                                    ),
+                                    style: TextStyle(color: textColor),
+                                  ),
+                                ),
+                              ),
+                              // Date filter chip
+                              if (_selectedDate != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Chip(
+                                    label: Text(
+                                      'Date: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                                    ),
+                                    onDeleted: () => _updateDateFilter(null),
+                                    backgroundColor: cardColor,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      );
-                    },
+                        Expanded(
+                          child: _filteredReports.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No reports found',
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                          color: textColor.withOpacity(0.6),
+                                        ),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                                  itemCount: _filteredReports.length,
+                                  itemBuilder: (context, index) {
+                                    return ReportCard(report: _filteredReports[index]);
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              Expanded(
-                child: displayedReports.isEmpty
-                  ? Center(
-                      child: Text(
-                        _selectedDate != null
-                          ? 'No reports for selected date'
-                          : 'No reports for $_selectedYear',
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: displayedReports.length,
-                      itemBuilder: (context, index) {
-                        final report = displayedReports[index];
-                        return ReportCard(report: report);
-                      },
-                    ),
-              ),
-            ],
-          ),
     );
-  }
-
-  Future<void> _pickYear() async {
-    final startYear = 2020;
-    final endYear = DateTime.now().year;
-    final years = List.generate(endYear - startYear + 1, (i) => startYear + i);
-    
-    final selectedYear = await showDialog<int>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Select Year"),
-          content: Container(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: years.length,
-              itemBuilder: (context, index) {
-                final year = years[index];
-                return ListTile(
-                  title: Text(year.toString()),
-                  onTap: () => Navigator.of(context).pop(year),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-
-    if (selectedYear != null) {
-      setState(() {
-        _selectedYear = selectedYear;
-        _selectedDate = null;
-      });
-      _fetchReports();
-    }
   }
 }

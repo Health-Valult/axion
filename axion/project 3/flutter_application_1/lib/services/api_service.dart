@@ -209,7 +209,10 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> sendOTP(String recipient, {required String otpType}) async {
+    print('\n=== Send OTP Request ===');
+    
     if (recipient.isEmpty) {
+      print('❌ Send OTP Validation Error: Recipient is empty');
       return {
         'success': false,
         'error': 'Recipient is required',
@@ -218,21 +221,32 @@ class ApiService {
 
     // Generate a UUID for this OTP request
     final String requestId = const Uuid().v4();
+    print('Generated UUID: $requestId');
 
     try {
-      final response = await _makeApiCall(() => http.post(
+      final requestBody = {
+        'type': otpType,
+        'tempID': requestId,
+        'data': recipient,
+      };
+
+      print('Request URL: ${ApiConfig.baseUrl}${ApiConfig.sendOTP}');
+      print('Request Body:');
+      print(const JsonEncoder.withIndent('  ').convert(requestBody));
+
+      final response = await http.post(
         Uri.parse(ApiConfig.baseUrl + ApiConfig.sendOTP),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'recipient': recipient,
-          'type': otpType,
-          'requestId': requestId,
-        }),
-      ));
+        body: jsonEncode(requestBody),
+      );
 
-      print('Request ID: $requestId');
+      print('\nResponse Status: ${response.statusCode}');
+      print('Response Body:');
+      print(const JsonEncoder.withIndent('  ').convert(jsonDecode(response.body)));
 
-      if (response['success']) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('✅ OTP sent successfully');
+        
         // Store the requestId in secure storage
         final userData = await _storage.readSecure(SecureStorageService.userDataKey);
         final Map<String, dynamic> updatedUserData = userData != null 
@@ -244,80 +258,157 @@ class ApiService {
           SecureStorageService.userDataKey,
           json.encode(updatedUserData)
         );
-      }
+        print('✅ Request ID stored in secure storage');
 
-      return response;
+        return {
+          'success': true,
+          'data': jsonDecode(response.body),
+        };
+      } else {
+        print('❌ OTP send failed with status ${response.statusCode}');
+        final error = jsonDecode(response.body)['message'] ?? 'Failed to send OTP';
+        print('Error: $error');
+        return {
+          'success': false,
+          'error': error,
+        };
+      }
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      print('❌ OTP send error');
+      print('Error: $e');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    } finally {
+      print('======================\n');
     }
   }
 
   Future<Map<String, dynamic>> verifyOTP(String email, String otp) async {
-    // Get the stored requestId from secure storage
-    final userData = await _storage.readSecure(SecureStorageService.userDataKey);
-    if (userData == null) {
+    if (email.isEmpty || otp.isEmpty) {
+      print('❌ Verify OTP Validation Error: Email or OTP is empty');
       return {
         'success': false,
-        'error': 'No user data found',
-      };
-    }
-
-    final Map<String, dynamic> userDataMap = json.decode(userData);
-    final String? requestId = userDataMap['last_otp_request_id'] as String?;
-
-    if (requestId == null) {
-      return {
-        'success': false,
-        'error': 'Invalid OTP request. Please request a new OTP.',
+        'error': 'Email and OTP are required',
       };
     }
 
     try {
+      print('\n=== Verify OTP Request ===');
+      print('URL: ${ApiConfig.baseUrl}${ApiConfig.verifyOTP}');
+      
+      // Get the stored request ID
+      final userData = await _storage.readSecure(SecureStorageService.userDataKey);
+      final Map<String, dynamic>? userDataMap = userData != null 
+        ? json.decode(userData) as Map<String, dynamic>
+        : null;
+      final String? requestId = userDataMap?['last_otp_request_id'];
+      
+      print('Stored Request ID: ${requestId ?? 'Not found'}');
+      
+      final requestBody = {
+        'email': email,
+        'otp': otp,
+        'tempID': requestId,
+      };
+      print('Request Body:');
+      print(const JsonEncoder.withIndent('  ').convert(requestBody));
+
       final response = await _makeApiCall(() => http.post(
         Uri.parse(ApiConfig.baseUrl + ApiConfig.verifyOTP),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'otp': otp,
-          'requestId': requestId,
-        }),
+        body: jsonEncode(requestBody),
       ));
 
+      print('\nResponse:');
+      print(const JsonEncoder.withIndent('  ').convert(response));
+
       if (response['success']) {
-        // Clear the stored requestId after successful validation
-        userDataMap.remove('last_otp_request_id');
-        await _storage.writeSecure(
-          SecureStorageService.userDataKey,
-          json.encode(userDataMap)
-        );
+        print('✅ OTP verified successfully');
+      } else {
+        print('❌ OTP verification failed');
+        print('Error: ${response['error']}');
       }
 
       return response;
     } catch (e) {
+      print('❌ OTP verification error');
+      print('Error: $e');
       return {'success': false, 'error': e.toString()};
+    } finally {
+      print('======================\n');
     }
   }
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
-    final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.loginUser),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
-    final data = await _handleResponse(response);
-    
-    if (data['success'] && data.containsKey('data') && data['data'].containsKey('token')) {
-      final sessionService = SessionService();
-      await sessionService.setSession(
-        token: data['data']['token'],
-        refreshToken: data['data']['refresh_token'] ?? '',
-        expiry: DateTime.now().add(const Duration(hours: 1)),
-        userData: data['data']['user'] ?? {},
+    print('\n=== Login Request ===');
+    final url = Uri.parse(ApiConfig.baseUrl + ApiConfig.loginUser);
+    print('URL: $url');
+    print('Request Data:');
+    print(const JsonEncoder.withIndent('  ').convert({
+      'email': email,
+      'password': '********', // Masked for security
+    }));
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
       );
+
+      print('\n=== Login Response ===');
+      print('Status Code: ${response.statusCode}');
+      
+      final data = await _handleResponse(response);
+      print('Response Data:');
+      final sanitizedData = Map<String, dynamic>.from(data);
+      if (sanitizedData['data'] != null && sanitizedData['data']['token'] != null) {
+        sanitizedData['data']['token'] = '********'; // Mask token for logging
+      }
+      print(const JsonEncoder.withIndent('  ').convert(sanitizedData));
+      
+      if (data['success'] && data.containsKey('data') && data['data'].containsKey('token')) {
+        print('✅ Login Successful');
+        final sessionService = SessionService();
+        await sessionService.setSession(
+          token: data['data']['token'],
+          refreshToken: data['data']['refresh_token'] ?? '',
+          expiry: DateTime.now().add(const Duration(hours: 1)),
+          userData: data['data']['user'] ?? {},
+        );
+        print('Session data stored successfully');
+      } else {
+        print('❌ Login Failed');
+        print('Error: ${data['error'] ?? 'Unknown error'}');
+      }
+      
+      return data;
+    } on http.ClientException catch (e) {
+      print('❌ Network Error: ${e.toString()}');
+      return {
+        'success': false,
+        'error': 'Network error occurred. Please check your internet connection.',
+      };
+    } on FormatException catch (e) {
+      print('❌ Response Format Error: ${e.toString()}');
+      return {
+        'success': false,
+        'error': 'Invalid response from server',
+      };
+    } catch (e) {
+      print('❌ Login Error: ${e.toString()}');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    } finally {
+      print('=====================\n');
     }
-    return data;
   }
 
   Future<Map<String, dynamic>> logout() async {
@@ -483,8 +574,8 @@ class ApiService {
       final headers = await _getHeaders();
       final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.profile.delete);
       final requestBody = {
-        'email': email,
-        'password': password,
+        'Password': password,
+        'Email': email,
       };
       
       print('Request URL: $url');

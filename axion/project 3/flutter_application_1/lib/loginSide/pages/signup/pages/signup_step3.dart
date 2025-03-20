@@ -78,31 +78,52 @@ class _SignupStep3State extends State<SignupStep3>
     });
 
     try {
+      print('\n=== Verifying OTP ===');
       final response = await _apiService.verifyOTP(
         widget.signupData.Email,
         _otpController.text.trim(),
       );
 
       if (response['success'] == true) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Signup successful!')),
-          );
-          context.go('/login');
+        print('✅ OTP Verified Successfully');
+        
+        // Create account after OTP verification
+        print('\n=== Creating Account ===');
+        final signupResponse = await _apiService.signupUser(widget.signupData.toJson());
+        
+        if (signupResponse['success'] == true) {
+          print('✅ Account Created Successfully');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Signup successful!')),
+            );
+            context.go('/login');
+          }
+        } else {
+          print('❌ Account Creation Failed');
+          final error = signupResponse['error'] ?? 'Failed to create account';
+          print('Error: $error');
+          setState(() {
+            _error = error;
+          });
         }
       } else {
+        print('❌ OTP Verification Failed');
         setState(() {
           _error = response['error'] ?? 'Invalid OTP';
         });
       }
     } catch (e) {
+      print('❌ API Call Error');
+      print('Error: ${e.toString()}');
       setState(() {
-        _error = 'Failed to verify OTP';
+        _error = e.toString();
       });
     } finally {
       setState(() {
         _isLoading = false;
       });
+      print('===========================\n');
     }
   }
 

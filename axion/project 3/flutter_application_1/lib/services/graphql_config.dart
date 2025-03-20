@@ -11,13 +11,21 @@ class GraphQLConfig {
   
   static final HttpLink httpLink = HttpLink(
     EnvConfig.graphqlUrl,
+    defaultHeaders: {
+      'Content-Type': 'application/json',
+    },
   );
 
   static final AuthLink authLink = AuthLink(
     getToken: () async {
-      // Get the current token from session service
-      final sessionToken = await _sessionService.getSessionToken();
-      return sessionToken != null ? 'Bearer $sessionToken' : null;
+      try {
+        final sessionToken = await _sessionService.getSessionToken();
+        print('Auth token for GraphQL: ${sessionToken != null ? 'Present' : 'Not found'}');
+        return sessionToken != null ? 'Bearer $sessionToken' : null;
+      } catch (e) {
+        print('Error getting auth token: $e');
+        return null;
+      }
     },
   );
 
@@ -25,7 +33,10 @@ class GraphQLConfig {
 
   /// Default GraphQL client with network-only fetch policy for real-time data
   static GraphQLClient client = GraphQLClient(
-    cache: GraphQLCache(store: InMemoryStore()),
+    cache: GraphQLCache(
+      store: InMemoryStore(),
+      dataIdFromObject: (object) => null,  // Disable automatic caching
+    ),
     link: link,
     defaultPolicies: DefaultPolicies(
       query: Policies(
@@ -44,7 +55,10 @@ class GraphQLConfig {
   static ValueNotifier<GraphQLClient> initializeClient() {
     return ValueNotifier(
       GraphQLClient(
-        cache: GraphQLCache(store: InMemoryStore()),
+        cache: GraphQLCache(
+          store: InMemoryStore(),
+          dataIdFromObject: (object) => null,  // Disable automatic caching
+        ),
         link: link,
         defaultPolicies: DefaultPolicies(
           query: Policies(
@@ -65,7 +79,10 @@ class GraphQLConfig {
   static void updateToken(String newToken) {
     token = newToken;
     client = GraphQLClient(
-      cache: GraphQLCache(store: InMemoryStore()),
+      cache: GraphQLCache(
+        store: InMemoryStore(),
+        dataIdFromObject: (object) => null,  // Disable automatic caching
+      ),
       link: link,
       defaultPolicies: DefaultPolicies(
         query: Policies(

@@ -18,7 +18,7 @@ class ApiConfig {
   static String get logout => EnvConfig.auth.logout;
   static String get resetPassword => EnvConfig.auth.resetPassword;
   static String get userProfile => EnvConfig.profile.profile;
-  static String get deleteUser => EnvConfig.auth.deleteUser;
+  static String get deleteUser => EnvConfig.profile.delete;
   
   // Profile endpoints
   static String get updateProfile => EnvConfig.profile.update;

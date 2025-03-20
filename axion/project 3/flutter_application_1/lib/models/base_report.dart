@@ -1,9 +1,19 @@
 abstract class BaseReport {
-  String get id;
-  DateTime get dateTime;
-  String get title;
-  String get status;
-  String? get placeholderImageUrl;
-  List<Map<String, dynamic>>? get observations;
-  Map<String, dynamic>? get meta;
+  final String id;
+  final DateTime dateTime;
+  final String title;
+  final String status;
+  final String? placeholderImageUrl;
+  List<Map<String, dynamic>>? observations; 
+  final Map<String, dynamic>? meta;
+
+  BaseReport({
+    required this.id,
+    required this.dateTime,
+    required this.title,
+    required this.status,
+    this.placeholderImageUrl,
+    this.observations,
+    this.meta,
+  });
 }

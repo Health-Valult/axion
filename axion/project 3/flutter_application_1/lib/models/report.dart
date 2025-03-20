@@ -6,15 +6,7 @@ part 'report.g.dart';
 
 @HiveType(typeId: 0)
 @JsonSerializable()
-class Report implements BaseReport {
-  @HiveField(0)
-  @override
-  final String id;
-  
-  @HiveField(1)
-  @override
-  final DateTime dateTime;
-  
+class Report extends BaseReport {
   @HiveField(2)
   final String code;
   
@@ -26,34 +18,25 @@ class Report implements BaseReport {
   
   @HiveField(5)
   final String? patient;
-  
-  @HiveField(6)
-  @override
-  final Map<String, dynamic>? meta;
-  
-  @HiveField(7)
-  @override
-  List<Map<String, dynamic>>? observations;
-
-  @override
-  String get title => display;
-
-  @override
-  String get status => 'completed';  // Default status for loaded reports
-
-  @override
-  String? get placeholderImageUrl => null;  // We don't use placeholder images
 
   Report({
-    required this.id,
-    required this.dateTime,
+    required String id,
+    required DateTime dateTime,
     required this.code,
     required this.display,
     this.encounter,
     this.patient,
-    this.meta,
-    this.observations,
-  });
+    Map<String, dynamic>? meta,
+    List<Map<String, dynamic>>? observations,
+  }) : super(
+    id: id,
+    dateTime: dateTime,
+    title: display,
+    status: 'completed',
+    meta: meta,
+    observations: observations,
+    placeholderImageUrl: null,
+  );
 
   factory Report.fromJson(Map<String, dynamic> json) => _$ReportFromJson(json);
   Map<String, dynamic> toJson() => _$ReportToJson(this);

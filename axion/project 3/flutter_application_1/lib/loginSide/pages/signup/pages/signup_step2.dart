@@ -136,17 +136,21 @@ class _SignupStep2State extends State<SignupStep2>
     });
 
     try {
-      print('\n=== Making Signup API Call ===');
-      final response = await _apiService.signupUser(widget.signupData.toJson());
+      // Send OTP before moving to next step
+      print('\n=== Sending OTP ===');
+      final otpResponse = await _apiService.sendOTP(
+        widget.signupData.Email,
+        otpType: 'email',
+      );
       
-      if (response['success'] == true) {
-        print('✅ API Call Successful');
+      if (otpResponse['success'] == true) {
+        print('✅ OTP Sent Successfully');
         if (mounted) {
           widget.onNext(); // Navigate to OTP page
         }
       } else {
-        print('❌ API Call Failed');
-        final error = response['error'] ?? 'Signup failed';
+        print('❌ OTP Send Failed');
+        final error = otpResponse['error'] ?? 'Failed to send OTP';
         print('Error: $error');
         setState(() {
           _error = error;

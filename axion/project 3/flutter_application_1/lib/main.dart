@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/pages/login/login_screen.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/signup_pageview.dart';
 import 'package:flutter_application_1/loginSide/pages/splash/splash_screen.dart';
-import 'package:flutter_application_1/models/base_report.dart';
 import 'package:flutter_application_1/models/report.dart';
 import 'package:flutter_application_1/pages/main_page.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_application_1/services/notification_service.dart';
+import 'package:flutter_application_1/services/graphql_config.dart';
+import 'package:flutter_application_1/services/hive_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_application_1/services/permission_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:flutter_application_1/services/graphql_config.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_application_1/services/permission_service.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
@@ -101,6 +102,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
+  // Initialize notification service
+  await NotificationService.initialize();
+
   // Request all required permissions
   await PermissionService.requestAllPermissions();
 
@@ -113,9 +117,11 @@ Future<void> main() async {
 
   // Initialize Hive and register adapters.
   await Hive.initFlutter();
-  Hive.registerAdapter(ReportAdapter());
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(ReportAdapter());
+  }
   // Open the box once.
-  await Hive.openBox<BaseReport>('downloadedReports');
+  await Hive.openBox<Report>(HiveService.reportsBoxName);
 
   // Load persistent settings.
   final themeMode = await loadThemeMode();

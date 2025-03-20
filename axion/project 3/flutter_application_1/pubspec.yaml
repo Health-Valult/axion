@@ -38,25 +38,26 @@ dependencies:
   hive: ^2.2.3
   path_provider: ^2.1.2
   shared_preferences: ^2.2.2
-  intl: ^0.19.0  # Instead of 'any'
+  intl: ^0.19.0
   google_fonts: ^4.0.4
   graphql_flutter: ^5.0.1
-  flutter_secure_storage: ^9.0.0  # Updated from ^4.2.1
+  flutter_secure_storage: ^9.0.0
   encrypt: ^5.0.3
   geolocator: ^10.1.0
   permission_handler: ^11.3.0
   connectivity_plus: ^5.0.2
   mask_text_input_formatter: ^2.2.0
-  get_ip_address: ^0.0.7  # Updated to correct version
-  device_info_plus: ^9.1.2  # Added for getting Android ID
-  uuid: ^4.3.3  # For generating unique identifiers for OTP tracking
+  get_ip_address: ^0.0.7
+  device_info_plus: ^9.1.2
+  uuid: ^4.3.3
   json_annotation: ^4.9.0
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
+  flutter_local_notifications: ^16.3.2
+  share_plus: ^10.0.0
   cupertino_icons: ^1.0.8
   flutter_localizations:
     sdk: flutter
-  share_plus: ^10.1.4
   flutter_dotenv: ^5.2.1
   provider: ^6.1.2
 

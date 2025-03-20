@@ -5,8 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class EnvConfig {
   // API Configuration
   static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://axiontestgateway.azure-api.net';
-  static String get graphqlUrl => dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/axion/graphql';
-  static String get apiSubscriptionKey => dotenv.env['API_SUBSCRIPTION_KEY'] ?? '';
+  static String get graphqlUrl => dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/records-patients';
   
   // Authentication Configuration
   static int get accessTokenDuration => int.parse(dotenv.env['ACCESS_TOKEN_DURATION'] ?? '3600');
@@ -29,13 +28,12 @@ class _AuthEndpoints {
   String get signupUser => '/auth/signup/patient';
   String get validateEmail => '/axion/auth/validate/email';
   String get validateOTP => '/axion/auth/validate/otp';
-  String get sendOTP => '/axion/auth/send/otp';
-  String get verifyOTP => '/axion/auth/verify/otp';
+  String get sendOTP => '/auth/send/otp';
+  String get verifyOTP => '/auth/verify/otp';
   String get loginUser => '/auth/login/patient';
   String get refreshToken => '/axion/auth/refresh';
   String get logout => '/axion/auth/logout';
   String get resetPassword => '/user/reset-password';
-  String get deleteUser => '/auth/delete/patient';
 }
 
 /// Profile-related endpoints

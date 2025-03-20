@@ -16,129 +16,128 @@ class ProfilePage extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'), 
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Header
-            Center(
-              child: Column(
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: isDarkMode 
-                        ? const Color.fromARGB(103, 79, 41, 146).withOpacity(0.7)
-                        : const Color.fromARGB(188, 163, 92, 201).withOpacity(0.2),
-                    child: Text(
-                      '${user.firstName[0]}${user.lastName[0]}',
-                      style: headlineStyle?.copyWith(
-                        color: isDarkMode ? Colors.white : Colors.purple,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Header
+              Center(
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: isDarkMode 
+                          ? const Color.fromARGB(103, 79, 41, 146).withOpacity(0.7)
+                          : const Color.fromARGB(188, 163, 92, 201).withOpacity(0.2),
+                      child: Text(
+                        '${user.firstName[0]}${user.lastName[0]}',
+                        style: headlineStyle?.copyWith(
+                          color: isDarkMode ? Colors.white : Colors.purple,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${user.firstName} ${user.lastName}',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    user.email,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Contact Information
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Contact Information',
-                      style: TextStyle(fontSize: 18),
-                    ),
                     const SizedBox(height: 16),
-                    ListTile(
-                      leading: const Icon(Icons.email),
-                      title: const Text('Email'),
-                      subtitle: Text(user.email),
+                    Text(
+                      '${user.firstName} ${user.lastName}',
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    ListTile(
-                      leading: const Icon(Icons.phone),
-                      title: const Text('Phone'),
-                      subtitle: Text(user.telephone),
+                    const SizedBox(height: 8),
+                    Text(
+                      user.email,
+                      style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 32),
 
-            // Personal Information
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Personal Information',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 16),
-                    ListTile(
-                      leading: const Icon(Icons.person),
-                      title: const Text('Full Name'),
-                      subtitle: Text('${user.firstName} ${user.lastName}'),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.cake),
-                      title: const Text('Birthday'),
-                      subtitle: Text(
-                        // Convert YYYYMMDD to formatted date
-                        '${user.dateOfBirth.toString().substring(6, 8)}/'  // DD
-                        '${user.dateOfBirth.toString().substring(4, 6)}/'  // MM
-                        '${user.dateOfBirth.toString().substring(0, 4)}',  // YYYY
+              // Contact Information
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Contact Information',
+                        style: TextStyle(fontSize: 18),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      ListTile(
+                        leading: const Icon(Icons.email),
+                        title: const Text('Email'),
+                        subtitle: Text(user.email),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.phone),
+                        title: const Text('Phone'),
+                        subtitle: Text(user.telephone),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 16),
 
-            // Settings option
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsPage(),
+              // Personal Information
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Personal Information',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      const SizedBox(height: 16),
+                      ListTile(
+                        leading: const Icon(Icons.person),
+                        title: const Text('Full Name'),
+                        subtitle: Text('${user.firstName} ${user.lastName}'),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.cake),
+                        title: const Text('Birthday'),
+                        subtitle: Text(
+                          // Convert YYYYMMDD to formatted date
+                          '${user.dateOfBirth.toString().substring(6, 8)}/'  // DD
+                          '${user.dateOfBirth.toString().substring(4, 6)}/'  // MM
+                          '${user.dateOfBirth.toString().substring(0, 4)}',  // YYYY
+                        ),
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              const SizedBox(height: 32),
 
-            // Logout button
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                _showLogoutConfirmation(context);
-              },
-            ),
-          ],
+              // Settings option
+              ListTile(
+                leading: const Icon(Icons.settings_outlined),
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const SettingsPage(),
+                    ),
+                  );
+                },
+              ),
+
+              // Logout button
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('Logout'),
+                onTap: () {
+                  _showLogoutConfirmation(context);
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

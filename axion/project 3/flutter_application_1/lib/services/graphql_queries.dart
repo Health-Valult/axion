@@ -1,31 +1,27 @@
 class GraphQLQueries {
-  // Single query to get all patient data including reports (procedures)
-  static String getPatientData = '''
-    query GetPatientData(\$patient: ID!) {
-      procedures(patient: \$patient) {
-        Procedures {
-          encounter
-          patient
-          id
+  // Query to get medications for the authenticated user
+  static String getMedications = '''
+    query Medications {
+      medications {
+        medications {
+          patientID
           code
           display
-          Date
+          dosage
+          route
+          prescriber
           meta
         }
       }
-      observations(patient: \$patient, code: null, encounter: null) {
-        encounter
-        patient
-        code
-        display
-        unit
-        value
-        timestamp
-        meta
-      }
-      allergys(patient: \$patient) {
+    }
+  ''';
+
+  // Query to get allergies for the authenticated user
+  static String getAllergies = '''
+    query Allergys {
+      allergys {
         allergyIntolerances {
-          patient
+          patientID
           code
           display
           timestamp
@@ -35,46 +31,61 @@ class GraphQLQueries {
           active
           source
           verificationStatus
-        }
-      }
-      medications(patient: \$patient) {
-        medications {
-          patient
-          code
-          display
-          dosage
-          route
-          prescriber
-          meta
-        }
-      }
-      immunizations(patient: \$patient) {
-        immunizations {
-          patient
-          code
-          display
-          timestamp
-          status
-          route
-          doseQuantity
           meta
         }
       }
     }
   ''';
 
-  // Query for specific observations (report content) by encounter
-  static String getObservationsByEncounter = '''
-    query GetObservationsByEncounter(\$patient: ID!, \$encounter: ID!) {
-      observations(patient: \$patient, encounter: \$encounter) {
-        encounter
-        patient
-        code
-        display
-        unit
-        value
-        timestamp
-        meta
+  // Query to get immunizations for the authenticated user
+  static String getImmunizations = '''
+    query Immunization {
+      immunization {
+        immunizations {
+          patientID
+          code
+          display
+          dosage
+          unit
+          site
+          timestamp
+          meta
+        }
+      }
+    }
+  ''';
+
+  // Query to get lab reports
+  static String getLabs = '''
+    query Labs {
+      Labs {
+        labs {
+          id
+          patientID
+          code
+          display
+          timestamp
+          meta
+        }
+      }
+    }
+  ''';
+
+  // Query to get observations for a specific lab report
+  static String getObservationStack = '''
+    query ObservationStack(\$LabID: String!) {
+      observationStack(LabID: \$LabID) {
+        Observations {
+          id
+          patientID
+          labID
+          code
+          display
+          unit
+          value
+          timestamp
+          meta
+        }
       }
     }
   ''';

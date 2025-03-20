@@ -6,14 +6,16 @@ class LoginTextFieald extends StatelessWidget {
   final String? Function(String?) validator;
   final TextEditingController? controller;
   final bool isPassword;
+  final Widget? suffixIcon; // New parameter for suffix icon
 
   const LoginTextFieald({
-    super.key, 
+    Key? key, 
     required this.label,
     required this.validator,
     this.controller,
     this.isPassword = false,
-  });
+    this.suffixIcon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,7 @@ class LoginTextFieald extends StatelessWidget {
             ),
           ),
           focusColor: focusedBorderColor,
+          suffixIcon: suffixIcon, // Insert the suffix icon here
         ),
       ),
     );
