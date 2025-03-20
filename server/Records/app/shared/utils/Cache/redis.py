@@ -80,6 +80,11 @@ class redis_AX:
         self.r.publish(channel, message.model_dump_json())
         print(f"Published: {message}")
 
+    def autoComplete(self,test:str):
+        start_range = f"[{test}"  
+        end_range = f"[{test}\xff"
+        result = self.r.zrangebylex("nic_autocomplete", start_range, end_range, start=0)
+        return result
 
     def scarletSender_is_waiting(self,channel:str,body:Body):
         temp_channel = f"temp_channel_{uuid.uuid4().hex}"

@@ -10,6 +10,7 @@ from fastapi import APIRouter,FastAPI,Depends, WebSocketDisconnect
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
+from app.shared.utils.Cache.redis import redis_AX
 
 route = APIRouter()
 connected_clients:dict = {}
@@ -40,7 +41,7 @@ async def websocket_endpoint(websocket: WebSocket,):
 
     c_uuid,role = await Authenticate_WS(webSocket=websocket)
     await websocket.accept()
-
+    Cache:redis_AX = websocket.app.state.Cache
     connected_clients[c_uuid] = {
         "time":datetime.datetime.now(datetime.timezone.utc),
         "role":role,
@@ -53,10 +54,12 @@ async def websocket_endpoint(websocket: WebSocket,):
         while True:
             text = await websocket.receive_json()  
             logger.warning(text)
-            dci = {
-                "res":"then go jump"
+            prefix = json.loads(text)
+            res = Cache.autoComplete(prefix.get("packet"))
+            response = {
+                "msg":res
             }
-            jdic = json.dumps(dci)
+            jdic = json.dumps(response)
             await websocket.send_json(jdic)
 
     except WebSocketDisconnect:
