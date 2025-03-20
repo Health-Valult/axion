@@ -65,7 +65,7 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
             "body":f"new login at {location}"
             }
 
-            response = state.sender_task.send_and_await("notification","send-email",body=body)
+            #response = state.sender_task.send_and_await("notification","send-email",body=body)
 
     locationDataPacket = {
         "Latitude":lat,
