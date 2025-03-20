@@ -31,6 +31,6 @@ endpoints = {"doctors" : {
 
 def _get_profile(collection:Collection,c_uuid:UUID,endpoint:Literal["patient","doctor","hospital"]):
     currunt = collection.find_one({"UserID":c_uuid}, endpoints.get(endpoint))
-    data = next(currunt,None)
+    data = currunt
     return JSONResponse(status_code=200, content=data)
 
