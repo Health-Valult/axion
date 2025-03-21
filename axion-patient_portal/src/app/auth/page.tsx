@@ -495,7 +495,7 @@ const registerUser = async (formData: FormData) => {
 
 const loginUser = async (email: string, password: string) => {
     try {
-        const response = await fetch(`api/login`, {
+        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
