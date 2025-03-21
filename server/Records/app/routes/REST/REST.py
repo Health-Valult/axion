@@ -59,7 +59,7 @@ async def websocket_endpoint(websocket: WebSocket,):
             
             auto = pt.find({ "NIC": { "$regex": f"/^{text.get("packet")}/", "$options": 'i' } })
             response = {
-                "packet":auto
+                "packet":list(auto)
             }
             jdic = json.dumps(response)
             await websocket.send_json(jdic)
