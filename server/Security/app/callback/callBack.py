@@ -34,4 +34,4 @@ async def callback_security(request:RedRequest) -> None:
             return result
   
         except Exception as e:
-            return e
+            return {}

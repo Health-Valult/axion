@@ -40,11 +40,11 @@ def Authenticate(request: Request):
     return request
 
 
-async def Authenticate_WS(webSocket: WebSocket):
+async def Authenticate_WS(webSocket: WebSocket,token:str):
     
     Mq:redis_AX = webSocket.app.state.Cache 
-    token:str = webSocket.headers.get('authorization')
-    print("ur here")
+
+
     if token is None:
         await webSocket.close()
         raise WebSocketException(code=1008, reason="session token expired or invalid")
