@@ -5,7 +5,7 @@ from fastapi import FastAPI
 import asyncio
 from pymongo import MongoClient
 import uvicorn
-from app.shared.utils.MQ.reciver import RedReciver, recieveMQ
+from app.shared.utils.MQ.reciver import RedReciver
 from app.shared.utils.MQ.sender import sendMQ
 from app.shared.utils.Cache.redis import redis_AX
 from dotenv import load_dotenv

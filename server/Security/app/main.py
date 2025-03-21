@@ -92,6 +92,7 @@ origins = [
     "https://localhost.tiangolo.com",
     "http://localhost",
     "http://localhost:3000",
+    "https://patient.axionhealth.app"
 ]
 
 app.add_middleware(
