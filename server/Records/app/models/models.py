@@ -10,6 +10,8 @@ class Test(BaseModel):
 class SelectPatient(BaseModel):
     NIC:str
 
+class OTP(BaseModel):
+    otp:str
 # Medical Data types
 
 # ENUMS AND SUB MODELS

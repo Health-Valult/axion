@@ -1,4 +1,5 @@
 import datetime
+import hmac
 import json
 import logging
 import random
@@ -48,7 +49,7 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     logger.info(credentials)
 
     if not credentials:
-        JSONResponse(status_code=401,content={"Details":"patient does not exist"})
+        return JSONResponse(status_code=401,content={"Details":"patient does not exist"})
 
     EMAIL = credentials.get("Email")
     UUID = credentials.get("UserID")
@@ -70,8 +71,30 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     })
     
     cache.scarletSender("notification",body=body)
+    return JSONResponse(status_code=401,content={"Details":"pending verification status"})
 
+@route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
+async def verify_doctor_request(request:Request,cred:OTP):
+    state:FastAPI = request.app.state
+    cache:redis_AX = request.app.state.Cache
+    c_otp = cred.otp
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+    
+   
+    name = f"otp::verify:records::request::{c_uuid}"
+    otp_payload = cache.get_item(name=name)
+    logger.warning(otp_payload)
+    if otp_payload is None:
+        return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
 
+    otp = otp_payload.get(b"otp").decode()
+    if otp is None:
+        return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
+    
+    if not hmac.compare_digest(otp,c_otp):
+        return JSONResponse(status_code=200,content={"msg":"otp invalid"})
+
+    return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
 
 @route.websocket("/records/search",)
