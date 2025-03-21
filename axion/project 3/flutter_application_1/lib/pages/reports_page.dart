@@ -198,10 +198,13 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDarkMode ? Colors.grey[850]! : Colors.white;
     final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtleColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
 
     return Scaffold(
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            ))
           : _error != null
               ? Center(
                   child: Column(
@@ -210,13 +213,19 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                       Text('Error: $_error'),
                       const SizedBox(height: 16),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[300],
+                        ),
                         onPressed: _fetchReports,
-                        child: const Text('Retry'),
+                        child: Text('Retry', 
+                          style: TextStyle(color: Colors.grey[800]),
+                        ),
                       ),
                     ],
                   ),
                 )
               : RefreshIndicator(
+                  color: Colors.blue,
                   onRefresh: _fetchReports,
                   child: SafeArea(
                     child: Column(
@@ -225,7 +234,6 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                           child: Column(
                             children: [
-                              // Top capsule with Reports text and buttons
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                 decoration: BoxDecoration(
@@ -242,11 +250,13 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    // Calendar button
                                     Material(
                                       color: Colors.transparent,
                                       child: IconButton(
-                                        icon: const Icon(Icons.calendar_today, size: 22),
+                                        icon: Icon(Icons.calendar_today, 
+                                          size: 22,
+                                          color: subtleColor,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         onPressed: () async {
                                           final DateTime? picked = await showDatePicker(
@@ -261,7 +271,6 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                                         },
                                       ),
                                     ),
-                                    // Reports text
                                     Expanded(
                                       child: Text(
                                         appLocalizations.reports,
@@ -272,13 +281,13 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                                             ),
                                       ),
                                     ),
-                                    // Search button
                                     Material(
                                       color: Colors.transparent,
                                       child: IconButton(
                                         icon: AnimatedIcon(
                                           icon: AnimatedIcons.menu_close,
                                           progress: _searchAnimation,
+                                          color: subtleColor,
                                         ),
                                         padding: const EdgeInsets.all(12),
                                         onPressed: _toggleSearch,
@@ -287,7 +296,6 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                                   ],
                                 ),
                               ),
-                              // Search bar
                               SizeTransition(
                                 sizeFactor: _searchAnimation,
                                 child: Container(
@@ -310,21 +318,23 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
                                       hintText: 'Search reports...',
                                       border: InputBorder.none,
                                       hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                                      prefixIcon: Icon(Icons.search, color: subtleColor),
                                     ),
                                     style: TextStyle(color: textColor),
                                   ),
                                 ),
                               ),
-                              // Date filter chip
                               if (_selectedDate != null)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Chip(
                                     label: Text(
                                       'Date: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                                      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
                                     ),
                                     onDeleted: () => _updateDateFilter(null),
-                                    backgroundColor: cardColor,
+                                    backgroundColor: Colors.grey.withOpacity(0.1),
+                                    deleteIconColor: subtleColor,
                                   ),
                                 ),
                             ],

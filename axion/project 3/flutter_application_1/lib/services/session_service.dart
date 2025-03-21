@@ -31,6 +31,7 @@ class SessionService {
     required Map<String, dynamic> userData,
   }) async {
     // First update the GraphQL client token to ensure it's ready immediately
+    GraphQLConfig.token = token;
     GraphQLConfig.updateToken(token);
 
     // Then persist the data to secure storage

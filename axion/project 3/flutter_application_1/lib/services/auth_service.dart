@@ -188,13 +188,7 @@ class AuthService {
     String? profileImage,
   }) async {
     try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('$baseUrl/auth/signup'),
-      );
-
-      // Add text fields
-      request.fields.addAll({
+      final response = await _makeAuthRequest('auth/signup', {
         'nic': nic,
         'password': password,
         'firstName': firstName,
@@ -203,36 +197,29 @@ class AuthService {
         'phoneNumber': phoneNumber,
         'address': address,
         'otp': otp,
+        if (profileImage != null) 'profileImage': profileImage,
       });
 
-      // Add profile image if provided
-      if (profileImage != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'profileImage',
-          profileImage,
-        ));
-      }
-
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 201) {
-        final data = json.decode(response.body);
-        return {
-          'success': true,
-          'data': data,
-        };
+      if (response['success']) {
+        if (response['token'] != null && response['refreshToken'] != null) {
+          await _saveTokens(response['token'], response['refreshToken']);
+        }
+        return response;
       } else {
-        final error = json.decode(response.body);
+        String errorMessage = response['error'] ?? 'Signup failed';
+        if (response['error']?.toLowerCase().contains('email') && 
+            response['error']?.toLowerCase().contains('exists')) {
+          errorMessage = 'This email is already registered. Please use a different email or login.';
+        }
         return {
           'success': false,
-          'error': error['message'] ?? 'Registration failed',
+          'error': errorMessage
         };
       }
     } catch (e) {
       return {
         'success': false,
-        'error': 'Network error occurred',
+        'error': 'An unexpected error occurred. Please try again.',
       };
     }
   }
@@ -309,6 +296,26 @@ class AuthService {
       return {
         'success': false,
         'error': 'An unexpected error occurred. Please try again.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> checkEmailExists(String email) async {
+    try {
+      final response = await _makeAuthRequest('auth/check-email', {
+        'email': email,
+      });
+
+      return {
+        'success': true,
+        'exists': response['exists'] ?? false,
+        'error': response['error']
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'exists': false,
+        'error': 'Failed to check email. Please try again.'
       };
     }
   }

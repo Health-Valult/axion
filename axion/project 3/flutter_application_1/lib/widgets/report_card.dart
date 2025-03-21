@@ -13,21 +13,25 @@ class ReportCard extends StatelessWidget {
     final hour = report.dateTime.hour.toString().padLeft(2, '0');
     final minute = report.dateTime.minute.toString().padLeft(2, '0');
     final timeString = '$hour:$minute';
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final subtleColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
+    final iconColor = isDarkMode ? Colors.grey[300] : Colors.grey[700];
+    final cardColor = isDarkMode ? const Color.fromRGBO(13, 14, 18, 1) : const Color.fromRGBO(241, 241, 241, 1);
 
     // Format the date using the intl package (localized)
     final formattedDate = DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(report.dateTime);
 
-    // Use theme properties for colors and text styles
-    final cardColor = Theme.of(context).cardColor;
-    final iconBackground = Theme.of(context).brightness == Brightness.dark
-        ? Colors.grey[800]
-        : Colors.grey[300];
-
     return Card(
       color: cardColor,
       margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Colors.grey.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+      elevation: 0,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
@@ -39,45 +43,68 @@ class ReportCard extends StatelessWidget {
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-              // Use a themed background for the icon container
               Container(
-                width: 60,
-                height: 60,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: iconBackground,
+                  color: Colors.grey.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.insert_drive_file, color: Colors.white),
+                child: Icon(Icons.insert_drive_file, color: iconColor),
               ),
-              const SizedBox(width: 12),
-              // Title, date and time information using theme text styles
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       report.title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: subtleColor,
+                        ),
+                        const SizedBox(width: 4),
                         Text(
                           formattedDate,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.blueGrey),
+                          style: TextStyle(
+                            color: subtleColor,
+                            fontSize: 14,
+                          ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 12),
+                        Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: subtleColor,
+                        ),
+                        const SizedBox(width: 4),
                         Text(
                           timeString,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.blueGrey),
+                          style: TextStyle(
+                            color: subtleColor,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: subtleColor?.withOpacity(0.7),
               ),
             ],
           ),

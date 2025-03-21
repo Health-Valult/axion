@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step1.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step2.dart';
 import 'package:flutter_application_1/loginSide/pages/signup/pages/signup_step3.dart';
-import 'package:flutter_application_1/loginSide/widgets/progress_bar.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SignupPageView extends StatefulWidget {
   const SignupPageView({Key? key}) : super(key: key);
@@ -23,7 +24,6 @@ class _SignupPageViewState extends State<SignupPageView> {
   @override
   void initState() {
     super.initState();
-    // Debug print initial state
     print('Initial SignupData state:');
     print('First Name: ${_signupData.FirstName}');
     print('Last Name: ${_signupData.LastName}');
@@ -47,10 +47,8 @@ class _SignupPageViewState extends State<SignupPageView> {
       return;
     }
 
-    // Force the current form to save its state
     currentFormKey.currentState!.save();
 
-    // Debug print to verify data after each step
     print('Current SignupData state after step ${_currentPage + 1}:');
     print('First Name: ${_signupData.FirstName}');
     print('Last Name: ${_signupData.LastName}');
@@ -84,13 +82,39 @@ class _SignupPageViewState extends State<SignupPageView> {
 
   @override
   Widget build(BuildContext context) {
-    final pageTitle = _currentPage == 2 ? 'Enter Verification Code' : 'Sign up';
+    // For step 3, render the title with the provided gradient; for steps 1 and 2, no title is displayed.
+    Widget titleWidget = Container();
+    if (_currentPage == 2) {
+      titleWidget = ShaderMask(
+        shaderCallback: (Rect bounds) {
+          return const LinearGradient(
+            colors: [
+              Color.fromARGB(255, 255, 136, 34),
+              Color.fromARGB(255, 251, 48, 48),
+              Color.fromARGB(255, 255, 177, 41)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ).createShader(bounds);
+        },
+        child: Text(
+          'Enter Verification Code',
+          style: GoogleFonts.montserrat(
+            textStyle: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
           onPressed: _previousPage,
         ),
         backgroundColor: Colors.transparent,
@@ -99,18 +123,11 @@ class _SignupPageViewState extends State<SignupPageView> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 60),
-            Text(
-              pageTitle,
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            if (_currentPage == 2)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: titleWidget,
               ),
-            ),
-            const SizedBox(height: 20),
-            ProgressBar(currentStep: _currentPage + 1),
-            const SizedBox(height: 40),
             Expanded(
               child: PageView(
                 controller: _pageController,

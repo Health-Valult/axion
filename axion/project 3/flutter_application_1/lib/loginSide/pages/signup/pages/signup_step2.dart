@@ -3,8 +3,13 @@ import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart'; 
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:flutter_application_1/loginSide/widgets/terms_conditions_dialog.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignupStep2 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -29,7 +34,7 @@ class _SignupStep2State extends State<SignupStep2>
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
   final _nicController = TextEditingController();
-  final _dobController = TextEditingController(); 
+  final _dobController = TextEditingController();
 
   final dateMaskFormatter = MaskTextInputFormatter(
     mask: '##/##/####',
@@ -48,25 +53,9 @@ class _SignupStep2State extends State<SignupStep2>
     _passwordController.text = widget.signupData.Password;
     _phoneController.text = widget.signupData.Telephone;
     _nicController.text = widget.signupData.NIC;
-    _dobController.text = widget.signupData.DateOfBirth > 0 
-        ? _formatDate(widget.signupData.DateOfBirth) 
+    _dobController.text = widget.signupData.DateOfBirth > 0
+        ? _formatDate(widget.signupData.DateOfBirth)
         : '';
-
-    // Debug print to verify Step 1 data
-    print('Step2 Init - Step 1 data saved: ${widget.step1DataSaved}');
-    print('First Name: ${widget.signupData.FirstName}');
-    print('Last Name: ${widget.signupData.LastName}');
-    print('Email: ${widget.signupData.Email}');
-  }
-
-  @override
-  void didUpdateWidget(SignupStep2 oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Debug print when widget updates
-    print('Step2 Updated - Step 1 data saved: ${widget.step1DataSaved}');
-    print('First Name: ${widget.signupData.FirstName}');
-    print('Last Name: ${widget.signupData.LastName}');
-    print('Email: ${widget.signupData.Email}');
   }
 
   String _formatDate(int date) {
@@ -76,7 +65,6 @@ class _SignupStep2State extends State<SignupStep2>
   }
 
   int _parseDateToInt(String date) {
-    // Convert from MM/DD/YYYY to YYYYMMDD
     final parts = date.split('/');
     if (parts.length != 3) return 0;
     return int.parse('${parts[2]}${parts[0]}${parts[1]}');
@@ -92,33 +80,23 @@ class _SignupStep2State extends State<SignupStep2>
   }
 
   Future<void> _validateAndSendData() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!widget.formKey.currentState!.validate()) {
       return;
     }
 
     if (!widget.step1DataSaved) {
       setState(() {
-        _error = 'Please complete Step 1 first';
+        _error = l10n.signupStep1Incomplete;
       });
       return;
     }
 
-    // Update signup data before validation
     widget.signupData.Password = _passwordController.text;
     widget.signupData.Telephone = _phoneController.text.trim();
     widget.signupData.NIC = _nicController.text.trim();
     widget.signupData.DateOfBirth = _parseDateToInt(_dobController.text.trim());
-
-    // Debug print to verify all data before showing terms
-    print('\n=== Signup Data Before Terms ===');
-    print('First Name: ${widget.signupData.FirstName}');
-    print('Last Name: ${widget.signupData.LastName}');
-    print('Email: ${widget.signupData.Email}');
-    print('NIC: ${widget.signupData.NIC}');
-    print('Phone: ${widget.signupData.Telephone}');
-    print('DOB: ${widget.signupData.DateOfBirth}');
-    print('Password: ${widget.signupData.Password}');
-    print('===========================\n');
 
     final bool? accepted = await showDialog<bool>(
       context: context,
@@ -126,9 +104,7 @@ class _SignupStep2State extends State<SignupStep2>
       builder: (BuildContext context) => const TermsAndConditionsDialog(),
     );
 
-    if (accepted != true) {
-      return;
-    }
+    if (accepted != true) return;
 
     setState(() {
       _isLoading = true;
@@ -136,29 +112,20 @@ class _SignupStep2State extends State<SignupStep2>
     });
 
     try {
-      // Send OTP before moving to next step
-      print('\n=== Sending OTP ===');
       final otpResponse = await _apiService.sendOTP(
         widget.signupData.Email,
         otpType: 'email',
       );
-      
+
       if (otpResponse['success'] == true) {
-        print('✅ OTP Sent Successfully');
-        if (mounted) {
-          widget.onNext(); // Navigate to OTP page
-        }
+        if (mounted) widget.onNext();
       } else {
-        print('❌ OTP Send Failed');
-        final error = otpResponse['error'] ?? 'Failed to send OTP';
-        print('Error: $error');
+        final error = otpResponse['error'] ?? l10n.otpSendFailed;
         setState(() {
           _error = error;
         });
       }
     } catch (e) {
-      print('❌ API Call Error');
-      print('Error: ${e.toString()}');
       setState(() {
         _error = e.toString();
       });
@@ -166,7 +133,6 @@ class _SignupStep2State extends State<SignupStep2>
       setState(() {
         _isLoading = false;
       });
-      print('===========================\n');
     }
   }
 
@@ -176,13 +142,52 @@ class _SignupStep2State extends State<SignupStep2>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
+    final defaultStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16) ??
+        const TextStyle(fontSize: 16);
+
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: widget.formKey,
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 50.0),
+                child: SvgPicture.asset(
+                  "assets/img/step_two.svg",
+                  width: 200,
+                  height: 200,
+                  semanticsLabel: l10n.signupStepTwoImage,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return const LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 255, 136, 34),
+                        Color.fromARGB(255, 251, 48, 48),
+                        Color.fromARGB(255, 255, 177, 41)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds);
+                  },
+                  child: Text(
+                    l10n.signupStepTwoTagline,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
               if (_error != null)
                 Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -207,49 +212,49 @@ class _SignupStep2State extends State<SignupStep2>
                 ),
               CustomTextField(
                 controller: _nicController,
-                hintText: 'NIC Number',
+                hintText: l10n.nic,
                 enabled: !_isLoading,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'NIC number is required';
+                    return l10n.nicRequired;
                   }
                   return null;
                 },
               ),
               CustomTextField(
                 controller: _dobController,
-                hintText: 'Date of Birth (MM/DD/YYYY)',
+                hintText: l10n.dobHint,
                 enabled: !_isLoading,
                 keyboardType: TextInputType.number,
                 inputFormatters: [dateMaskFormatter],
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Date of Birth is required';
+                    return l10n.dobRequired;
                   }
                   if (!RegExp(r'^\d{2}/\d{2}/\d{4}$').hasMatch(value)) {
-                    return 'Please enter a valid date (MM/DD/YYYY)';
+                    return l10n.dobInvalidFormat;
                   }
                   return null;
                 },
               ),
               CustomTextField(
                 controller: _phoneController,
-                hintText: 'Phone Number',
+                hintText: l10n.phone,
                 enabled: !_isLoading,
                 keyboardType: TextInputType.phone,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Phone number is required';
+                    return l10n.phoneRequired;
                   }
                   if (!RegExp(r'^\d{10}$').hasMatch(value.replaceAll(RegExp(r'[^\d]'), ''))) {
-                    return 'Please enter a valid 10-digit phone number';
+                    return l10n.phoneInvalid;
                   }
                   return null;
                 },
               ),
               CustomTextField(
                 controller: _passwordController,
-                hintText: 'Password',
+                hintText: l10n.passwordLabel,
                 enabled: !_isLoading,
                 obscureText: !_showPassword,
                 suffixIcon: IconButton(
@@ -264,22 +269,22 @@ class _SignupStep2State extends State<SignupStep2>
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Password is required';
+                    return l10n.passwordValidationEmpty;
                   }
                   if (value.length < 8) {
-                    return 'Password must be at least 8 characters';
+                    return l10n.passwordValidationLength;
                   }
                   if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                    return 'Password must contain at least one uppercase letter';
+                    return l10n.passwordValidationUpper;
                   }
                   if (!RegExp(r'[a-z]').hasMatch(value)) {
-                    return 'Password must contain at least one lowercase letter';
+                    return l10n.passwordValidationLower;
                   }
                   if (!RegExp(r'[0-9]').hasMatch(value)) {
-                    return 'Password must contain at least one number';
+                    return l10n.passwordValidationNumber;
                   }
                   if (!RegExp(r'[!@#\$&*~]').hasMatch(value)) {
-                    return 'Password must contain at least one special character';
+                    return l10n.passwordValidationSpecial;
                   }
                   return null;
                 },
@@ -287,8 +292,25 @@ class _SignupStep2State extends State<SignupStep2>
               const SizedBox(height: 24),
               CustomButton(
                 onPressed: _isLoading ? null : _validateAndSendData,
-                text: 'Next',
+                text: l10n.next,
                 isLoading: _isLoading,
+              ),
+              const SizedBox(height: 16),
+              RichText(
+                text: TextSpan(
+                  style: defaultStyle,
+                  children: [
+                    TextSpan(text: l10n.alreadyHaveAccount),
+                    TextSpan(
+                      text: l10n.loginButton,
+                      style: const TextStyle(color: Colors.red),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          context.push('/login');
+                        },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

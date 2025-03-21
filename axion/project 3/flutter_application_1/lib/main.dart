@@ -17,10 +17,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/// Global authentication flag (for demo purposes).
 bool isLoggedIn = false;
 
-/// Load the saved theme mode from SharedPreferences.
+/// Load theme
 Future<ThemeMode> loadThemeMode() async {
   final prefs = await SharedPreferences.getInstance();
   final saved = prefs.getString('theme_mode') ?? 'dark';
@@ -29,67 +28,47 @@ Future<ThemeMode> loadThemeMode() async {
   return ThemeMode.system;
 }
 
-/// Load the saved locale code from SharedPreferences.
+/// Load locale
 Future<String> loadLocaleCode() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getString('locale') ?? 'en';
 }
 
-/// Save the theme mode to SharedPreferences.
+/// Save theme
 Future<void> saveThemeMode(ThemeMode mode) async {
   final prefs = await SharedPreferences.getInstance();
-  String modeString;
-  switch (mode) {
-    case ThemeMode.dark:
-      modeString = 'dark';
-      break;
-    case ThemeMode.light:
-      modeString = 'light';
-      break;
-    default:
-      modeString = 'system';
-      break;
-  }
+  final modeString = mode.name;
   await prefs.setString('theme_mode', modeString);
 }
 
-/// Save the locale code to SharedPreferences.
+/// Save locale
 Future<void> saveLocale(String localeCode) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString('locale', localeCode);
 }
 
-/// GoRouter configuration with redirection based on authentication.
+/// ✅ Router with locale notifier refresh
 final GoRouter _router = GoRouter(
+  refreshListenable: MyApp.localeNotifier, // ✅ Key Fix
   redirect: (context, state) {
-    // Allow access to splash, login, and signup pages.
     final loggingIn = state.matchedLocation == '/' ||
         state.matchedLocation == '/login' ||
         state.matchedLocation == '/signup';
     if (!isLoggedIn && !loggingIn) return '/login';
-    if (isLoggedIn && (state.matchedLocation == '/login' || state.matchedLocation == '/signup')) return '/home';
+    if (isLoggedIn &&
+        (state.matchedLocation == '/login' ||
+         state.matchedLocation == '/signup')) return '/home';
     return null;
   },
   routes: <RouteBase>[
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupPageView(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const MainPage(), // MainPage includes your nav bar and other features.
-    ),
+    GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupPageView()),
+    GoRoute(path: '/home', builder: (context, state) => const MainPage()),
   ],
 );
 
+/// Secure storage service
 class SecureStorageService {
   final _storage = const FlutterSecureStorage();
 
@@ -101,29 +80,20 @@ class SecureStorageService {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-
-  // Initialize notification service
   await NotificationService.initialize();
-
-  // Request all required permissions
   await PermissionService.requestAllPermissions();
 
-  // Initialize secure storage
   final secureStorage = SecureStorageService();
   await secureStorage.init();
 
-  // Initialize GraphQL Client
   final client = GraphQLConfig.initializeClient();
 
-  // Initialize Hive and register adapters.
   await Hive.initFlutter();
   if (!Hive.isAdapterRegistered(0)) {
     Hive.registerAdapter(ReportAdapter());
   }
-  // Open the box once.
   await Hive.openBox<Report>(HiveService.reportsBoxName);
 
-  // Load persistent settings.
   final themeMode = await loadThemeMode();
   final localeCode = await loadLocaleCode();
 
@@ -149,7 +119,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Use your original dark and light themes.
   final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primarySwatch: Colors.deepOrange,
@@ -213,7 +182,7 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-/// Helper widget to combine two ValueNotifiers.
+/// Combine two ValueNotifiers
 class ValueListenableBuilder2<A, B> extends StatelessWidget {
   final ValueNotifier<A> first;
   final ValueNotifier<B> second;

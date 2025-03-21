@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_button.dart';
 import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignupStep1 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -28,7 +33,6 @@ class _SignupStep1State extends State<SignupStep1>
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with existing data
     _firstNameController.text = widget.signupData.FirstName;
     _lastNameController.text = widget.signupData.LastName;
     _emailController.text = widget.signupData.Email;
@@ -50,16 +54,9 @@ class _SignupStep1State extends State<SignupStep1>
     }
 
     if (formState.validate()) {
-      // Save data to signupData model
       widget.signupData.FirstName = _firstNameController.text.trim();
       widget.signupData.LastName = _lastNameController.text.trim();
       widget.signupData.Email = _emailController.text.trim();
-
-      // Debug print to verify data is saved
-      print('Step 1 Data Saved:');
-      print('First Name: ${widget.signupData.FirstName}');
-      print('Last Name: ${widget.signupData.LastName}');
-      print('Email: ${widget.signupData.Email}');
 
       formState.save();
       widget.onNext();
@@ -74,16 +71,58 @@ class _SignupStep1State extends State<SignupStep1>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
+    final defaultStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16) ??
+        const TextStyle(fontSize: 16);
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: widget.formKey,
           child: Column(
             children: [
+              // Image for Signup Step 1 (200x200)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 50.0),
+                child: SvgPicture.asset(
+                  "assets/img/step_one.svg",
+                  width: 200,
+                  height: 200,
+                  semanticsLabel: l10n.signupStepOneImage,
+                ),
+              ),
+              // Gradient text
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return const LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 255, 136, 34),
+                        Color.fromARGB(255, 251, 48, 48),
+                        Color.fromARGB(255, 255, 177, 41)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds);
+                  },
+                  child: Text(
+                    l10n.signupStepOneTagline,
+                    style: GoogleFonts.montserrat(
+                      textStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Input fields
               CustomTextField(
                 controller: _firstNameController,
-                hintText: 'First Name',
+                hintText: l10n.firstName,
                 onSaved: (value) {
                   if (value != null) {
                     widget.signupData.FirstName = value.trim();
@@ -91,17 +130,17 @@ class _SignupStep1State extends State<SignupStep1>
                 },
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'First Name cannot be empty';
+                    return l10n.firstNameRequired;
                   }
                   if (!RegExp(r'^[a-zA-Z]+(?: [a-zA-Z]+)*$').hasMatch(value)) {
-                    return 'Please enter letters only';
+                    return l10n.nameValidation;
                   }
                   return null;
                 },
               ),
               CustomTextField(
                 controller: _lastNameController,
-                hintText: 'Last Name',
+                hintText: l10n.lastName,
                 onSaved: (value) {
                   if (value != null) {
                     widget.signupData.LastName = value.trim();
@@ -109,29 +148,24 @@ class _SignupStep1State extends State<SignupStep1>
                 },
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Last Name cannot be empty';
+                    return l10n.lastNameRequired;
                   }
                   if (!RegExp(r'^[a-zA-Z]+(?: [a-zA-Z]+)*$').hasMatch(value)) {
-                    return 'Please enter letters only';
+                    return l10n.nameValidation;
                   }
                   return null;
                 },
               ),
               CustomTextField(
                 controller: _emailController,
-                hintText: 'Email',
+                hintText: l10n.emailLabel,
                 keyboardType: TextInputType.emailAddress,
-                onSaved: (value) {
-                  if (value != null) {
-                    widget.signupData.Email = value.trim();
-                  }
-                },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Email is required';
+                    return l10n.emailValidationEmpty;
                   }
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(value)) {
-                    return 'Please enter a valid email';
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    return l10n.emailValidationInvalid;
                   }
                   return null;
                 },
@@ -139,7 +173,24 @@ class _SignupStep1State extends State<SignupStep1>
               const SizedBox(height: 24),
               CustomButton(
                 onPressed: _validateAndProceed,
-                text: 'Next',
+                text: l10n.next,
+              ),
+              const SizedBox(height: 16),
+              RichText(
+                text: TextSpan(
+                  style: defaultStyle,
+                  children: [
+                    TextSpan(text: l10n.alreadyHaveAccount),
+                    TextSpan(
+                      text: l10n.loginButton,
+                      style: const TextStyle(color: Colors.red),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          context.push('/login');
+                        },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

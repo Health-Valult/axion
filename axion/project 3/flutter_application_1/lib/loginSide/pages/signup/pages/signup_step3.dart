@@ -4,6 +4,8 @@ import 'package:flutter_application_1/loginSide/widgets/custom_text_field.dart';
 import 'package:flutter_application_1/models/signup_data.dart';
 import 'package:flutter_application_1/services/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SignupStep3 extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -34,6 +36,8 @@ class _SignupStep3State extends State<SignupStep3>
   }
 
   Future<void> _resendOTP() async {
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isResending = true;
       _error = null;
@@ -44,21 +48,21 @@ class _SignupStep3State extends State<SignupStep3>
         widget.signupData.Email,
         otpType: 'email',
       );
-      
+
       if (response['success'] != true) {
         setState(() {
-          _error = response['error'] ?? 'Failed to resend OTP';
+          _error = response['error'] ?? l10n.resendOtpFailed;
         });
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP resent successfully')),
+            SnackBar(content: Text(l10n.otpResent)),
           );
         }
       }
     } catch (e) {
       setState(() {
-        _error = 'Failed to resend OTP';
+        _error = l10n.resendOtpFailed;
       });
     } finally {
       setState(() {
@@ -68,6 +72,8 @@ class _SignupStep3State extends State<SignupStep3>
   }
 
   Future<void> _verifyOTP() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!widget.formKey.currentState!.validate()) {
       return;
     }
@@ -78,44 +84,33 @@ class _SignupStep3State extends State<SignupStep3>
     });
 
     try {
-      print('\n=== Verifying OTP ===');
       final response = await _apiService.verifyOTP(
         widget.signupData.Email,
         _otpController.text.trim(),
       );
 
       if (response['success'] == true) {
-        print('✅ OTP Verified Successfully');
-        
-        // Create account after OTP verification
-        print('\n=== Creating Account ===');
         final signupResponse = await _apiService.signupUser(widget.signupData.toJson());
-        
+
         if (signupResponse['success'] == true) {
-          print('✅ Account Created Successfully');
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Signup successful!')),
+              SnackBar(content: Text(l10n.signupSuccess)),
             );
             context.go('/login');
           }
         } else {
-          print('❌ Account Creation Failed');
-          final error = signupResponse['error'] ?? 'Failed to create account';
-          print('Error: $error');
+          final error = signupResponse['error'] ?? l10n.signupFailed;
           setState(() {
             _error = error;
           });
         }
       } else {
-        print('❌ OTP Verification Failed');
         setState(() {
-          _error = response['error'] ?? 'Invalid OTP';
+          _error = response['error'] ?? l10n.invalidOtp;
         });
       }
     } catch (e) {
-      print('❌ API Call Error');
-      print('Error: ${e.toString()}');
       setState(() {
         _error = e.toString();
       });
@@ -123,7 +118,6 @@ class _SignupStep3State extends State<SignupStep3>
       setState(() {
         _isLoading = false;
       });
-      print('===========================\n');
     }
   }
 
@@ -133,6 +127,8 @@ class _SignupStep3State extends State<SignupStep3>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -140,6 +136,15 @@ class _SignupStep3State extends State<SignupStep3>
           key: widget.formKey,
           child: Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 50.0),
+                child: SvgPicture.asset(
+                  "assets/img/step_three.svg",
+                  width: 200,
+                  height: 200,
+                  semanticsLabel: l10n.signupStepThreeImage,
+                ),
+              ),
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -151,23 +156,23 @@ class _SignupStep3State extends State<SignupStep3>
                     ),
                   ),
                 ),
-              const Text(
-                'Please enter the verification code sent to your email',
+              Text(
+                l10n.enterOtpHint,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 24),
               CustomTextField(
                 controller: _otpController,
-                hintText: 'Enter OTP',
+                hintText: l10n.enterOtp,
                 enabled: !_isLoading,
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'OTP is required';
+                    return l10n.otpRequired;
                   }
                   if (!RegExp(r'^\d{6}$').hasMatch(value)) {
-                    return 'Please enter a valid 6-digit OTP';
+                    return l10n.invalidOtpFormat;
                   }
                   return null;
                 },
@@ -175,14 +180,14 @@ class _SignupStep3State extends State<SignupStep3>
               const SizedBox(height: 24),
               CustomButton(
                 onPressed: _isLoading ? null : _verifyOTP,
-                text: 'Verify',
+                text: l10n.verify,
                 isLoading: _isLoading,
               ),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _isResending ? null : _resendOTP,
                 child: Text(
-                  _isResending ? 'Resending...' : 'Resend OTP',
+                  _isResending ? l10n.resending : l10n.resendOtp,
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
                   ),

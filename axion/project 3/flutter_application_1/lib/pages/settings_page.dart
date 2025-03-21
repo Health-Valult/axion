@@ -130,73 +130,71 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final loc = AppLocalizations.of(context)!;
-
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text(loc.settings)),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+    final appLocalizations = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode ? const Color.fromRGBO(13, 14, 18, 1) : const Color.fromRGBO(241, 241, 241, 1);
 
     return Scaffold(
-      appBar: AppBar(title: Text(loc.settings)),
-      body: RefreshIndicator(
-        onRefresh: _loadSettings,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildDarkModeCard(loc),
-            const SizedBox(height: 16),
-            _buildLanguageCard(loc),
-            const SizedBox(height: 16),
-            _buildNotificationsCard(loc),
-            const SizedBox(height: 16),
-            _buildPrivacyCard(loc),
-            const SizedBox(height: 16),
-            _buildChangePasswordCard(loc),
-            const SizedBox(height: 16),
-            _buildDeleteAccountCard(loc),
-          ],
-        ),
+      appBar: AppBar(
+        title: Text(appLocalizations.settings),
       ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+            ))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  _buildDarkModeCard(appLocalizations, cardColor),
+                  const SizedBox(height: 8),
+                  _buildLanguageCard(appLocalizations, cardColor),
+                  const SizedBox(height: 8),
+                  _buildNotificationsCard(appLocalizations, cardColor),
+                  const SizedBox(height: 8),
+                  _buildPrivacyCard(appLocalizations, cardColor),
+                  const SizedBox(height: 8),
+                  _buildChangePasswordCard(appLocalizations, cardColor),
+                  const SizedBox(height: 8),
+                  _buildDeleteAccountCard(appLocalizations, cardColor),
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _buildDarkModeCard(AppLocalizations loc) {
+  Widget _buildDarkModeCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: SwitchListTile(
         title: Text(loc.darkMode),
         value: _isDarkMode,
-        onChanged: (bool value) async {
+        onChanged: (bool value) {
           setState(() => _isDarkMode = value);
-          final newMode = value ? ThemeMode.dark : ThemeMode.light;
-          MyApp.themeNotifier.value = newMode;
-          await saveThemeMode(newMode);
+          MyApp.themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+          saveThemeMode(MyApp.themeNotifier.value);
         },
       ),
     );
   }
 
-  Widget _buildLanguageCard(AppLocalizations loc) {
+  Widget _buildLanguageCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: Column(
         children: [
           ListTile(
             title: Text(loc.language),
           ),
-          ...(_languageMap.keys.map((language) => RadioListTile<String>(
-            title: Text(language),
-            value: language,
+          ...(_languageMap.keys.map((lang) => RadioListTile<String>(
+            title: Text(lang),
+            value: lang,
             groupValue: _selectedLanguage,
             onChanged: (String? value) async {
               if (value != null) {
                 setState(() => _selectedLanguage = value);
-                final newLocale = _languageMap[value]!;
-                MyApp.localeNotifier.value = newLocale;
-                await saveLocale(newLocale);
+                MyApp.localeNotifier.value = _languageMap[value]!;
+                await saveLocale(_languageMap[value]!);
               }
             },
           ))),
@@ -205,8 +203,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildNotificationsCard(AppLocalizations loc) {
+  Widget _buildNotificationsCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: Column(
         children: [
           ListTile(
@@ -227,8 +226,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildPrivacyCard(AppLocalizations loc) {
+  Widget _buildPrivacyCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: Column(
         children: [
           ListTile(
@@ -249,8 +249,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildChangePasswordCard(AppLocalizations loc) {
+  Widget _buildChangePasswordCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: ListTile(
         title: Text(loc.changePassword),
         trailing: const Icon(Icons.arrow_forward_ios),
@@ -264,8 +265,9 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDeleteAccountCard(AppLocalizations loc) {
+  Widget _buildDeleteAccountCard(AppLocalizations loc, Color cardColor) {
     return Card(
+      color: cardColor,
       child: ListTile(
         title: Text(
           loc.deleteAccount,
@@ -344,7 +346,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
     }
 
     // Validate email format
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       _showErrorDialog('Please enter a valid email address');
       return;
     }
@@ -365,7 +367,21 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
         Navigator.of(context).pop(); // Close dialog
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
-        _showErrorDialog(result['error'] ?? 'Failed to delete account. Please check your credentials and try again.');
+        String errorMessage = 'Failed to delete account. Please try again.';
+        
+        // Handle specific error cases
+        if (result['error']?.toLowerCase().contains('password')) {
+          errorMessage = 'Incorrect password. Please check your password and try again.';
+        } else if (result['error']?.toLowerCase().contains('not found') || 
+                  result['error']?.toLowerCase().contains('no account')) {
+          errorMessage = 'Account not found. Please check your email.';
+        } else if (result['error']?.toLowerCase().contains('authenticated')) {
+          errorMessage = 'You must be logged in to delete your account.';
+        } else if (result['error'] != null) {
+          errorMessage = result['error'];
+        }
+        
+        _showErrorDialog(errorMessage);
       }
     } catch (e) {
       if (!mounted) return;
@@ -380,7 +396,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       builder: (context) => AlertDialog(
         title: const Text('Error'),
         content: Text(message),
@@ -395,43 +411,24 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   }
 
   void _showConfirmationDialog() {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Account Deletion'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Are you sure you want to delete your account?'),
-            SizedBox(height: 8),
-            Text(
-              'This action cannot be undone and will:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 4),
-            Text('• Delete all your personal data'),
-            Text('• Remove all your medical records'),
-            Text('• Cancel any active subscriptions'),
-            Text('• Remove access to all services'),
-          ],
-        ),
+        title: Text(loc.deleteAccountConfirmation),
+        content: Text(loc.deleteAccountWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(loc.cancel),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _attemptDeleteAccount();
-            },
+            onPressed: _attemptDeleteAccount,
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete Account'),
+            child: Text(loc.delete),
           ),
         ],
       ),
@@ -471,7 +468,6 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                 suffixIcon: IconButton(
                   icon: Icon(
                     _passwordVisible ? Icons.visibility_off : Icons.visibility,
-                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   onPressed: () {
                     setState(() {
@@ -496,8 +492,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
           TextButton(
             onPressed: _showConfirmationDialog,
             style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-              textStyle: const TextStyle(fontWeight: FontWeight.bold),
+              foregroundColor: Theme.of(context).colorScheme.error,
             ),
             child: Text(loc.delete),
           ),

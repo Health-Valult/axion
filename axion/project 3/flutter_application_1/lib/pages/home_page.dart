@@ -24,7 +24,6 @@ class _HomePageState extends State<HomePage> {
   User? _userProfile;
   List<Map<String, dynamic>>? _medicalRecords;
 
-  // UI state variables
   bool _isMedicationExpanded = false;
   bool _isAllergiesExpanded = false;
   bool _isImmunizationsExpanded = false;
@@ -50,7 +49,6 @@ class _HomePageState extends State<HomePage> {
         });
       }
     } catch (e) {
-      print("Error loading notifications: $e");
       if (mounted) {
         setState(() {
           _hasPendingNotifications = false;
@@ -63,23 +61,16 @@ class _HomePageState extends State<HomePage> {
     try {
       final notifications = await _apiService.getMedicalNotifications();
       if (mounted) {
-        // Update the static reminders
         MedicalNotificationsPage.getReminders(notifications);
-        setState(() {}); // Trigger rebuild to show new reminders
+        setState(() {});
       }
-    } catch (e) {
-      print('Error loading medical notifications: $e');
-    }
+    } catch (_) {}
   }
 
   Future<void> _handleRefresh() async {
-    try {
-      await _loadData();
-      await _loadNotifications();
-      await _loadMedicalNotifications();
-    } catch (e) {
-      print("Error refreshing data: $e");
-    }
+    await _loadData();
+    await _loadNotifications();
+    await _loadMedicalNotifications();
   }
 
   Future<void> _loadData() async {
@@ -89,7 +80,6 @@ class _HomePageState extends State<HomePage> {
         _error = null;
       });
 
-      // Load user profile
       try {
         final profile = await _apiService.getUserProfile();
         if (mounted) {
@@ -97,262 +87,84 @@ class _HomePageState extends State<HomePage> {
             _userProfile = profile;
           });
         }
-      } catch (e) {
-        print('❌ Profile Error: ${e.toString()}');
-        // Don't return here, continue loading other data
-      }
+      } catch (_) {}
 
       final client = GraphQLProvider.of(context).value;
-      try {
-        print('\n=== GraphQL Debug Info ===');
-        print('\n--- Medications Query Debug ---');
-        print('GraphQL URL: ${EnvConfig.graphqlUrl}');
-        print('Query:');
-        print(const JsonEncoder.withIndent('  ').convert({
-          'query': GraphQLQueries.getMedications,
-        }));
 
-        final medicationsResult = await client.query(QueryOptions(
-          document: gql(GraphQLQueries.getMedications),
-          fetchPolicy: FetchPolicy.noCache,
-          errorPolicy: ErrorPolicy.all,
-        ));
+      final medicationsResult = await client.query(QueryOptions(
+        document: gql(GraphQLQueries.getMedications),
+        fetchPolicy: FetchPolicy.noCache,
+        errorPolicy: ErrorPolicy.all,
+      ));
 
-        if (medicationsResult.hasException) {
-          print('❌ Medications Query Failed');
-          final error = medicationsResult.exception!;
-          print('Error Type: ${error.runtimeType}');
-          
-          if (error.linkException != null) {
-            print('Link Exception: ${error.linkException}');
-            if (error.linkException is ServerException) {
-              final serverError = error.linkException as ServerException;
-              print('Server Response: ${serverError.parsedResponse?.response}');
-              print('Status Code: ${serverError.parsedResponse?.response['statusCode']}');
-              print('Message: ${serverError.parsedResponse?.response['message']}');
-            }
-          }
-          
-          if (error.graphqlErrors.isNotEmpty) {
-            print('GraphQL Errors:');
-            for (final err in error.graphqlErrors) {
-              print('- ${err.message}');
-              print('  Location: ${err.locations}');
-              print('  Path: ${err.path}');
-            }
-          }
-          
-          throw error;
-        }
-        
-        if (medicationsResult.data == null) {
-          print('❌ Medications Query: No data returned');
-          throw Exception('No medication data available');
-        }
-
-        print('✅ Medications Query Successful');
-        print('Data:');
-        print(const JsonEncoder.withIndent('  ').convert(medicationsResult.data));
-
-        print('\n=== Processing Results ===');
-        List<Map<String, dynamic>> medications = [];
-        if (medicationsResult.data?['medications']?['medications'] != null) {
-          medications = (medicationsResult.data!['medications']['medications'] as List).map((m) => {
-            'title': m['display'] ?? 'Unknown Medication',
-            'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
-            Route: ${m['route'] ?? 'Unknown route'}
-            Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
-            Code: ${m['code'] ?? 'No code'}
-            Prescribed: ${m['meta']?['created'] ?? 'Unknown'}
-            Source: ${m['meta']?['source'] ?? 'Unknown'}''',
-            'type': 'medication',
-            'route': m['route'] ?? 'Unknown route',
-            'prescriber': m['prescriber'] ?? 'Unknown prescriber',
-            'patientID': m['patientID'],
-            'code': m['code'],
-            'meta': m['meta'] ?? {
-              'created': DateTime.now().toIso8601String(),
-              'updated': DateTime.now().toIso8601String(),
-              'source': 'Unknown'
-            }
-          }).toList();
-        }
-        print('Processed ${medications.length} medications');
-        print('Sample medication data:');
-        if (medications.isNotEmpty) {
-          print(const JsonEncoder.withIndent('  ').convert(medications.first));
-        }
-
-        print('Total medical records: ${_medicalRecords?.length ?? 0}');
-        print('=====================\n');
-
-        // Fetch Allergies
-        print('\n--- Allergies Query Debug ---');
-        print('Query:');
-        print(const JsonEncoder.withIndent('  ').convert({
-          'query': GraphQLQueries.getAllergies,
-        }));
-
-        final allergiesResult = await client.query(QueryOptions(
-          document: gql(GraphQLQueries.getAllergies),
-          fetchPolicy: FetchPolicy.noCache,
-          errorPolicy: ErrorPolicy.all,
-        ));
-
-        if (allergiesResult.hasException) {
-          print('❌ Allergies Query Failed');
-          final error = allergiesResult.exception!;
-          print('Error Type: ${error.runtimeType}');
-          
-          if (error.linkException != null) {
-            print('Link Exception: ${error.linkException}');
-            if (error.linkException is ServerException) {
-              final serverError = error.linkException as ServerException;
-              print('Server Response: ${serverError.parsedResponse?.response}');
-              print('Status Code: ${serverError.parsedResponse?.response['statusCode']}');
-              print('Message: ${serverError.parsedResponse?.response['message']}');
-            }
-          }
-          
-          if (error.graphqlErrors.isNotEmpty) {
-            print('GraphQL Errors:');
-            for (final err in error.graphqlErrors) {
-              print('- ${err.message}');
-              print('  Location: ${err.locations}');
-              print('  Path: ${err.path}');
-            }
-          }
-          
-          throw error;
-        }
-
-        print('✅ Allergies Query Successful');
-        print('Data:');
-        print(const JsonEncoder.withIndent('  ').convert(allergiesResult.data));
-
-        List<Map<String, dynamic>> allergies = [];
-        if (allergiesResult.data?['allergys']?['allergyIntolerances'] != null) {
-          allergies = (allergiesResult.data!['allergys']['allergyIntolerances'] as List).map((a) => {
-            'title': a['display'] ?? 'Unknown Allergy',
-            'detail': '''Severity: ${a['severity'] ?? 'Unknown'} 
-            Category: ${a['category'] ?? 'Unknown'}
-            Criticality: ${a['criticality'] ?? 'Unknown'}
-            Status: ${a['verificationStatus'] ?? 'Unknown'}
-            Source: ${a['source'] ?? 'Unknown'}
-            Created: ${a['meta']?['created'] ?? 'Unknown'}
-            Updated: ${a['meta']?['updated'] ?? 'Unknown'}
-            System: ${a['meta']?['source'] ?? 'Unknown'}''',
-            'type': 'allergy',
-            'patientID': a['patientID'],
-            'code': a['code'],
-            'timestamp': a['timestamp'],
-            'criticality': a['criticality'],
-            'severity': a['severity'],
-            'category': a['category'],
-            'active': a['active'],
-            'source': a['source'],
-            'verificationStatus': a['verificationStatus'],
-            'meta': a['meta'] ?? {
-              'created': DateTime.now().toIso8601String(),
-              'updated': DateTime.now().toIso8601String(),
-              'source': 'Unknown'
-            }
-          }).toList();
-        }
-        print('Processed ${allergies.length} allergies');
-
-        // Fetch Immunizations
-        print('\n--- Immunizations Query Debug ---');
-        print('Query:');
-        print(const JsonEncoder.withIndent('  ').convert({
-          'query': GraphQLQueries.getImmunizations,
-        }));
-
-        final immunizationsResult = await client.query(QueryOptions(
-          document: gql(GraphQLQueries.getImmunizations),
-          fetchPolicy: FetchPolicy.noCache,
-          errorPolicy: ErrorPolicy.all,
-        ));
-
-        if (immunizationsResult.hasException) {
-          print('❌ Immunizations Query Failed');
-          final error = immunizationsResult.exception!;
-          print('Error Type: ${error.runtimeType}');
-          
-          if (error.linkException != null) {
-            print('Link Exception: ${error.linkException}');
-            if (error.linkException is ServerException) {
-              final serverError = error.linkException as ServerException;
-              print('Server Response: ${serverError.parsedResponse?.response}');
-              print('Status Code: ${serverError.parsedResponse?.response['statusCode']}');
-              print('Message: ${serverError.parsedResponse?.response['message']}');
-            }
-          }
-          
-          if (error.graphqlErrors.isNotEmpty) {
-            print('GraphQL Errors:');
-            for (final err in error.graphqlErrors) {
-              print('- ${err.message}');
-              print('  Location: ${err.locations}');
-              print('  Path: ${err.path}');
-            }
-          }
-          
-          throw error;
-        }
-
-        print('✅ Immunizations Query Successful');
-        print('Data:');
-        print(const JsonEncoder.withIndent('  ').convert(immunizationsResult.data));
-
-        List<Map<String, dynamic>> immunizations = [];
-        if (immunizationsResult.data?['immunization']?['immunizations'] != null) {
-          immunizations = (immunizationsResult.data!['immunization']['immunizations'] as List).map((i) => {
-            'title': i['display'] ?? 'Unknown Vaccine',
-            'detail': '''Vaccine: ${i['display'] ?? 'Unknown'}
-            Site: ${i['site'] ?? 'Not specified'}
-            Dosage: ${i['dosage'] ?? 'Unknown'} ${i['unit'] ?? ''}
-            Date: ${i['timestamp'] ?? 'Unknown'}
-            Source: ${i['meta']?['source'] ?? 'Unknown'}
-            Created: ${i['meta']?['created'] ?? 'Unknown'}
-            Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
-            'type': 'immunization',
-            'patientID': i['patientID'],
-            'code': i['code'],
-            'dosage': i['dosage'],
-            'unit': i['unit'],
-            'site': i['site'],
-            'timestamp': i['timestamp'],
-            'meta': i['meta'] ?? {
-              'created': DateTime.now().toIso8601String(),
-              'updated': DateTime.now().toIso8601String(),
-              'source': 'Unknown'
-            }
-          }).toList();
-        }
-        print('Processed ${immunizations.length} immunizations');
-
-        if (mounted) {
-          setState(() {
-            _medicalRecords = [...medications, ...allergies, ...immunizations];
-            _isLoading = false;
-          });
-        }
-
-      } catch (e) {
-        print('❌ GraphQL Error: ${e.toString()}');
-        if (mounted) {
-          setState(() {
-            _medicalRecords = null;
-            _error = 'Failed to load medical records: ${e.toString()}';
-            _isLoading = false;
-          });
-        }
+      List<Map<String, dynamic>> medications = [];
+      if (medicationsResult.data?['medications']?['medications'] != null) {
+        medications = (medicationsResult.data!['medications']['medications'] as List).map((m) => {
+          'title': m['display'] ?? 'Unknown',
+          'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
+Route: ${m['route'] ?? 'Unknown route'}
+Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
+Code: ${m['code'] ?? 'No code'}
+Prescribed: ${m['meta']?['created'] ?? 'Unknown'}
+Source: ${m['meta']?['source'] ?? 'Unknown'}''',
+          'type': 'medication'
+        }).toList();
       }
-    } catch (e) {
-      print('❌ General Error: ${e.toString()}');
+
+      final allergiesResult = await client.query(QueryOptions(
+        document: gql(GraphQLQueries.getAllergies),
+        fetchPolicy: FetchPolicy.noCache,
+        errorPolicy: ErrorPolicy.all,
+      ));
+
+      List<Map<String, dynamic>> allergies = [];
+      if (allergiesResult.data?['allergys']?['allergyIntolerances'] != null) {
+        allergies = (allergiesResult.data!['allergys']['allergyIntolerances'] as List).map((a) => {
+          'title': a['display'] ?? 'Unknown',
+          'detail': '''Severity: ${a['severity'] ?? 'Unknown'}
+Category: ${a['category'] ?? 'Unknown'}
+Criticality: ${a['criticality'] ?? 'Unknown'}
+Status: ${a['verificationStatus'] ?? 'Unknown'}
+Source: ${a['source'] ?? 'Unknown'}
+Created: ${a['meta']?['created'] ?? 'Unknown'}
+Updated: ${a['meta']?['updated'] ?? 'Unknown'}
+System: ${a['meta']?['source'] ?? 'Unknown'}''',
+          'type': 'allergy'
+        }).toList();
+      }
+
+      final immunizationsResult = await client.query(QueryOptions(
+        document: gql(GraphQLQueries.getImmunizations),
+        fetchPolicy: FetchPolicy.noCache,
+        errorPolicy: ErrorPolicy.all,
+      ));
+
+      List<Map<String, dynamic>> immunizations = [];
+      if (immunizationsResult.data?['immunization']?['immunizations'] != null) {
+        immunizations = (immunizationsResult.data!['immunization']['immunizations'] as List).map((i) => {
+          'title': i['display'] ?? 'Unknown',
+          'detail': '''Vaccine: ${i['display'] ?? 'Unknown'}
+Site: ${i['site'] ?? 'Not specified'}
+Dosage: ${i['dosage'] ?? 'Unknown'} ${i['unit'] ?? ''}
+Date: ${i['timestamp'] ?? 'Unknown'}
+Source: ${i['meta']?['source'] ?? 'Unknown'}
+Created: ${i['meta']?['created'] ?? 'Unknown'}
+Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
+          'type': 'immunization'
+        }).toList();
+      }
+
       if (mounted) {
         setState(() {
+          _medicalRecords = [...medications, ...allergies, ...immunizations];
+          _isLoading = false;
+        });
+      }
+
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _medicalRecords = null;
           _error = e.toString();
           _isLoading = false;
         });
@@ -364,15 +176,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final reminders = MedicalNotificationsPage.reminders;
-    final earliestReminder = reminders.isNotEmpty 
-        ? Map<String, String>.from(reminders.first)
-        : null;
+    final earliestReminder = reminders.isNotEmpty ? Map<String, String>.from(reminders.first) : null;
 
     if (_isLoading) {
-      return Scaffold(
-        body: SafeArea(
-          child: Center(child: CircularProgressIndicator()),
-        ),
+      return const Scaffold(
+        body: SafeArea(child: Center(child: CircularProgressIndicator())),
       );
     }
 
@@ -383,11 +191,11 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Error: $_error'),
+                Text('${loc.errorPrefix}$_error'),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _loadData,
-                  child: const Text('Retry'),
+                  child: Text(loc.retry),
                 ),
               ],
             ),
@@ -396,30 +204,32 @@ class _HomePageState extends State<HomePage> {
       );
     }
 
-    // Split medical records into medications, allergies and immunizations
     final medicationList = _medicalRecords
-        ?.where((record) => record['type'] == 'medication')
-        .map((m) => <String, String>{
-              'title': m['title']?.toString() ?? 'Unknown',
-              'detail': m['detail']?.toString() ?? 'No detail'
-            })
-        .toList() ?? [];
+            ?.where((record) => record['type'] == 'medication')
+            .map((m) => <String, String>{
+                  'title': m['title']?.toString() ?? loc.noTitle,
+                  'detail': m['detail']?.toString() ?? loc.noDetail
+                })
+            .toList() ??
+        [];
 
     final allergiesList = _medicalRecords
-        ?.where((record) => record['type'] == 'allergy')
-        .map((a) => <String, String>{
-              'title': a['title']?.toString() ?? 'Unknown',
-              'detail': a['detail']?.toString() ?? 'No detail'
-            })
-        .toList() ?? [];
+            ?.where((record) => record['type'] == 'allergy')
+            .map((a) => <String, String>{
+                  'title': a['title']?.toString() ?? loc.noTitle,
+                  'detail': a['detail']?.toString() ?? loc.noDetail
+                })
+            .toList() ??
+        [];
 
     final immunizationsList = _medicalRecords
-        ?.where((record) => record['type'] == 'immunization')
-        .map((i) => <String, String>{
-              'title': i['title']?.toString() ?? 'Unknown',
-              'detail': i['detail']?.toString() ?? 'No detail'
-            })
-        .toList() ?? [];
+            ?.where((record) => record['type'] == 'immunization')
+            .map((i) => <String, String>{
+                  'title': i['title']?.toString() ?? loc.noTitle,
+                  'detail': i['detail']?.toString() ?? loc.noDetail
+                })
+            .toList() ??
+        [];
 
     return Scaffold(
       body: SafeArea(
@@ -530,24 +340,16 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (earliestReminder != null)
-                                Text(
-                                  '${earliestReminder["time"]} - ${earliestReminder["title"]}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              else
-                                const Text(
-                                  'No reminders',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              Text(
+                                earliestReminder != null
+                                    ? '${earliestReminder["time"]} - ${earliestReminder["title"]}'
+                                    : loc.noReminders,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.orange,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                              ),
                               const SizedBox(height: 4),
                               Text(
                                 loc.tapToSeeFullList,
@@ -573,11 +375,7 @@ class _HomePageState extends State<HomePage> {
                   items: medicationList,
                   iconData: Icons.medical_services,
                   isSectionExpanded: _isMedicationExpanded,
-                  onSectionToggle: () {
-                    setState(() {
-                      _isMedicationExpanded = !_isMedicationExpanded;
-                    });
-                  },
+                  onSectionToggle: () => setState(() => _isMedicationExpanded = !_isMedicationExpanded),
                   expandedItems: _expandedMedicationItems,
                 ),
                 const SizedBox(height: 16),
@@ -587,25 +385,17 @@ class _HomePageState extends State<HomePage> {
                   items: allergiesList,
                   iconData: Icons.warning,
                   isSectionExpanded: _isAllergiesExpanded,
-                  onSectionToggle: () {
-                    setState(() {
-                      _isAllergiesExpanded = !_isAllergiesExpanded;
-                    });
-                  },
+                  onSectionToggle: () => setState(() => _isAllergiesExpanded = !_isAllergiesExpanded),
                   expandedItems: _expandedAllergyItems,
                 ),
                 const SizedBox(height: 16),
                 _buildSectionCapsule(
                   context: context,
-                  title: 'Immunizations',
+                  title: loc.immunizations,
                   items: immunizationsList,
                   iconData: Icons.vaccines,
                   isSectionExpanded: _isImmunizationsExpanded,
-                  onSectionToggle: () {
-                    setState(() {
-                      _isImmunizationsExpanded = !_isImmunizationsExpanded;
-                    });
-                  },
+                  onSectionToggle: () => setState(() => _isImmunizationsExpanded = !_isImmunizationsExpanded),
                   expandedItems: _expandedImmunizationItems,
                 ),
               ],
@@ -625,6 +415,7 @@ class _HomePageState extends State<HomePage> {
     required VoidCallback onSectionToggle,
     required Set<int> expandedItems,
   }) {
+    final loc = AppLocalizations.of(context)!;
     const int defaultCount = 3;
     final bool hasMore = items.length > defaultCount;
     final displayedItems = isSectionExpanded ? items : items.take(defaultCount).toList();
@@ -647,14 +438,14 @@ class _HomePageState extends State<HomePage> {
               if (hasMore)
                 Row(
                   children: [
-                    if (!isSectionExpanded)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Text(
-                          '+${items.length - defaultCount} more',
-                          style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
-                        ),
+                   if (!isSectionExpanded)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        loc.moreCount(items.length - defaultCount),
+                        style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
                       ),
+                    ),
                     GestureDetector(
                       onTap: onSectionToggle,
                       child: Icon(
@@ -675,8 +466,8 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               children: List.generate(displayedItems.length, (index) {
                 final itemMap = displayedItems[index];
-                final itemTitle = itemMap['title'] ?? 'No Title';
-                final itemDetail = itemMap['detail'] ?? 'No Detail';
+                final itemTitle = itemMap['title'] ?? loc.noTitle;
+                final itemDetail = itemMap['detail'] ?? loc.noDetail;
                 return _buildItemWithDetails(
                   iconData: iconData,
                   itemTitle: itemTitle,
@@ -717,10 +508,7 @@ class _HomePageState extends State<HomePage> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(iconData, color: Colors.cyan),
-            title: Text(
-              itemTitle,
-              style: const TextStyle(fontSize: 16),
-            ),
+            title: Text(itemTitle, style: const TextStyle(fontSize: 16)),
             trailing: Icon(
               isExpanded ? Icons.expand_less : Icons.expand_more,
               color: Colors.blueGrey,
@@ -733,10 +521,7 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    itemDetail,
-                    style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
-                  ),
+                  Text(itemDetail, style: const TextStyle(fontSize: 14, color: Colors.blueGrey)),
                   const SizedBox(height: 8),
                   const Divider(),
                 ],

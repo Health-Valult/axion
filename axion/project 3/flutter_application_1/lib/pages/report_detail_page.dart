@@ -2,9 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../models/base_report.dart';
-import '../models/report.dart';
 import '../services/graphql_queries.dart';
-import '../services/hive_service.dart';
 
 class ReportDetailPage extends StatefulWidget {
   final BaseReport report;
@@ -18,39 +16,10 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
   bool _isLoading = true;
   String? _error;
   bool _hasInitialized = false;
-  bool _isDownloaded = false;
 
   @override
   void initState() {
     super.initState();
-    _checkDownloadStatus();
-  }
-
-  void _checkDownloadStatus() {
-    if (widget.report is Report) {
-      _isDownloaded = HiveService.isReportDownloaded(widget.report.id);
-      setState(() {});
-    }
-  }
-
-  Future<void> _toggleDownload() async {
-    if (!(widget.report is Report)) return;
-    
-    final report = widget.report as Report;
-    
-    if (_isDownloaded) {
-      await HiveService.deleteReport(report.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report removed from downloads')),
-      );
-    } else {
-      await HiveService.saveReport(report);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report saved to downloads')),
-      );
-    }
-    
-    _checkDownloadStatus();
   }
 
   @override
@@ -306,12 +275,6 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.report.title),
-        actions: [
-          IconButton(
-            icon: Icon(_isDownloaded ? Icons.download_done : Icons.download_outlined),
-            onPressed: _toggleDownload,
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

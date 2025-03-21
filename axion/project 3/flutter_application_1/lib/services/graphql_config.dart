@@ -19,9 +19,20 @@ class GraphQLConfig {
   static final AuthLink authLink = AuthLink(
     getToken: () async {
       try {
+        // First check if we have a cached token
+        if (token.isNotEmpty) {
+          return 'Bearer $token';
+        }
+        
+        // If not, try to get it from session service
         final sessionToken = await _sessionService.getSessionToken();
-        print('Auth token for GraphQL: ${sessionToken != null ? 'Present' : 'Not found'}');
-        return sessionToken != null ? 'Bearer $sessionToken' : null;
+        if (sessionToken != null) {
+          token = sessionToken; // Cache the token
+          print('Auth token for GraphQL: Present');
+          return 'Bearer $sessionToken';
+        }
+        print('Auth token for GraphQL: Not found');
+        return null;
       } catch (e) {
         print('Error getting auth token: $e');
         return null;

@@ -7,7 +7,7 @@ import 'package:flutter_application_1/services/connectivity_service.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _connectivityService = ConnectivityService();
   bool _isLoading = false;
   String? _error;
-  bool _obscurePassword = true; // State variable to toggle password visibility
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -34,6 +34,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (!_loginForm.currentState!.validate()) return;
 
     setState(() {
@@ -42,11 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Check internet connectivity first
       final hasInternet = await _connectivityService.checkInternetConnection();
       if (!hasInternet) {
         setState(() {
-          _error = 'No internet connection. Please check your network and try again.';
+          _error = l10n.noInternetError;
           _isLoading = false;
         });
         return;
@@ -58,17 +59,28 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (mounted) {
-        if (result['success']) {  
-          // Wait a short moment for token to be saved
-          await Future.delayed(const Duration(milliseconds: 100));
+        if (result['success']) {
+          await Future.delayed(const Duration(milliseconds: 500)); // Give time for session to initialize
           isLoggedIn = true;
-          context.go('/home');
+          if (mounted) {
+            context.go('/home');
+          }
         } else {
           setState(() {
-            if (result['details'] != null) {
-              print('Login Error Details: ${json.encode(result['details'])}');
+            String errorMessage = l10n.loginFailed;
+
+            if (result['error']?.toLowerCase().contains('password')) {
+              errorMessage = l10n.loginErrorIncorrectPassword;
+            } else if (result['error']?.toLowerCase().contains('not found') || 
+                      result['error']?.toLowerCase().contains('no account')) {
+              errorMessage = l10n.loginErrorAccountNotFound;
+            } else if (result['error']?.toLowerCase().contains('verify')) {
+              errorMessage = l10n.loginErrorVerifyEmail;
+            } else if (result['error'] != null) {
+              errorMessage = result['error'];
             }
-            _error = result['error'] ?? 'Login failed';
+
+            _error = errorMessage;
           });
         }
       }
@@ -76,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
       print('Login Screen Error: $e');
       if (mounted) {
         setState(() {
-          _error = 'An unexpected error occurred. Please try again.';
+          _error = l10n.unexpectedError;
         });
       }
     } finally {
@@ -92,45 +104,35 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.textTheme.bodyLarge?.color ?? Colors.white;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
+          onPressed: () => context.go('/'),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       resizeToAvoidBottomInset: false,
       body: Center(
-        child: SingleChildScrollView( // Enables scrolling if needed
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo and welcome message
               Padding(
                 padding: const EdgeInsets.only(bottom: 60.0),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 50.0),
-                      child: Hero(
-                        tag: 'logo',
-                        child: SvgPicture.asset(
-                          "assets/img/Logo.svg",
-                          width: 100,
-                          height: 100,
-                          semanticsLabel: 'Red dash paths',
-                        ),
-                      ),
-                    ),
-                    Text(
-                      "Welcome Back",
-                      style: GoogleFonts.montserrat(
-                        textStyle: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Hero(
+                  tag: 'logo',
+                  child: SvgPicture.asset(
+                    "assets/img/login_image.svg",
+                    width: 200,
+                    height: 200,
+                    semanticsLabel: l10n.loginImage,
+                  ),
                 ),
               ),
-              // Login form
               Form(
                 key: _loginForm,
                 child: Column(
@@ -168,14 +170,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(bottom: 30.0),
                       child: LoginTextFieald(
                         controller: _emailController,
-                        label: "Email",
+                        label: l10n.emailLabel,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return l10n.emailValidationEmpty;
                           }
                           final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                           if (!emailRegex.hasMatch(value)) {
-                            return 'Please enter a valid email address';
+                            return l10n.emailValidationInvalid;
                           }
                           return null;
                         },
@@ -185,18 +187,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(bottom: 40.0),
                       child: LoginTextFieald(
                         controller: _passwordController,
-                        label: "Password",
+                        label: l10n.passwordLabel,
                         isPassword: _obscurePassword,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return l10n.passwordValidationEmpty;
                           }
                           if (value.length < 8) {
-                            return 'Password must be at least 8 characters';
+                            return l10n.passwordValidationLength;
                           }
                           return null;
                         },
-                        // Suffix icon to toggle password visibility
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword ? Icons.visibility : Icons.visibility_off,
@@ -206,6 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscurePassword = !_obscurePassword;
                             });
                           },
+                          tooltip: _obscurePassword ? l10n.showPassword : l10n.hidePassword,
                         ),
                       ),
                     ),
