@@ -125,7 +125,7 @@ const PatientMedicineList: React.FC = () => {
                     <MedicineCard key={medicine.code || index} medicine={medicine} />
                 ))
             ) : (
-                <p className="text-center text-gray-700 dark:text-white">No Medications Found</p>
+                <p className="text-center text-gray-700 dark:text-white">{t.no_medications_found}</p>
             )}
         </div>
     );

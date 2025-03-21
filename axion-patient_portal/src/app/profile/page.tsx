@@ -7,6 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import useAuth from "@/hooks/useAuth";
 import {Input} from "@/components/ui/input";
 import SidebarLayout from "@/app/components/Layout";
+import {useLanguage} from "@/app/components/LanguageContext";
 
 export default function ProfileLayout() {
     return (
@@ -35,6 +36,7 @@ function ProfileForm() {
     const [deletePassword, setDeletePassword] = useState("");
 
     const isAuthenticated = useAuth();
+    const { t } = useLanguage();
 
     useEffect(() => {
         const token = sessionStorage.getItem("session_token");
@@ -61,7 +63,7 @@ function ProfileForm() {
                     lastName: data.LastName || "",
                     email: data.Email || "",
                     phone: data.Telephone || "",
-                    nic: "",
+                    nic: data.NIC || "",
                     dob: data.DateOfBirth || "",
                 });
             } catch (error) {
@@ -77,10 +79,6 @@ function ProfileForm() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
-    };
-
-    const handleSave = () => {
-        toast.success("Profile updated successfully!");
     };
 
     const handleResetPassword = async (oldPassword: string, newPassword: string) => {
@@ -143,7 +141,7 @@ function ProfileForm() {
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950 p-6 flex flex-col items-center">
             <div><Toaster /></div>
-            <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-orange-300">Your Profile</h1>
+            <h1 className="text-2xl font-bold mb-4 text-purple-900 dark:text-orange-300">{t.your_profile}</h1>
 
             <div className="mt-6 w-full max-w-lg space-y-4">
                 {[
@@ -170,19 +168,19 @@ function ProfileForm() {
             </div>
 
             <div className="mt-6 w-full max-w-lg">
-                <Button
-                    onClick={handleSave}
-                    className="w-full py-2 bg-purple-600 dark:bg-orange-300 text-white dark:text-black font-semibold rounded-md hover:bg-purple-700 dark:hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    Save Changes
-                </Button>
+                {/*<Button*/}
+                {/*    onClick={handleSave}*/}
+                {/*    className="w-full py-2 bg-purple-600 dark:bg-orange-300 text-white dark:text-black font-semibold rounded-md hover:bg-purple-700 dark:hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-blue-500"*/}
+                {/*>*/}
+                {/*    Save Changes*/}
+                {/*</Button>*/}
 
                 <Button
                     onClick={() => setIsResetPasswordModalOpen(true)}
                     className="w-full font-semibold mt-4"
                     variant="default"
                 >
-                    Reset Password
+                    {t.reset_password}
                 </Button>
 
                 <Button
@@ -190,16 +188,16 @@ function ProfileForm() {
                     className="w-full font-semibold mt-4"
                     variant="destructive"
                 >
-                    Delete Account
+                    {t.delete_account}
                 </Button>
             </div>
 
             <Dialog open={isResetPasswordModalOpen} onOpenChange={setIsResetPasswordModalOpen}>
                 <DialogContent>
-                    <DialogTitle>Reset Your Password</DialogTitle>
+                    <DialogTitle>{t.reset_password}</DialogTitle>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium">Old Password</label>
+                            <label className="block text-sm font-medium">{t.old_password}</label>
                             <Input
                                 type="password"
                                 value={oldPassword}
@@ -208,7 +206,7 @@ function ProfileForm() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium">New Password</label>
+                            <label className="block text-sm font-medium">{t.new_password}</label>
                             <Input
                                 type="password"
                                 value={newPassword}
@@ -222,13 +220,13 @@ function ProfileForm() {
                             onClick={async () => await handleResetPassword(oldPassword, newPassword)}
                             className="bg-purple-600 text-white rounded-md"
                         >
-                            Submit
+                            {t.confirm}
                         </Button>
                         <Button
                             onClick={() => setIsResetPasswordModalOpen(false)} // Close modal
                             className="bg-gray-400 text-white rounded-md"
                         >
-                            Cancel
+                            {t.cancel}
                         </Button>
                     </div>
                 </DialogContent>
@@ -236,10 +234,10 @@ function ProfileForm() {
 
             <Dialog open={isDeleteAccountModalOpen} onOpenChange={setIsDeleteAccountModalOpen}>
                 <DialogContent>
-                    <DialogTitle>Delete Your Account</DialogTitle>
+                    <DialogTitle>{t.delete_account}</DialogTitle>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium">Email</label>
+                            <label className="block text-sm font-medium">{t.email}</label>
                             <Input
                                 type="text"
                                 value={deleteEmail}
@@ -248,7 +246,7 @@ function ProfileForm() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium">Password</label>
+                            <label className="block text-sm font-medium">{t.password}</label>
                             <Input
                                 type="password"
                                 value={deletePassword}
@@ -257,7 +255,7 @@ function ProfileForm() {
                             />
                         </div>
                         <div className="text-sm text-gray-600 mt-2">
-                            Enter Email and Password to confirm account deletion.
+                            {t.enter_email_and_password}
                         </div>
                     </div>
                     <div className="mt-4 flex justify-between">
@@ -265,13 +263,13 @@ function ProfileForm() {
                             onClick={() => handleDeleteAccount(deleteEmail, deletePassword)}
                             className="bg-red-600 text-white rounded-md"
                         >
-                            Confirm Deletion
+                            {t.confirm}
                         </Button>
                         <Button
                             onClick={() => setIsDeleteAccountModalOpen(false)} // Close modal
                             className="bg-gray-400 text-white rounded-md"
                         >
-                            Cancel
+                            {t.cancel}
                         </Button>
                     </div>
                 </DialogContent>

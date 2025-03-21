@@ -43,7 +43,7 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
                                 <strong>{t.dosage}:</strong> {medicine.dosage}
                             </p>
                             <p className="text-sm text-gray-600 dark:text-white">
-                                <strong>Route:</strong> {medicine.route}
+                                <strong>{t.source}:</strong> {medicine.route}
                             </p>
                         </div>
                     </div>
@@ -60,16 +60,16 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
                         <strong>{t.dosage}:</strong> {medicine.dosage}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-white">
-                        <strong>Route:</strong> {medicine.route}
+                        <strong>{t.source}:</strong> {medicine.route}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-white">
-                        <strong>Prescriber:</strong> {medicine.prescriber}
+                        <strong>{t.doctor}:</strong> {medicine.prescriber}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-white">
                         <strong>{t.prescribedAt}:</strong> {new Date(medicine.meta?.created).toLocaleString() || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-white">
-                        <strong>Source:</strong> {medicine.meta?.source || "N/A"}
+                        <strong>{t.source}:</strong> {medicine.meta?.source || "N/A"}
                     </p>
                 </DialogContent>
             </Dialog>

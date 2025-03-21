@@ -267,7 +267,6 @@ const ReportPage: React.FC = () => {
                                 onSelect={setFilterDate}
                                 month={currentMonth}
                                 onMonthChange={setCurrentMonth}
-                                initialFocus
                             />
                         </PopoverContent>
                     </Popover>
@@ -293,7 +292,7 @@ const ReportPage: React.FC = () => {
                         />
                     ))
                 ) : (
-                    <p>No reports found</p>
+                    <p>{t.noReportsFound}</p>
                 )}
             </div>
 

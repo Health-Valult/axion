@@ -66,7 +66,7 @@ const Dashboard = () => {
     const { darkMode } = useDarkMode();
     const [healthInfo, setHealthInfo] = useState({
         name: '',
-        age: 21,
+        dob: 21,
     });
     const [medications] = useState<Medication[]>([
         { name: 'Paracetamol', dosage: '500mg', schedule: 'Twice daily' },
@@ -114,7 +114,7 @@ const Dashboard = () => {
 
                 setHealthInfo({
                     name: data.FirstName,
-                    age: 21,
+                    dob: data.DateOfBirth,
                 });
             } catch (error) {
                 console.error("Error fetching profile data:", error);
@@ -310,7 +310,7 @@ const Dashboard = () => {
                 <CardContent className="bg-white dark:bg-gray-950 rounded-lg">
                     <ul className="text-black dark:text-white space-y-2">
                         <li>{t.name}: {healthInfo.name}</li>
-                        <li>{t.age}: {healthInfo.age}</li>
+                        <li>{t.age}: {healthInfo.dob}</li>
                     </ul>
                 </CardContent>
             </Card>
@@ -340,12 +340,12 @@ const Dashboard = () => {
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">Allergies</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.allergies}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div>
                             {allergies.length === 0 ? (
-                                <p className="text-center text-gray-500 dark:text-white">No allergies data available.</p>
+                                <p className="text-center text-gray-500 dark:text-white">{t.no_allergies_data}</p>
                             ) : (
                                 <ul className="space-y-2"> {/* space between items */}
                                     {allergies.map((allergy, index) => (
@@ -364,13 +364,13 @@ const Dashboard = () => {
                                                         <DialogTitle>{allergy.display}</DialogTitle>
                                                     </DialogHeader>
                                                     <div className="space-y-4">
-                                                        <p><strong>Criticality:</strong> {allergy.criticality}</p>
-                                                        <p><strong>Severity:</strong> {allergy.severity}</p>
-                                                        <p><strong>Category:</strong> {allergy.category}</p>
-                                                        <p><strong>Source:</strong> {allergy.source}</p>
-                                                        <p><strong>Verification Status:</strong> {allergy.verificationStatus}</p>
-                                                        <p><strong>Created:</strong> {new Date(allergy.meta?.created).toLocaleString() || "N/A"}</p>
-                                                        <p><strong>Source:</strong> {allergy.meta?.source || "N/A"}</p>
+                                                        <p><strong>{t.criticality}:</strong> {allergy.criticality}</p>
+                                                        <p><strong>{t.severity}:</strong> {allergy.severity}</p>
+                                                        <p><strong>{t.category}:</strong> {allergy.category}</p>
+                                                        <p><strong>{t.source}:</strong> {allergy.source}</p>
+                                                        <p><strong>{t.verification_status}:</strong> {allergy.verificationStatus}</p>
+                                                        <p><strong>{t.created}:</strong> {new Date(allergy.meta?.created).toLocaleString() || "N/A"}</p>
+                                                        <p><strong>{t.source}:</strong> {allergy.meta?.source || "N/A"}</p>
                                                     </div>
                                                 </DialogContent>
                                             )}
@@ -384,11 +384,11 @@ const Dashboard = () => {
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">Immunizations</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.immunizations}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {immunizations.length === 0 ? (
-                            <p className="text-center text-gray-500 dark:text-white">No immunizations data available.</p>
+                            <p className="text-center text-gray-500 dark:text-white">{t.no_immunizations_data}</p>
                         ) : (
                             <ul className="space-y-2">
                                 {immunizations.map((immunization, index) => (
@@ -407,9 +407,9 @@ const Dashboard = () => {
                                                     <DialogTitle className="text-purple-900">{immunization.display}</DialogTitle>
                                                 </DialogHeader>
                                                 <div className="space-y-2">
-                                                    <p><strong>Dosage:</strong> {immunization.dosage} {immunization.unit}</p>
-                                                    <p><strong>Site:</strong> {immunization.site}</p>
-                                                    <p><strong>Administered On:</strong> {new Date(immunization.timestamp).toLocaleString()}</p>
+                                                    <p><strong>{t.dosage}:</strong> {immunization.dosage} {immunization.unit}</p>
+                                                    <p><strong>{t.site}:</strong> {immunization.site}</p>
+                                                    <p><strong>{t.administered_on}:</strong> {new Date(immunization.timestamp).toLocaleString()}</p>
                                                 </div>
                                             </DialogContent>
                                         )}

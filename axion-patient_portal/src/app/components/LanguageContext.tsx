@@ -39,6 +39,34 @@ type Translations = {
     prescribedAt: string;
     treatmentDuration: string;
     doctor: string;
+    allergies: string,
+    no_allergies_data: string,
+    criticality: string,
+    severity: string,
+    category: string,
+    source: string,
+    verification_status: string,
+    created: string,
+    immunizations: string,
+    no_immunizations_data: string,
+    site: string,
+    administered_on: string,
+    no_medications_found: string,
+    your_profile: string,
+    reset_password: string,
+    delete_account: string,
+    confirm: string,
+    cancel: string,
+    enter_email_and_password: string,
+    no_reports_found: string,
+    download: string,
+    no_data_available: string,
+    data_not_found: string,
+    something_went_wrong: string,
+    email: string,
+    password: string,
+    old_password: string,
+    new_password: string
 };
 
 const translations: Record<string, () => Promise<{ default: Translations }>> = {
