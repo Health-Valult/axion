@@ -39,6 +39,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
                 logger.warning(e)
             logger.warning(request)
             response = await executer(request)
+            logger.warning(response)
             body = Body(
                 task = "verifiedToken",
                 body = response
