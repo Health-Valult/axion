@@ -26,13 +26,12 @@ logger = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(app:FastAPI):
 
-    # loader function
-    app.state.search_loader = asyncio.create_task(load_to_redis.loader(app=app))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")
     DBClient = pymongo.MongoClient(URL)
     Database = DBClient.get_database("records_db")
+    ptclient = DBClient.get_database("users_db")
     app.state.ObservationCollection = Database.get_collection("observations")
     app.state.AllergiesCollection = Database.get_collection("allergyIntolerance")
     app.state.MedicationsCollection = Database.get_collection("medications")
@@ -40,7 +39,7 @@ async def lifespan(app:FastAPI):
     app.state.ProceduresCollection = Database.get_collection("procedures")
     app.state.LabsCollection = Database.get_collection("labs")
 
-    app.state.PatientsCollection = Database.get_collection("patients")
+    app.state.PatientsCollection = ptclient.get_collection("patients")
 
 
     # cache connection startup
@@ -72,12 +71,12 @@ patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenti
         
 
 doctor_schema = strawberry.Schema(d_query)
-doctor_gql_router = GraphQLRouter(doctor_schema,dependencies=[Depends(Authenticate)])
+doctor_gql_router = GraphQLRouter(doctor_schema)#,dependencies=[Depends(Authenticate)])
 
 app.include_router(patient_gql_router, prefix="/graphql/patient")
 app.include_router(doctor_gql_router, prefix="/graphql/doctor")
 app.include_router(w_route)
-#app.add_middleware(AuthenticateMiddleware)
+
 
 # main app
 if __name__ == '__main__':

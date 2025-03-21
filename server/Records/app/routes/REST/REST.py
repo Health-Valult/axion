@@ -41,7 +41,9 @@ async def websocket_endpoint(websocket: WebSocket,):
 
     c_uuid,role = await Authenticate_WS(webSocket=websocket)
     await websocket.accept()
-    Cache:redis_AX = websocket.app.state.Cache
+    
+    pt:Collection = websocket.app.state.PatientsCollection
+
     connected_clients[c_uuid] = {
         "time":datetime.datetime.now(datetime.timezone.utc),
         "role":role,
@@ -55,9 +57,9 @@ async def websocket_endpoint(websocket: WebSocket,):
             text = await websocket.receive_json()  
             logger.warning(text)
             
-            res = Cache.autoComplete(text.get("packet"))
+            auto = pt.find({ "NIC": { "$regex": f"/^{text.get("packet")}/", "$options": 'i' } })
             response = {
-                "msg":res
+                "packet":auto
             }
             jdic = json.dumps(response)
             await websocket.send_json(jdic)
