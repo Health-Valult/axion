@@ -28,7 +28,6 @@ def send_otp(request:Request,cred:SendOtp):
     type = cred.type
     data = cred.data
     
-    c_uuid,role = 35726845687,"patient"
     name = f"otp::{id}"
     otp = generate_otp()
     payload = {

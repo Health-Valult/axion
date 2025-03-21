@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import random
 from typing import Annotated, Union
 import uuid
 from fastapi.responses import JSONResponse
@@ -10,8 +11,11 @@ from fastapi import APIRouter,FastAPI,Depends, WebSocketDisconnect, WebSocketExc
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
-from app.shared.utils.Cache.redis import redis_AX
+from app.shared.utils.Cache.redis import Body, redis_AX
 from app.models.models import *
+
+def generate_otp(length=6):
+    return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
 route = APIRouter()
 connected_clients:dict = {}
@@ -33,9 +37,31 @@ async def upload_report(type:str,report:Annotated[Union[
     pass
 """
 @route.post(path="/records/select-patient")
-async def verify_doctor(pateint:SelectPatient):
+async def verify_doctor(request:Request,pateint:SelectPatient):
+
+    collection:Collection = request.app.state
+    cache:redis_AX = request.app.state.Cache
+
     NIC = pateint.NIC
+    EMAIL = collection.find_one({"NIC":NIC},{"_id":0,"Email":1}).get("Email")
+
+    name = f"otp::{id}"
+    otp = generate_otp()
+    payload = {
+        "uuid":id,
+        "type":type,
+        "otp":otp
+    }
+    cache.set_item(name=name,payload=payload)
+    body = Body(
+        task="send-email",
+        body={
+        "email":EMAIL,
+        "subject":"Axion Verification OTP",
+        "body":f"your otp is {otp}"
+    })
     
+    cache.scarletSender("notification",body=body)
 
 
 @route.websocket("/records/search",)
@@ -48,7 +74,6 @@ async def websocket_endpoint(websocket: WebSocket):
         raise WebSocketException(code=1008, reason="session token not sent")
     c_uuid,role = await Authenticate_WS(webSocket=websocket,token=token)
     connected_clients[c_uuid] = {
-        "time":datetime.datetime.now(datetime.timezone.utc),
         "role":role,
         "socket":websocket
         }
