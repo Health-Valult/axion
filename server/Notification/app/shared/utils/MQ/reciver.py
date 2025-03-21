@@ -37,7 +37,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             request = RedRequest.model_validate_json(data)
             
             #logger.warning(e)
-            logger.warning(request)
+            #logger.warning(request)
             response = await executer(request)
             logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
             body = Body(
