@@ -66,7 +66,7 @@ app.include_router(w_route)
 app.include_router(r_route)
 app.include_router(t_route)
 
-logger.info(app.routes)
+
 
 if __name__ == '__main__':
     uvicorn.run("app.main:app",host="0.0.0.0",port=8080,reload=True)

@@ -75,10 +75,6 @@ async def websocket_endpoint(websocket: WebSocket):
     if token is None:
         raise WebSocketException(code=1008, reason="session token not sent")
     c_uuid,role = await Authenticate_WS(webSocket=websocket,token=token)
-    connected_clients[c_uuid] = {
-        "role":role,
-        "socket":websocket
-        }
 
     pt:Collection = websocket.app.state.PatientsCollection
 
