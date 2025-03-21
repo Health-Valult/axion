@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/app/components/LanguageContext";
 import {useDarkMode} from "@/app/components/DarkModeContext";
+import {Card, CardContent, CardTitle} from "@/components/ui/card";
 
 interface Meta {
     created: string;
@@ -27,8 +28,8 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
         <div>
             <Dialog>
                 <DialogTrigger asChild>
-                    <div
-                        className="p-4 bg-white dark:bg-gray-950 shadow-md rounded-lg flex items-center space-x-4 border dark:border-gray-700 cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 mb-5"
+                    <Card
+                        className="p-4 bg-white overflow-hidden dark:bg-gray-950 shadow-md rounded-lg flex items-center space-x-4 border dark:border-gray-700 cursor-pointer hover:shadow-xl hover:-translate-y-2 transition-all duration-300 mb-5"
                     >
                         <Image
                             src={darkMode ? "/images/medicine/medicine-black.jpg" : "/images/medicine/medicine.png"}
@@ -38,15 +39,17 @@ const MedicineCard: React.FC<{ medicine: Medicine }> = ({ medicine }) => {
                             className="object-contain rounded-md"
                         />
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-orange-300">{medicine.display}</h3>
-                            <p className="text-sm text-gray-600 dark:text-white">
-                                <strong>{t.dosage}:</strong> {medicine.dosage}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-white">
-                                <strong>{t.source}:</strong> {medicine.route}
-                            </p>
+                            <CardTitle className="text-lg font-semibold text-gray-800 dark:text-orange-300">{medicine.display}</CardTitle>
+                            <CardContent>
+                                <p className="text-sm text-gray-600 dark:text-white">
+                                    <strong>{t.dosage}:</strong> {medicine.dosage}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-white">
+                                    <strong>{t.source}:</strong> {medicine.route}
+                                </p>
+                            </CardContent>
                         </div>
-                    </div>
+                    </Card>
                 </DialogTrigger>
 
                 <DialogContent className="p-6 space-y-4 bg-white dark:bg-gray-950 rounded-lg shadow-lg w-96">

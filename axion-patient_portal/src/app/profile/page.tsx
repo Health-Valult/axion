@@ -177,7 +177,7 @@ function ProfileForm() {
 
                 <Button
                     onClick={() => setIsResetPasswordModalOpen(true)}
-                    className="w-full font-semibold mt-4"
+                    className="w-full font-semibold mt-4 overflow-hidden"
                     variant="default"
                 >
                     {t.reset_password}
@@ -185,7 +185,7 @@ function ProfileForm() {
 
                 <Button
                     onClick={() => setIsDeleteAccountModalOpen(true)}
-                    className="w-full font-semibold mt-4"
+                    className="w-full font-semibold mt-4 overflow-hidden"
                     variant="destructive"
                 >
                     {t.delete_account}

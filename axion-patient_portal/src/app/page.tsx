@@ -25,14 +25,20 @@ export default function DashboardLayout() {
 }
 
 interface Medication {
-    name: string;
+    patientID: string;
+    code: string;
+    display: string;
     dosage: string;
-    schedule: string;
+    route: string;
+    prescriber: string;
+    meta: Meta;
 }
 
-interface MedicalReport {
-    name: string;
-    date: string;
+interface Report {
+    id: string;
+    display: string;
+    timestamp: string;
+    meta: string;
 }
 
 interface Meta {
@@ -66,16 +72,11 @@ const Dashboard = () => {
     const { darkMode } = useDarkMode();
     const [healthInfo, setHealthInfo] = useState({
         name: '',
-        dob: 21,
+        age: null as number | null,
+        gender: '' as string | undefined,
     });
-    const [medications] = useState<Medication[]>([
-        { name: 'Paracetamol', dosage: '500mg', schedule: 'Twice daily' },
-        { name: 'Amoxicillin', dosage: '250mg', schedule: 'Once daily' },
-    ]);
-    const [medicalReports] = useState<MedicalReport[]>([
-        { name: 'Complete Blood Count (CBC)', date: '2024-01-25' },
-        { name: 'Lipid Profile Report', date: '2023-09-15' },
-    ]);
+    const [medications, setMedications] = useState<Medication[]>([]);
+    const [reports, setReports] = useState<Report[]>([]);
     const notifications = [
         { id: 1, message: "Your appointment is scheduled for tomorrow at 10 AM." },
         { id: 2, message: "You have a new lab report available for viewing." },
@@ -112,13 +113,118 @@ const Dashboard = () => {
 
                 const data = await response.json();
 
+                const currentYear = new Date().getFullYear();
+                let birthYear;
+
+                if (data.NIC.length === 12) {
+                    birthYear = parseInt(data.NIC.substring(0, 4)); // Extract the first 4 digits
+                } else if (data.NIC.length === 10) {
+                    // NIC with 10 digits (9 digits + 'v' or 'x' at the end)
+                    const firstTwoDigits = data.NIC.substring(0, 2); // First 2 digits
+                    birthYear = parseInt('19' + firstTwoDigits); // Prefix '19' to the 2 digits to get the year
+                } else {
+                    // Invalid NIC length
+                    console.error("Invalid NIC length.");
+                    birthYear = null; // Set to null if invalid
+                }
+
+                // Calculate age if birthYear is valid
+                const age = birthYear ? currentYear - birthYear : null;
+
+                let gender;
+
+                if (data.NIC.length === 12) {
+                    const genderDigit = parseInt(data.NIC.charAt(4)); // Extract the 5th digit (index 4 in 0-based indexing)
+                    gender = genderDigit <= 4 ? "Male" : "Female";
+                } else if (data.NIC.length === 10) {
+                    // NIC with 10 digits (9 digits + 'v' or 'x' at the end)
+                    const genderDigit = parseInt(data.NIC.charAt(2)); // Extract the 3rd digit (index 2 in 0-based indexing)
+                    gender = genderDigit <= 4 ? "Male" : "Female";
+                } else {
+                    // Invalid NIC length
+                    console.error("Invalid NIC length.");
+                }
+
+                // Update state with name and calculated age
                 setHealthInfo({
                     name: data.FirstName,
-                    dob: data.DateOfBirth,
+                    age: age,
+                    gender: gender,
                 });
             } catch (error) {
                 console.error("Error fetching profile data:", error);
                 toast.error("Failed to load profile data.");
+            }
+        };
+
+        const fetchMedications = async () => {
+            try {
+                const response = await fetch('https://axiontestgateway.azure-api.net/records-patients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        query: `
+                    query Medications {
+                        medications {
+                            medications {
+                                patientID
+                                code
+                                display
+                                dosage
+                                route
+                                prescriber
+                                meta
+                            }
+                        }
+                    }`,
+                    }),
+                });
+
+                const {data} = await response.json();
+                if (data && data.medications && data.medications.medications) {
+                    setMedications(data.medications.medications);
+                }
+            } catch (error) {
+                console.error('Error fetching medication data:', error);
+                toast.error("Failed to load medications.");
+            }
+        }
+
+        const fetchReports = async () => {
+            try {
+                const response = await fetch('https://axiontestgateway.azure-api.net/records-patients', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        "Authorization": `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        query: `
+                    query Labs {
+                        Labs {
+                            labs {
+                                id
+                                patientID
+                                code
+                                display
+                                timestamp
+                                meta
+                            }
+                        }
+                    }`,
+                    }),
+                });
+
+                const { data } = await response.json();
+                if (data && data.Labs && data.Labs.labs) {
+                    setReports(data.Labs.labs);
+                }
+            } catch (error) {
+                console.error('Error fetching lab data:', error);
+                toast.error("Failed to load lab results.");
             }
         };
 
@@ -197,6 +303,8 @@ const Dashboard = () => {
 
         if (isAuthenticated) {
             fetchProfileData();
+            fetchMedications();
+            fetchReports()
             fetchAllergies();
             fetchImmunizations();
         }
@@ -215,7 +323,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="min-h-screen dark:bg-gray-950 p-6">
+        <div className="min-h-screen dark:bg-gray-950 p-6 overflow-x-hidden">
             <Toaster />
             <div className="flex items-center justify-between py-4 px-8 bg-white dark:bg-gray-950 rounded-lg">
                 <div className="flex justify-center w-full">
@@ -264,30 +372,33 @@ const Dashboard = () => {
                                         <Button variant="outline" className="w-full" onClick={() => router.push('/profile')}>
                                             Profile
                                         </Button>
-                                        <Button variant="destructive" className="w-full"
-                                                onClick={async () => {
-                                                    try {
-                                                        const response = await fetch('https://axiontestgateway.azure-api.net/axion/auth/logout', {
-                                                            method: 'POST',
-                                                            headers: {
-                                                                'Content-Type': 'application/json',
-                                                                'Authorization': `Bearer ${token}`,
-                                                            },
-                                                        });
-                                                        if (response.ok) {
-                                                            toast.success("Logging out...")
-                                                            sessionStorage.removeItem("session_token");
-                                                            sessionStorage.removeItem("refresh_token");
-                                                            router.push("/auth");
-                                                        } else {
-                                                            toast.error("Logout failed!")
-                                                            console.error("Logout failed:", await response.text());
-                                                        }
-                                                    } catch (error) {
+                                        <Button
+                                            variant="destructive"
+                                            className="w-full"
+                                            onClick={async () => {
+                                                try {
+                                                    const response = await fetch('https://axiontestgateway.azure-api.net/axion/auth/logout', {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'Authorization': `Bearer ${sessionStorage.getItem("session_token")}`,
+                                                        },
+                                                    });
+                                                    if (response.ok) {
+                                                        toast.success("Logging out...");
+                                                        sessionStorage.removeItem("session_token");
+                                                        sessionStorage.removeItem("refresh_token");
+                                                        router.push("/auth");
+                                                    } else {
                                                         toast.error("Logout failed!");
-                                                        console.error("Error during logout:", error);
+                                                        console.error("Logout failed:", await response.text());
                                                     }
-                                                }}>
+                                                } catch (error) {
+                                                    toast.error("Logout failed!");
+                                                    console.error("Error during logout:", error);
+                                                }
+                                            }}
+                                        >
                                             Logout
                                         </Button>
                                     </PopoverContent>
@@ -301,7 +412,7 @@ const Dashboard = () => {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-400 mt-6">{t.welcomeMessage} {healthInfo.name}!</h1>
-            <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950">
+            <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                 <CardHeader>
                     <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
                         {t.basicHealthInformation}
@@ -310,35 +421,35 @@ const Dashboard = () => {
                 <CardContent className="bg-white dark:bg-gray-950 rounded-lg">
                     <ul className="text-black dark:text-white space-y-2">
                         <li>{t.name}: {healthInfo.name}</li>
-                        <li>{t.age}: {healthInfo.dob}</li>
+                        <li>{t.age}: {healthInfo.age}</li>
                     </ul>
                 </CardContent>
             </Card>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
+                <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-purple-900 dark:text-orange-300">{t.myMedications}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {medications.map((med, index) => (
-                            <p key={index} className="text-sm">{med.name} - {med.dosage} ({med.schedule})</p>
+                            <p key={index} className="text-sm">{med.display}</p>
                         ))}
                     </CardContent>
                 </Card>
 
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
+                <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-purple-900 dark:text-orange-300">{t.medicalReports}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {medicalReports.map((report, index) => (
-                            <p key={index} className="text-sm">{report.name} - {report.date}</p>
+                        {reports.map((report, index) => (
+                            <p key={index} className="text-sm">{report.display}</p>
                         ))}
                     </CardContent>
                 </Card>
 
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
+                <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-purple-900 dark:text-orange-300">{t.allergies}</CardTitle>
                     </CardHeader>
@@ -382,7 +493,7 @@ const Dashboard = () => {
                     </CardContent>
                 </Card>
 
-                <Card className="dark:border-gray-700 dark:bg-gray-950">
+                <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
                         <CardTitle className="text-purple-900 dark:text-orange-300">{t.immunizations}</CardTitle>
                     </CardHeader>

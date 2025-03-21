@@ -40,7 +40,7 @@ function Sidebar({ children }: SidebarProps) {
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
-                const response = await fetch("api/get-user-data", {
+                const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",

@@ -211,7 +211,7 @@ const Auth: React.FC = () => {
                             name="firstName"
                             type="text"
                             placeholder="First Name"
-                            className={`w-64 ${errors.firstName ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.firstName ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.firstName}
                             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
@@ -222,7 +222,7 @@ const Auth: React.FC = () => {
                             name="lastName"
                             type="text"
                             placeholder="Last Name"
-                            className={`w-64 ${errors.lastName ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.lastName ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.lastName}
                             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
@@ -233,7 +233,7 @@ const Auth: React.FC = () => {
                             name="email"
                             type="email"
                             placeholder="Email"
-                            className={`w-64 ${errors.email ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.email ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -244,7 +244,7 @@ const Auth: React.FC = () => {
                             name="password"
                             type="password"
                             placeholder="Password"
-                            className={`w-64 ${errors.password ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.password ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -260,13 +260,13 @@ const Auth: React.FC = () => {
             case 2:
                 return (
                     <FormProvider>
-                        <h1 className="text-2xl font-bold text-gray-500 mb-8">Additional Information</h1>
+                        <h1 className="text-2xl font-bold sm:text-center text-gray-500 mb-8">Additional Information</h1>
                         {errors.mobileNumber && <p className="text-red-500 text-sm">{errors.mobileNumber}</p>}
                         <Input
                             name="mobileNumber"
                             type="text"
                             placeholder="Mobile Number"
-                            className={`w-64 ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.mobileNumber}
                             onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })}
@@ -277,7 +277,7 @@ const Auth: React.FC = () => {
                             name="nic"
                             type="text"
                             placeholder="NIC"
-                            className={`w-64 ${errors.nic ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${errors.nic ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
                             value={formData.nic}
                             onChange={(e) => setFormData({ ...formData, nic: e.target.value })}
@@ -289,17 +289,17 @@ const Auth: React.FC = () => {
                             name="dateOfBirth"
                             type="date"
                             placeholder="Date of Birth"
-                            className={`w-64 ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} mb-4 relative text-black`}
                             required
                             value={formData.dateOfBirth}
                             onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
                         />
 
                         <div className="flex space-x-4 mt-4">
-                            <Button className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase" onClick={prevStep}>
+                            <Button className="bg-gray-500 text-white py-2 px-4 sm:py-2 sm:px-6 rounded-lg uppercase" onClick={prevStep}>
                                 Back
                             </Button>
-                            <Button className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase" onClick={async () => { await nextStep(); }}>
+                            <Button className="bg-purple-600 text-white py-2 px-4 sm:py-2 sm:px-6 rounded-lg uppercase" onClick={async () => { await nextStep(); }}>
                                 Register
                             </Button>
                         </div>
@@ -309,7 +309,7 @@ const Auth: React.FC = () => {
                 return (
                     <FormProvider>
                         <h1 className="text-2xl font-bold text-gray-500 mb-8">OTP Verification</h1>
-                        <InputOTP maxLength={6} value={value} onChange={value => setValue(value)} >
+                        <InputOTP maxLength={6} value={value} onChange={value => setValue(value)}>
                             <InputOTPGroup>
                                 <InputOTPSlot index={0} />
                                 <InputOTPSlot index={1} />
@@ -329,7 +329,7 @@ const Auth: React.FC = () => {
                                             headers: {
                                                 "Content-Type": "application/json",
                                             },
-                                            body: JSON.stringify({ tempID: uuid, otp: value as string }),
+                                            body: JSON.stringify({ tempID: uuid, otp: value }),
                                         });
 
                                         // Handle the response
@@ -410,7 +410,7 @@ const Auth: React.FC = () => {
                             name="Email"
                             type="text"
                             placeholder="Email"
-                            className={`w-64 ${loginErrors.email ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${loginErrors.email ? 'border-red-500' : 'border-gray-300'} mb-4 relative text-black`}
                             required
                             value={loginFormData.email}
                             onChange={(e) => setLoginFormData({ ...loginFormData, email: e.target.value })}
@@ -420,7 +420,7 @@ const Auth: React.FC = () => {
                             name="password"
                             type="password"
                             placeholder="Password"
-                            className={`w-64 ${loginErrors.password ? 'border-red-500' : 'border-gray-300'} mb-4 relative`}
+                            className={`w-[80%] sm:w-[320px] ${loginErrors.password ? 'border-red-500' : 'border-gray-300'} mb-4 relative text-black`}
                             required
                             value={loginFormData.password}
                             onChange={(e) => setLoginFormData({ ...loginFormData, password: e.target.value })}
@@ -495,7 +495,7 @@ const registerUser = async (formData: FormData) => {
 
 const loginUser = async (email: string, password: string) => {
     try {
-        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
+        const response = await fetch(`api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

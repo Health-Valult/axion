@@ -207,7 +207,7 @@ const ReportPage: React.FC = () => {
     }
 
     return (
-        <div className="p-6 min-h-screen bg-white dark:bg-gray-950">
+        <div className="p-6 min-h-screen bg-white dark:bg-gray-950 overflow-x-hidden">
             <div className="flex-1 text-center">
                 <Image
                     src={darkMode ? "/logo-with-text.png" : "/logo-with-text-black.png"}
@@ -221,7 +221,7 @@ const ReportPage: React.FC = () => {
 
             <div className="flex justify-between items-center mb-4">
                 <div />
-                <div className="flex items-center space-x-4 dark:bg-gray-950">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 dark:bg-gray-950">
                     <Button variant="outline" onClick={handleSortChange}>
                         <ArrowUpDown className="mr-2" />
                         {sortOrder === "newest" ? `${t.newestFirst}` : `${t.oldestFirst}`}
