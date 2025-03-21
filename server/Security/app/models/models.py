@@ -21,7 +21,7 @@ class User(BaseModel):
     FirstName:str
     LastName:str
     Email:EmailStr
-    Telephone:str = constr(regex=r'^\d{10}$')
+    Telephone:constr(regex=r'^\d{10}$') # type: ignore
     DateOfBirth:int 
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     
