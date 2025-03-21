@@ -21,7 +21,7 @@ class User(BaseModel):
     FirstName:str
     LastName:str
     Email:EmailStr
-    Telephone:constr(regex=r'^\d{10}$') # type: ignore
+    Telephone:constr(pattern=r'^\d{10}$') # type: ignore
     DateOfBirth:int 
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     
@@ -62,7 +62,7 @@ class Doctor(BaseModel):
     FullName: str
     NIC: str
     Email: EmailStr
-    Telephone: constr(regex=r'^\d{10}$') # type: ignore
+    Telephone: constr(pattern=r'^\d{10}$') # type: ignore
     Address: str
     Specialization: str
     Affiliation: str
@@ -78,7 +78,7 @@ class HospitalStaff(BaseModel):
     NIC: str
     Gender: str
     DateOfBirth: str
-    ContactNumber: constr(regex=r'^\d{10}$') # type: ignore
+    ContactNumber: constr(pattern=r'^\d{10}$') # type: ignore
     Email: EmailStr
     Department: str
     MedicalRegistrationNumber: str
@@ -87,7 +87,7 @@ class HospitalStaff(BaseModel):
     Address: str
     City: str
     PostalCode: str
-    PhoneNumber: constr(regex=r'^\d{10}$') # type: ignore
+    PhoneNumber: constr(pattern=r'^\d{10}$') # type: ignore
     WorkLocation: str
     ShiftType: str
     Password:Annotated[str,AfterValidator(PasswordValidator)]
