@@ -58,7 +58,7 @@ async def websocket_endpoint(websocket: WebSocket,):
             logger.warning(text)
             prefix = text.get("packet")
             logger.warning(prefix)
-            auto = pt.find({ "NIC": { "$regex": f"/^{prefix}/", "$options": 'i' } })
+            auto = pt.find({ "NIC": { "$regex": f"^{prefix}", "$options": 'i' } })
             logger.warning(list(auto))
             response = {
                 "packet":list(auto)
