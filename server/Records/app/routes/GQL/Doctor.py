@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi.responses import JSONResponse
 from strawberry import Info
 import strawberry
+from graphql import GraphQLError
 from app.ax_types.observation import *
 from app.ax_types.allergyIntolerance import *
 from app.ax_types.medications import *
@@ -36,7 +37,7 @@ class Query:
             try:
                 patient = get_patient(uuid=Doctor,CACHE=cache)
             except Exception as e:
-                return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+                return GraphQLError("patient could not be found")
 
             collection:Collection = request.app.state.LabsCollection
             query = {"patientID": patient}
@@ -53,7 +54,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
 
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"LabID":LabID,"code":code}
@@ -71,7 +72,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"labID":LabID}
@@ -90,7 +91,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"code":code}
@@ -108,7 +109,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.AllergiesCollection
         query = {"patientID": patient}
@@ -126,7 +127,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.MedicationsCollection
         query = {"patientID": patient}
@@ -144,7 +145,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.ImmunizationsCollection
         query = {"patientID": patient}        
@@ -162,7 +163,7 @@ class Query:
         try:
             patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
-            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+            return GraphQLError("patient could not be found")
  
         collection:Collection = request.app.state.ProceduresCollection
         query = {"patientID": patient}
