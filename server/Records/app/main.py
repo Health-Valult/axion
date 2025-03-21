@@ -47,14 +47,12 @@ async def lifespan(app:FastAPI):
     logger.info("connecting to cache 📚...")
     app.state.Cache = redis_AX("redis://cache",10,service="records").connect()
 
-    logger.info(app.state)
 
     yield
 
     logger.info("shutting down server")
 
     # cleanup tasks
-    #app.state.consumer_task.cancel()
     DBClient.close()
     app.state.Cache.disconnect()
 

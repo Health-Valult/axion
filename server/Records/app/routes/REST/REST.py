@@ -32,10 +32,10 @@ async def upload_report(type:str,report:Annotated[Union[
         ]]): # type: ignore
     pass
 """
-@route.post(path="/records/upload/{type}")
+@route.post(path="/records/select-patient")
 async def verify_doctor(pateint:SelectPatient):
     NIC = pateint.NIC
-
+    
 
 
 @route.websocket("/records/search",)

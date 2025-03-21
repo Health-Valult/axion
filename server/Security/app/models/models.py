@@ -45,11 +45,11 @@ class Delete(BaseModel):
     Password:Annotated[str,AfterValidator(PasswordValidator)]
 
 class OTP(BaseModel):
-    tempID:UUID4
+    tempID:str
     otp:str
 
 class SendOtp(BaseModel):
-    tempID:UUID4
+    tempID:str
     type:str
     data:EmailStr
 
