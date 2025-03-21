@@ -86,7 +86,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
     name = f"otp::verify:records::request::{c_uuid}"
     otp_payload = cache.get_item(name=name)
     logger.warning(otp_payload)
-    if otp_payload is None:
+    if not otp_payload:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
 
     otp = otp_payload.get(b"otp").decode()

@@ -1,4 +1,5 @@
 from typing import Optional
+from fastapi.responses import JSONResponse
 from strawberry import Info
 import strawberry
 from app.ax_types.observation import *
@@ -30,9 +31,12 @@ class Query:
 
             request:Request = info.context.get("request")
             Doctor = request.state.meta.get("uuid")
-            
+
             cache:redis_AX = request.app.state.Cache
-            patient = get_patient(uuid=Doctor,CACHE=cache)
+            try:
+                patient = get_patient(uuid=Doctor,CACHE=cache)
+            except Exception as e:
+                return JSONResponse(content={"details":"patient could not be found"},status_code=401)
 
             collection:Collection = request.app.state.LabsCollection
             query = {"patientID": patient}
@@ -46,8 +50,11 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
- 
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
+
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"LabID":LabID,"code":code}
         Aggregate:Cursor = collection.find_one(query,observationsResult)   
@@ -61,7 +68,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"labID":LabID}
@@ -77,7 +87,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"code":code}
@@ -92,7 +105,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.AllergiesCollection
         query = {"patientID": patient}
@@ -107,7 +123,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.MedicationsCollection
         query = {"patientID": patient}
@@ -122,7 +141,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.ImmunizationsCollection
         query = {"patientID": patient}        
@@ -137,7 +159,10 @@ class Query:
         Doctor = request.state.meta.get("uuid")
 
         cache:redis_AX = request.app.state.Cache
-        patient = get_patient(uuid=Doctor,CACHE=cache)
+        try:
+            patient = get_patient(uuid=Doctor,CACHE=cache)
+        except Exception as e:
+            return JSONResponse(content={"details":"patient could not be found"},status_code=401)
  
         collection:Collection = request.app.state.ProceduresCollection
         query = {"patientID": patient}
