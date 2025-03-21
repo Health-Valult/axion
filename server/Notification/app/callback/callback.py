@@ -1,4 +1,5 @@
 from json import loads
+import logging
 from aio_pika.abc import AbstractIncomingMessage
 from pydantic import BaseModel
 from ..utils.sender import sendMQ
@@ -7,7 +8,7 @@ from .callback_send_notification import _send_one, _send_all
 from .callback_send_sms import _send_sms
 from .callback_send_ws_notification import _send_ws_notification
 
-
+logger = logging.getLogger("uvicorn")
 
 
 functions = {
@@ -37,7 +38,7 @@ class RedResponse(BaseModel):
 
 async def callback(request:RedRequest) -> None:
 
-
+    logger.log(request.body.task)
     runner = functions.get(request.body.task)
     if callable(runner):
         try:
