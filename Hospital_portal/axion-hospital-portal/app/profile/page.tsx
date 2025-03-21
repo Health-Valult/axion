@@ -9,12 +9,17 @@ import Link from "next/link";
 const Profile = () => {
   const [profileData, setProfileData] = useState<any>(null);
   const router = useRouter();
+  
 
   useEffect(() => {
-    const savedData = localStorage.getItem("profileData");
+    if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+      // Now it's safe to use sessionStorage
+      sessionStorage.setItem('key', 'value');
+    
+    const savedData = sessionStorage.getItem("profileData");
     if (savedData) {
       setProfileData(JSON.parse(savedData));
-    }
+    }}
   }, []);
 
   return (

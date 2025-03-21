@@ -10,11 +10,15 @@ const EditProfile = () => {
   const navigate = useRouter();
 
   useEffect(() => {
-    // Retrieve the current profile data
-    const savedData = localStorage.getItem("profileData");
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
+    // if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+    //   // Now it's safe to use sessionStorage
+    //   sessionStorage.setItem('key', 'value');
+    
+    // // Retrieve the current profile data
+    // const savedData = sessionStorage.getItem("profileData");
+    // if (savedData) {
+    //   setFormData(JSON.parse(savedData));
+    // }}
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +30,7 @@ const EditProfile = () => {
     e.preventDefault();
 
     // Save updated data to localStorage
-    localStorage.setItem("profileData", JSON.stringify(formData));
+    //localStorage.setItem("profileData", JSON.stringify(formData));
 
     navigate.push("/profile"); // Redirect to the Profile page
   };

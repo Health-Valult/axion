@@ -4,18 +4,18 @@ interface StaffProfile {
     dateOfBirth: string;
     gender: string;
     nationalId: string;
-    contactNumber: string;
+    contactNumber: number;
     email: string;
     department: string;
     medicalRegistrationNumber: string;
-    yearsOfExperience: string;
+    yearsOfExperience: number;
   
     // Work Information
     hospitalName: string;
     address: string;
     city: string;
     postalCode: string;
-    phoneNumber: string;
+    phoneNumber: number;
     workLocation: string;
     shiftType: string;
   

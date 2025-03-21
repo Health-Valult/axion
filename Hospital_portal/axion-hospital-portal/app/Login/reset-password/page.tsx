@@ -19,14 +19,18 @@ const ResetPassword = () => {
   const [passwords, setPasswords] = useState({ newPassword: "", confirmPassword: "" });
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
+      // Now it's safe to use sessionStorage
+      sessionStorage.setItem('key', 'value');
+    
     // Fetch the stored email from localStorage
-    const profileData = localStorage.getItem("profileData");
+    const profileData = sessionStorage.getItem("profileData");
     if (profileData) {
       const parsedData = JSON.parse(profileData);
       if (parsedData.email) {
         setEmail(parsedData.email);
       }
-    }
+    }}
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
