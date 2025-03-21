@@ -1,3 +1,5 @@
+import logging
+import os
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
 import bson
@@ -12,9 +14,15 @@ from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 from datetime import datetime,timezone
 import math
-from app.main import GOOGLE_MAPS_API_KEY
+
 import  googlemaps
 
+logger = logging.getLogger("uvicorn")
+
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API")
+
+if not GOOGLE_MAPS_API_KEY:
+    logger.critical("Unable to load environment variable : GOOGLE_MAPS_API_KEY")
 
 gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
 

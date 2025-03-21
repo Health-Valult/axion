@@ -30,12 +30,11 @@ from app.callback.callBack import callback_security
 logger = logging.getLogger("uvicorn")
 
 AZURE_DATABASE_URL = os.getenv("AZURE_DATABASE_URL")
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API")
+
 
 if not AZURE_DATABASE_URL:
     logger.critical("Unable to load environment variable : AZURE_DATABASE_URL")
-if not GOOGLE_MAPS_API_KEY:
-    logger.critical("Unable to load environment variable : GOOGLE_MAPS_API_KEY")
+
 
 
 # suppress pymongo Azure warning
