@@ -69,7 +69,7 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
 
         if speed > speed_threshhold:
 
-            location = gmaps.reverse_geocode(newCoords, enable_address_descriptor=True)
+            location = gmaps.reverse_geocode(newCoords)
 
             email = user.get("Email")
             body = {
