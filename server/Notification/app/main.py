@@ -31,7 +31,7 @@ logger = logging.getLogger("uvicorn")
 async def lifespan(app:FastAPI):
     logger.info("v-000")
     
-    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'security',executer=callback))
+    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'notification',executer=callback))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")

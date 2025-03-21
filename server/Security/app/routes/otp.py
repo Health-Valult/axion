@@ -7,7 +7,9 @@ from fastapi.responses import JSONResponse
 from app.models.models import *
 from starlette.requests import Request
 from app.callback import authenticate_session
-from app.shared.utils.Cache.redis import redis_AX
+from app.shared.utils.Cache.redis import redis_AX,Body
+
+
 logger = logging.getLogger("uvicorn")
 
 route = APIRouter()
@@ -35,12 +37,15 @@ def send_otp(request:Request,cred:SendOtp):
         "otp":otp
     }
     cache.set_item(name=name,payload=payload)
-    body = {
+    body = Body(
+        task="send-email",
+        body={
         "email":data,
         "subject":"Axion Verification OTP",
         "body":f"your otp is {otp}"
-    }
-    cache.scarletSender("notification","send-email",body=body)
+    })
+    
+    cache.scarletSender("notification",body=body)
     
     return JSONResponse(status_code=200,content={"msg":"otp sent"})
 
