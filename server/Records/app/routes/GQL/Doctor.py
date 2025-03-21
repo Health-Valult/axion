@@ -14,17 +14,17 @@ from pymongo.cursor import Cursor
 from pymongo.collection import Collection
 
 @strawberry.type
-class DoctorQuery:
+class Query:
 
     @strawberry.field
-    async def Labs(info:Info,NIC:str,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> LabStack:
+    async def Labs(info:Info,start:Optional[str] = strawberry.UNSET,end:Optional[str] = strawberry.UNSET) -> LabStack:
         
-        request:Request = info.context.get("request")
-        
-        collection:Collection = request.app.state.LabsCollection
-        query = {"patientID": patient}
-        Aggregate:Cursor = collection.find(query,labsResult)
-        return LabStack(labs=[Lab(**obs) for obs in Aggregate])
+            request:Request = info.context.get("request")
+            patient = request.state.meta.get("uuid")
+            collection:Collection = request.app.state.LabsCollection
+            query = {"patientID": patient}
+            Aggregate:Cursor = collection.find(query,labsResult)
+            return LabStack(labs=[Lab(**obs) for obs in Aggregate])
     
     @strawberry.field
     async def observation(info:Info,code:str,LabID:str) -> ObservationStack:

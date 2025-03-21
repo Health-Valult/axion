@@ -12,6 +12,7 @@ from app.utils.logging import*
 from app.shared.utils.Cache.redis import redis_AX
 from app.shared.middleware.authentication import Authenticate
 from app.routes.GQL.Patient import PatientQuery
+from app.routes.GQL.Doctor import Query as d_query
 from app.utils import load_to_redis
 from app.routes.REST.REST import route as w_route
 
@@ -24,9 +25,6 @@ logger = logging.getLogger("uvicorn")
 # startup events
 @asynccontextmanager
 async def lifespan(app:FastAPI):
-
-    # rabbitMQ connection startup
-
 
     # loader function
     app.state.search_loader = asyncio.create_task(load_to_redis.loader(app=app))
@@ -73,11 +71,11 @@ patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenti
 
         
 
-#doctor_schema = strawberry.Schema(Query)
-#doctor_gql_router = GraphQLRouter(patient_schema)
+doctor_schema = strawberry.Schema(d_query)
+doctor_gql_router = GraphQLRouter(doctor_schema,dependencies=[Depends(Authenticate)])
 
 app.include_router(patient_gql_router, prefix="/graphql/patient")
-#app.include_router(doctor_gql_router, prefix="/graphql/doctor")
+app.include_router(doctor_gql_router, prefix="/graphql/doctor")
 app.include_router(w_route)
 #app.add_middleware(AuthenticateMiddleware)
 

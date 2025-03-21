@@ -81,7 +81,7 @@ class redis_AX:
         print(f"Published: {message}")
 
     def autoComplete(self, text: str):
-        all_keys = self.r.keys(f"user::search::{text}*")  # Get all matching keys
+        all_keys = self.r.keys(f"user::search::{text}*")  
         return all_keys[:5]
     
     def scarletSender_is_waiting(self,channel:str,body:Body):

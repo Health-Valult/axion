@@ -3,7 +3,7 @@ import logging
 from fastapi import FastAPI
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
-import redis
+import redis.asyncio
 
 logger = logging.getLogger("uvicorn")
 
