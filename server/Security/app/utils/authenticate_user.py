@@ -24,7 +24,7 @@ GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API")
 if not GOOGLE_MAPS_API_KEY:
     logger.critical("Unable to load environment variable : GOOGLE_MAPS_API_KEY")
 
-gmaps = googlemaps.Client("AIzaSyBPyjoS3qx4popmE_Cbr3gD1FkBhNQGeVc")
+gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
 
 hasher = PasswordHasher()
 

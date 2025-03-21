@@ -46,18 +46,20 @@ def doctor_signup(request:Request,credentials:Doctor):
     return _sign_in_user(credentials=credentials,Collection=collection,query=docQuery)
 
 
-"""
-def staff_signup():
+@route.post("/axion/auth/signup/hospital-staff",tags=["signup"])
+def staff_signup(request:Request,credentials:HospitalStaff):
 
+    state:FastAPI = request.app
+    collection:Collection = state.state.HospitalCollection
+
+
+    c_nic = credentials.NIC
+    c_email = credentials.Email
+    c_phone = credentials.Email
+    c_mrn = credentials.MedicalRegistrationNumber
     credentials:dict = credentials.model_dump()
-
-    c_nic = credentials.get("NIC")
-    c_email = credentials.get("Email")
-    c_phone = credentials.get("Telephone")
-
     staffQuery = {
-    "$or":[{"NIC":c_nic},{"Email":c_email},{"Telephone":c_phone}]
+    "$or":[{"NIC":c_nic},{"Email":c_email},{"ContactNumber":c_phone},{"MedicalRegistrationNumber":c_mrn},]
     }
 
-    return _sign_in_user(credentials=credentials,Collection=PatientsCollection,query=patientQuery)
-"""
+    return _sign_in_user(credentials=credentials,Collection=collection,query=staffQuery)

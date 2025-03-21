@@ -78,3 +78,31 @@ class Doctor(BaseModel):
     Experience: int
     Qualifications: Optional[List[Qualification]] = []
     Password: Annotated[str,AfterValidator(PasswordValidator)]
+
+
+class HospitalStaff(BaseModel):
+    FullName: str
+    NIC: str
+    Gender: str
+    DateOfBirth: str
+    ContactNumber: str
+    Email: EmailStr
+    Department: str
+    MedicalRegistrationNumber: str
+    Experience: int
+    Hospital: str
+    Address: str
+    City: str
+    PostalCode: str
+    PhoneNumber: str
+    WorkLocation: str
+    ShiftType: str
+    Password: str
+
+
+
+
+
+
+
+
