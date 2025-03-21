@@ -59,6 +59,7 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     payload = {
         "uuid":c_uuid,
         "type":"email",
+        "NIC":NIC,
         "otp":otp
     }
     cache.set_item(name=name,payload=payload)
@@ -100,12 +101,19 @@ async def verify_doctor_request(request:Request,cred:OTP):
         "UserID":c_uuid
     }
 
-    collection.update_one(
+    """collection.update_one(
         {"UserID":requester},
           {"$addToSet": {"patients": {"$each": [new_patients]}}}
+    )"""
+    cache.set_item(
+        name=f"verified::doc::{requester}",
+        payload={"patient":c_uuid},
+        ttl=60
     )
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})
+
+@route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
 
 
 @route.websocket("/records/search",)
