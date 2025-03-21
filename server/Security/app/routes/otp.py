@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from app.models.models import *
 from starlette.requests import Request
 from app.callback import authenticate_session
+from app.shared.utils.Cache.redis import redis_AX
 logger = logging.getLogger("uvicorn")
 
 route = APIRouter()
@@ -19,6 +20,7 @@ def generate_otp(length=6):
 def send_otp(request:Request,cred:SendOtp):
 
     state:FastAPI = request.app.state
+    cache:redis_AX = request.app.state.Cache
 
     id = cred.tempID
     type = cred.type
@@ -32,26 +34,28 @@ def send_otp(request:Request,cred:SendOtp):
         "type":type,
         "otp":otp
     }
-    state.Cache.set_item(name=name,payload=payload)
+    cache.set_item(name=name,payload=payload)
     body = {
         "email":data,
         "subject":"Axion Verification OTP",
         "body":f"your otp is {otp}"
     }
-    response = state.sender_task.send_and_await("notification","send-email",body=body)
-    print(response)
+    cache.scarletSender("notification","send-email",body=body)
+    
     return JSONResponse(status_code=200,content={"msg":"otp sent"})
 
 
 
 @route.post("/axion/auth/verify/otp")
 def verify_otp(request:Request,cred:OTP):
-    state:FastAPI = request.app
+    state:FastAPI = request.app.state
+    cache:redis_AX = request.app.state.Cache
+
     c_otp = cred.otp
     c_id = cred.tempID
    
     name = f"otp::{c_id}"
-    otp_payload = state.state.Cache.get_item(name=name)
+    otp_payload = cache.get_item(name=name)
     logger.warning(otp_payload)
     if otp_payload is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})

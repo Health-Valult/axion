@@ -42,7 +42,7 @@ async def lifespan(app:FastAPI):
 
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://cache:6379",10).connect()
+    app.state.Cache = redis_AX("redis://cache:6379",10,"notification").connect()
 
     # firebase initialization
     logger.info("connecting to firebase 🔥...")
