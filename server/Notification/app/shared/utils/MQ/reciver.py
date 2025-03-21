@@ -34,6 +34,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             data:str = message.get("data").decode("utf-8")
             logger.warning(data)
             request = RedRequest.model_validate_json(data)
+            logger.warning(request)
             response = await executer(request)
             body = Body(
                 task = "verifiedToken",
