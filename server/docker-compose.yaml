@@ -44,7 +44,7 @@ services:
       dockerfile: Dockerfile
     
   logging-analytics:
-    container_name: record
+    container_name: logging-analytics
     ports:
       - 4000:4000
     
