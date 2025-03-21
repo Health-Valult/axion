@@ -119,16 +119,6 @@ const EditProfile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="employeeId">Employee Id</label>
-                    <Input
-                      id="employeeId"
-                      name="employeeId"
-                      value={formData.employeeId}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
                     <label htmlFor="medicalRegistrationNumber">Medical Registration Number</label>
                     <Input
                       id="medicalRegistrationNumber"
@@ -199,19 +189,6 @@ const EditProfile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="employeeId">Employee ID *</label>
-                    <Input
-                      id="employeeId"
-                      name="employeeId"
-                      type="employeeId"
-                      placeholder="Verified Employee ID"
-                      value={formData.employeeId}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
                     <label htmlFor="department">Medical Registration Number *</label>
                     <Input
                       id="medicalRegistrationNumber"
@@ -224,7 +201,7 @@ const EditProfile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="employeeId">Years Of Experience *</label>
+                    <label htmlFor="yearsOfExperience">Years Of Experience *</label>
                     <Input
                       id="yearsOfExperience"
                       name="yearsOfExperience"

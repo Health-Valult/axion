@@ -7,7 +7,6 @@ interface StaffProfile {
     contactNumber: string;
     email: string;
     department: string;
-    employeeId: string;
     medicalRegistrationNumber: string;
     yearsOfExperience: string;
   

@@ -35,7 +35,6 @@ const Register = () => {
     phoneNumber: "",
     workLocation: "",
     department: "",
-    employeeId: "",
     medicalRegistrationNumber: "",
     yearsOfExperience: "",
     shiftType: "",
@@ -366,19 +365,6 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="employeeId">Employee ID *</label>
-                    <Input
-                      id="employeeId"
-                      name="employeeId"
-                      type="employeeId"
-                      placeholder="Verified Employee ID"
-                      value={formData.employeeId}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
                     <label htmlFor="department">Medical Registration Number *</label>
                     <Input
                       id="medicalRegistrationNumber"
@@ -391,7 +377,7 @@ const Register = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="employeeId">Years Of Experience *</label>
+                    <label htmlFor="yearsOfExperience">Years Of Experience *</label>
                     <Input
                       id="yearsOfExperience"
                       name="yearsOfExperience"

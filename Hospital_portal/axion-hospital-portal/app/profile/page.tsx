@@ -63,7 +63,6 @@ const Profile = () => {
         <h3 className="text-lg font-semibold mb-6">Work Information</h3>
         <div className="space-y-3">
           <ProfileItem label="Department" value={profileData?.department || "N/A"} />
-          <ProfileItem label="Employee ID" value={profileData?.employeeId || "N/A"} />
           <ProfileItem label="Medical Registration Number" value={profileData?.medicalRegistrationNumber || "N/A"} />
           <ProfileItem label="Years of Experience" value={profileData?.yearsOfExperience || "N/A"} />
           <ProfileItem label="Shift Type" value={profileData?.shiftType || "N/A"} />
