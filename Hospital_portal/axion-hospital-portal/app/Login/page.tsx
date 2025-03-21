@@ -116,7 +116,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-black">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-blackdark:bg-black dark:text-white">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-block p-3 rounded-full bg-primary/10 mb-2">
@@ -126,7 +126,7 @@ const Login = () => {
           <p className="text-muted-foreground">Sign in to access your hospital dashboard.</p>
         </div>
 
-        <Card className="bg-white text-black dark:border-white">
+        <Card className="bg-white text-black dark:bg-black dark:text-white dark:border-white">
           <CardHeader>
             <CardTitle className="justify-center">Login</CardTitle>
             <CardDescription>Enter your credentials to sign in to your account</CardDescription>
