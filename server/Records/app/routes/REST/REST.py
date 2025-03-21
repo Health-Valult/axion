@@ -31,24 +31,18 @@ async def upload_report(type:str,report:Annotated[Union[
         ]]): # type: ignore
     pass
 
-@route.post(path="records/upload/{type}")
+@route.post(path="/records/upload/{type}")
 async def verify_doctor():
     pass
 """
 
-@route.websocket("/records/search",)
+@route.websocket("/records/search/{authentication}",)
 async def websocket_endpoint(websocket: WebSocket,):
 
-    c_uuid,role = await Authenticate_WS(webSocket=websocket)
     await websocket.accept()
     
     pt:Collection = websocket.app.state.PatientsCollection
 
-    connected_clients[c_uuid] = {
-        "time":datetime.datetime.now(datetime.timezone.utc),
-        "role":role,
-        "socket":websocket
-        }
 
     print(f"WebSocket Client Connected: {websocket.client}")
 
