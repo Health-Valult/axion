@@ -170,7 +170,7 @@ const Auth: React.FC = () => {
                 // setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 3
                 try {
                     // Send the POST request with the appropriate data
-                    const response = await fetch('/api/send-otp', {
+                    const response = await fetch('https://axiontestgateway.azure-api.net/axion/auth/send/otp', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ const Auth: React.FC = () => {
                         body: JSON.stringify({
                             tempID: uuid, // Using the generated UUID
                             type: 'email', // Hardcoded type as 'email'
-                            data: "subajanani@gmail.com", // Use email or any other data for this step
+                            data: formData.email, // Use email or any other data for this step
                         }),
                     });
 
@@ -324,7 +324,7 @@ const Auth: React.FC = () => {
                                 className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
                                 onClick={async () => {
                                     try {
-                                        const response = await fetch("/api/verify-otp", {
+                                        const response = await fetch("https://axiontestgateway.azure-api.net/axion/auth/verify/otp", {
                                             method: "POST",
                                             headers: {
                                                 "Content-Type": "application/json",
@@ -458,7 +458,7 @@ const Auth: React.FC = () => {
 
 const registerUser = async (formData: FormData) => {
     try {
-        const response = await fetch(`/api/signup`, {
+        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/signup/patient`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -495,7 +495,7 @@ const registerUser = async (formData: FormData) => {
 
 const loginUser = async (email: string, password: string) => {
     try {
-        const response = await fetch(`api/login`, {
+        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

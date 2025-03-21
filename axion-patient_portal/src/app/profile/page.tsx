@@ -41,7 +41,7 @@ function ProfileForm() {
         setToken(token);
         const fetchProfileData = async () => {
             try {
-                const response = await fetch("api/get-user-data", {
+                const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -85,7 +85,7 @@ function ProfileForm() {
 
     const handleResetPassword = async (oldPassword: string, newPassword: string) => {
         try {
-            const response = await fetch("/api/reset-password", {
+            const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/reset-password", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -111,7 +111,7 @@ function ProfileForm() {
 
     const handleDeleteAccount = async (email: string, password: string) => {
         try {
-            const response = await fetch("/api/delete-account", {
+            const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile/delete", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

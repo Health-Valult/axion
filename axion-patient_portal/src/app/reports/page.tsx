@@ -74,7 +74,7 @@ const ReportPage: React.FC = () => {
 
         const fetchReports = async () => {
             try {
-                const response = await fetch("/api/graphql", {
+                const response = await fetch("https://axiontestgateway.azure-api.net/records-patients", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -118,7 +118,7 @@ const ReportPage: React.FC = () => {
     // Fetch observations for the selected report using the LabID
     const fetchObservations = async (labID: string) => {
         try {
-            const response = await fetch("/api/graphql", {
+            const response = await fetch("https://axiontestgateway.azure-api.net/records-patients", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -57,7 +57,7 @@ const PatientMedicineList: React.FC = () => {
 
         const fetchMedicines = async () => {
             try {
-                const response = await fetch("/api/graphql", {
+                const response = await fetch("https://axiontestgateway.azure-api.net/records-patients", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

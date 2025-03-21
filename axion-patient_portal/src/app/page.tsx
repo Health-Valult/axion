@@ -97,7 +97,7 @@ const Dashboard = () => {
 
         const fetchProfileData = async () => {
             try {
-                const response = await fetch("api/get-user-data", {
+                const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -124,7 +124,7 @@ const Dashboard = () => {
 
         const fetchAllergies = async () => {
             try {
-                const response = await fetch('/api/graphql', {
+                const response = await fetch('https://axiontestgateway.azure-api.net/records-patients', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ const Dashboard = () => {
 
         const fetchImmunizations = async () => {
             try {
-                const response = await fetch('/api/graphql', {
+                const response = await fetch('https://axiontestgateway.azure-api.net/records-patients', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -267,7 +267,7 @@ const Dashboard = () => {
                                         <Button variant="destructive" className="w-full"
                                                 onClick={async () => {
                                                     try {
-                                                        const response = await fetch('/api/logout', {
+                                                        const response = await fetch('https://axiontestgateway.azure-api.net/axion/auth/logout', {
                                                             method: 'POST',
                                                             headers: {
                                                                 'Content-Type': 'application/json',
@@ -280,15 +280,11 @@ const Dashboard = () => {
                                                             sessionStorage.removeItem("refresh_token");
                                                             router.push("/auth");
                                                         } else {
-                                                            sessionStorage.removeItem("session_token");
-                                                            sessionStorage.removeItem("refresh_token");
-                                                            router.push("/auth");
+                                                            toast.error("Logout failed!")
                                                             console.error("Logout failed:", await response.text());
                                                         }
                                                     } catch (error) {
-                                                        sessionStorage.removeItem("session_token");
-                                                        sessionStorage.removeItem("refresh_token");
-                                                        router.push("/auth");
+                                                        toast.error("Logout failed!");
                                                         console.error("Error during logout:", error);
                                                     }
                                                 }}>
