@@ -102,7 +102,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
 
     collection.update_one(
         {"UserID":requester},
-          {"$addToSet": {"patients": {"$each": new_patients}}}
+          {"$addToSet": {"patients": {"$each": [new_patients]}}}
     )
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})

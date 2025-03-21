@@ -55,7 +55,7 @@ def staff_signup(request:Request,credentials:HospitalStaff):
 
     c_nic = credentials.NIC
     c_email = credentials.Email
-    c_phone = credentials.Email
+    c_phone = credentials.ContactNumber
     c_mrn = credentials.MedicalRegistrationNumber
     credentials:dict = credentials.model_dump()
     staffQuery = {
