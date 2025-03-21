@@ -37,7 +37,7 @@ class RedResponse(BaseModel):
 
 
 async def callback(request:RedRequest) -> None:
-
+    logger.warning("qwertyui")
     logger.log(request.body.task)
     runner = functions.get(request.body.task)
     if callable(runner):
