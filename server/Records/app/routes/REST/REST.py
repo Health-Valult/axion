@@ -37,12 +37,12 @@ async def upload_report(type:str,report:Annotated[Union[
         ]]): # type: ignore
     pass
 """
-@route.post(path="/records/select-patient")
+@route.post(path="/records/select-patient",dependencies=[Depends(Authenticate)])
 async def verify_doctor(request:Request,pateint:SelectPatient):
 
     collection:Collection = request.app.state.PatientsCollection
     cache:redis_AX = request.app.state.Cache
-
+    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
     NIC = pateint.NIC
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1})
 
@@ -57,7 +57,7 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     name = f"otp::verify:records::request::{UUID}"
     otp = generate_otp()
     payload = {
-        "uuid":UUID,
+        "uuid":c_uuid,
         "type":"email",
         "otp":otp
     }
@@ -71,12 +71,13 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     })
     
     cache.scarletSender("notification",body=body)
-    return JSONResponse(status_code=401,content={"Details":"pending verification status"})
+    return JSONResponse(status_code=200,content={"Details":"pending verification status"})
 
 @route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
 async def verify_doctor_request(request:Request,cred:OTP):
     state:FastAPI = request.app.state
     cache:redis_AX = request.app.state.Cache
+    collection:Collection = request.app.state.DoctorsCollection
     c_otp = cred.otp
     c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
     
@@ -88,11 +89,21 @@ async def verify_doctor_request(request:Request,cred:OTP):
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
 
     otp = otp_payload.get(b"otp").decode()
+    requester = otp_payload.get(b"uuid").decode()
     if otp is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
     
     if not hmac.compare_digest(otp,c_otp):
         return JSONResponse(status_code=200,content={"msg":"otp invalid"})
+    
+    new_patients = {
+        "UserID":c_uuid
+    }
+
+    collection.update_one(
+        {"UserID":requester},
+          {"$addToSet": {"patients": {"$each": new_patients}}}
+    )
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
