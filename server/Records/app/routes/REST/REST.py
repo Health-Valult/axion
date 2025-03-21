@@ -43,7 +43,7 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     cache:redis_AX = request.app.state.Cache
 
     NIC = pateint.NIC
-    credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1}).get("Email")
+    credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1})
 
     logger.info(credentials)
 
