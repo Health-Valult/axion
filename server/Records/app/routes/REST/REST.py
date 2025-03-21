@@ -43,15 +43,19 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     cache:redis_AX = request.app.state.Cache
 
     NIC = pateint.NIC
-    EMAIL = collection.find_one({"NIC":NIC},{"_id":0,"Email":1}).get("Email")
-    if not EMAIL:
+    credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1}).get("Email")
+
+    if not credentials:
         JSONResponse(status_code=401,content={"Details":"patient does not exist"})
 
-    name = f"otp::{id}"
+    EMAIL = credentials.get("Email")
+    UUID = credentials.get("UserID")
+
+    name = f"otp::verify:records::request::{UUID}"
     otp = generate_otp()
     payload = {
-        "uuid":id,
-        "type":type,
+        "uuid":UUID,
+        "type":"email",
         "otp":otp
     }
     cache.set_item(name=name,payload=payload)
@@ -64,6 +68,8 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     })
     
     cache.scarletSender("notification",body=body)
+
+
 
 
 @route.websocket("/records/search",)
@@ -98,3 +104,5 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
+
+
