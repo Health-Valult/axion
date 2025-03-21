@@ -36,11 +36,11 @@ async def verify_doctor():
     pass
 """
 
-@route.websocket("/records/search/{authentication}",)
-async def websocket_endpoint(websocket: WebSocket,):
-
-    await websocket.accept()
+@route.websocket("/records/search",)
+async def websocket_endpoint(websocket: WebSocket):
     
+    await websocket.accept()
+    token = websocket.query_params.get("token")
     pt:Collection = websocket.app.state.PatientsCollection
 
 
