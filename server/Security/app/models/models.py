@@ -1,7 +1,7 @@
 from typing_extensions import Annotated
 from pydantic import AfterValidator, BaseModel,EmailStr,Field
 import re
-from pydantic import BaseModel, EmailStr, constr
+from pydantic import BaseModel, EmailStr, confloat
 from typing import List, Optional
 
 def PasswordValidator(value:str):
@@ -13,8 +13,8 @@ def PasswordValidator(value:str):
 
 
 class Location(BaseModel):
-    Latitude:float
-    Longitude:float
+    Latitude:confloat(strict=True,ge=-90,le=90) # type: ignore
+    Longitude:confloat(strict=True,ge=-180,le=180) # type: ignore
 
 class User(BaseModel):
     NIC:str
