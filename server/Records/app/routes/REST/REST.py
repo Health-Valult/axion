@@ -59,6 +59,7 @@ async def websocket_endpoint(websocket: WebSocket,):
             prefix = text.get("packet")
             logger.warning(prefix)
             auto = pt.find({ "NIC": { "$regex": f"/^{prefix}/", "$options": 'i' } })
+            print(list(auto))
             response = {
                 "packet":list(auto)
             }
