@@ -9,12 +9,12 @@ import ReportModal from "@/app/components/ReportModal";
 import { useDarkMode } from "@/app/components/DarkModeContext";
 import useAuth from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {ArrowUpDown, CalendarIcon} from "lucide-react";
 import { format } from "date-fns";
 import SidebarLayout from "@/app/components/Layout";
+import {DayPicker} from "react-day-picker";
 
 // Define types for GraphQL response
 interface Report {
@@ -261,10 +261,9 @@ const ReportPage: React.FC = () => {
                                 </Select>
                             </div>
 
-                            <Calendar
-                                mode="single"
+                            <DayPicker
                                 selected={filterDate}
-                                onSelect={setFilterDate}
+                                onDayClick={setFilterDate}
                                 month={currentMonth}
                                 onMonthChange={setCurrentMonth}
                             />
