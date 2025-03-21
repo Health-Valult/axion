@@ -29,7 +29,7 @@ import redis.asyncio as redis
 async def reader(channel: redis.client.PubSub,executer:Callable):
     while True:
         message:dict = await channel.get_message(ignore_subscribe_messages=True)
-        logger.warning("u are here")
+        
         if message is not None:
             data:str = message.get("data").decode("utf-8")
             
