@@ -1,7 +1,7 @@
 from typing_extensions import Annotated
-from pydantic import AfterValidator, BaseModel,EmailStr,Field
+from pydantic import AfterValidator, BaseModel,EmailStr,Field, constr
 import re
-from pydantic import BaseModel, EmailStr, confloat
+from pydantic import BaseModel, EmailStr,IPvAnyAddress,UUID4, confloat
 from typing import List, Optional
 
 def PasswordValidator(value:str):
@@ -18,11 +18,10 @@ class Location(BaseModel):
 
 class User(BaseModel):
     NIC:str
-    Email:str
     FirstName:str
     LastName:str
     Email:EmailStr
-    Telephone:str = Field(min_length=10,max_length=10)
+    Telephone:str = constr(regex=r'^\d{10}$')
     DateOfBirth:int 
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     
@@ -31,7 +30,7 @@ class Userlg(BaseModel):
     Email:EmailStr
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     Location:Location
-    IpAddress:str
+    IpAddress:IPvAnyAddress
     AndroidId:str
 
 class Token(BaseModel):
@@ -46,19 +45,13 @@ class Delete(BaseModel):
     Password:Annotated[str,AfterValidator(PasswordValidator)]
 
 class OTP(BaseModel):
-    tempID:str
+    tempID:UUID4
     otp:str
 
 class SendOtp(BaseModel):
-    tempID:str
+    tempID:UUID4
     type:str
     data:EmailStr
-
-
-nic_regex = re.compile(r"^[0-9]{9}[VvXx]$|^[0-9]{12}$")
-phone_regex = re.compile(r"^\+?\d{10,15}$")
-slmc_regex = re.compile(r"^\d{5,10}$")
-password_regex = re.compile(r"^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@!#$%^&])[A-Za-z\d@!#$%^&]{8,}$")
 
 class Qualification(BaseModel):
     degree: str
@@ -69,7 +62,7 @@ class Doctor(BaseModel):
     FullName: str
     NIC: str
     Email: EmailStr
-    Telephone: str = Field(min_length=10,max_length=10)
+    Telephone: constr(regex=r'^\d{10}$') # type: ignore
     Address: str
     Specialization: str
     Affiliation: str
@@ -85,7 +78,7 @@ class HospitalStaff(BaseModel):
     NIC: str
     Gender: str
     DateOfBirth: str
-    ContactNumber: str
+    ContactNumber: constr(regex=r'^\d{10}$') # type: ignore
     Email: EmailStr
     Department: str
     MedicalRegistrationNumber: str
@@ -94,10 +87,10 @@ class HospitalStaff(BaseModel):
     Address: str
     City: str
     PostalCode: str
-    PhoneNumber: str
+    PhoneNumber: constr(regex=r'^\d{10}$') # type: ignore
     WorkLocation: str
     ShiftType: str
-    Password: str
+    Password:Annotated[str,AfterValidator(PasswordValidator)]
 
 
 
