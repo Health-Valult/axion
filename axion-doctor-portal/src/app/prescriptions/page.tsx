@@ -409,19 +409,43 @@ const Prescriptions: React.FC = () => {
 								new FormData(e.currentTarget)
 							);
 
-							// Ensure the date is stored correctly
-							const formattedData = {
+							const formattedMedicines = selectedMedicines.map(
+								(med) => ({
+									name: med.label,
+									key: med.key,
+									frequency: med.frequency,
+									mealTiming: med.mealTiming,
+									treatmentDuration: med.treatmentDuration
+										? {
+												start: med.treatmentDuration
+													.start
+													? med.treatmentDuration.start.toString()
+													: null,
+												end: med.treatmentDuration.end
+													? med.treatmentDuration.end.toString()
+													: null,
+										  }
+										: null,
+								})
+							);
+
+							// Create the complete prescription data object
+							const prescriptionData = {
 								...formData,
 								prescribedDate:
-									selectedDate?.toISOString() || null, // Convert Date to ISO format
+									selectedDate?.toISOString() || null,
 								category: selectedIndication,
-								medicines: selectedMedicines.map(
-									(med) => med.label
-								), // Convert selected medicines to an array of strings
+								medicines: formattedMedicines,
+								doctorName: 'Dr. Steven James', // This is hardcoded in the UI
 							};
 
+							console.log(
+								'Sending prescription data:',
+								prescriptionData
+							);
+
 							// Convert to JSON before sending to API
-							postPrescription(JSON.stringify(formattedData));
+							postPrescription(JSON.stringify(prescriptionData));
 						}}
 					>
 						<img
