@@ -11,6 +11,7 @@ from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
 from app.shared.utils.Cache.redis import redis_AX
+from app.models.models import *
 
 route = APIRouter()
 connected_clients:dict = {}
@@ -30,11 +31,12 @@ async def upload_report(type:str,report:Annotated[Union[
         TFTReportTemplate
         ]]): # type: ignore
     pass
-
-@route.post(path="/records/upload/{type}")
-async def verify_doctor():
-    pass
 """
+@route.post(path="/records/upload/{type}")
+async def verify_doctor(pateint:SelectPatient):
+    NIC = pateint.NIC
+
+
 
 @route.websocket("/records/search",)
 async def websocket_endpoint(websocket: WebSocket):

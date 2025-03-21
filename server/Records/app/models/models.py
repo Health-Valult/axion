@@ -7,6 +7,8 @@ import uuid
 class Test(BaseModel):
     data_packet:str
 
+class SelectPatient(BaseModel):
+    NIC:str
 
 # Medical Data types
 

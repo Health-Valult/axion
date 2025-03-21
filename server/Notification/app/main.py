@@ -5,7 +5,7 @@ from fastapi import FastAPI
 import asyncio
 from pymongo import MongoClient
 import uvicorn
-from app.shared.utils.MQ.reciver import recieveMQ
+from app.shared.utils.MQ.reciver import RedReciver, recieveMQ
 from app.shared.utils.MQ.sender import sendMQ
 from app.shared.utils.Cache.redis import redis_AX
 from dotenv import load_dotenv
@@ -30,8 +30,8 @@ logger = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     logger.info("v-000")
-    # rabbitMQ connection startup
     
+    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'security',executer=callback))
 
     # database connection startup
     logger.info("connecting to DB 🍃...")

@@ -12,6 +12,11 @@ from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 from datetime import datetime,timezone
 import math
+from app.main import GOOGLE_MAPS_API_KEY
+import  googlemaps
+
+
+gmaps = googlemaps.Client(GOOGLE_MAPS_API_KEY)
 
 hasher = PasswordHasher()
 
@@ -56,8 +61,8 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
 
         if speed > speed_threshhold:
 
-            geoLocator = Nominatim(user_agent="geo_app")
-            location = geoLocator.reverse(newCoords)
+            location = gmaps.reverse_geocode(newCoords, enable_address_descriptor=True)
+
             email = user.get("Email")
             body = {
             "email":email,

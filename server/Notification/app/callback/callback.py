@@ -1,5 +1,6 @@
 from json import loads
 from aio_pika.abc import AbstractIncomingMessage
+from pydantic import BaseModel
 from ..utils.sender import sendMQ
 from .callback_send_email import send_email
 from .callback_send_notification import _send_one, _send_all
@@ -16,36 +17,32 @@ functions = {
     "send-ws": _send_ws_notification
 }
 
-async def callback(message:AbstractIncomingMessage) -> None:
+class Body(BaseModel):
+    task:str
+    body:dict
 
-    msg:dict = loads(message.body)
-    return_q = message.reply_to
-    
-    runner = functions.get(msg.get("request").get("task"))
+
+class RedRequest(BaseModel):
+    sender:str
+    reciver:str
+    id:str
+    body:Body
+
+class RedResponse(BaseModel):
+    sender:str
+    reciver:str
+    id:str
+    body:Body
+
+
+async def callback(request:RedRequest) -> None:
+
+
+    runner = functions.get(request.body.task)
     if callable(runner):
         try:
-            result = await runner(msg.get("request").get("body"))
-
-            print(result)
-            MQ.send(
-                Qname=return_q,
-                task = msg.get("request").get("task"),
-                body={
-                    "result":result
-                },
-                type="response",
-                status="success",
-                declare=False
-                )
+            result = runner(request.body.body)
+            return result
+  
         except Exception as e:
-            print(e)
-            MQ.send(
-                Qname=return_q,
-                task = msg.get("request").get("task"),
-                body={
-                    "result":""
-                },
-                type="response",
-                status="error",
-                declare=False
-            )
+            return {}

@@ -11,5 +11,7 @@ COPY . .
 
 EXPOSE 8000
 
+ENV GOOGLE_MAPS_API = AIzaSyBPyjoS3qx4popmE_Cbr3gD1FkBhNQGeVc
+ENV AZURE_DATABASE_URL = mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000
 
 CMD [ "python","-m","app.main" ]

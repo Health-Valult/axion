@@ -3,6 +3,7 @@ import asyncio
 import logging
 import warnings
 import uvicorn
+import os
 
 # functions and classes
 from pymongo import MongoClient
@@ -25,26 +26,33 @@ from app.routes.otp import route as o_route
 # reciver callback function
 from app.callback.callBack import callback_security
 
+# setting up logger
+logger = logging.getLogger("uvicorn")
 
-URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
+AZURE_DATABASE_URL = os.getenv("AZURE_DATABASE_URL")
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API")
+
+if not AZURE_DATABASE_URL:
+    logger.critical("Unable to load environment variable : AZURE_DATABASE_URL")
+if not GOOGLE_MAPS_API_KEY:
+    logger.critical("Unable to load environment variable : GOOGLE_MAPS_API_KEY")
+
 
 # suppress pymongo Azure warning
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
 
-# setting up logger
-logger = logging.getLogger("uvicorn")
+
+
 
 # startup events
 @asynccontextmanager
 async def lifespan(app:FastAPI):
 
-    # rabbitMQ connection startup
-    #app.state.sender_task = sendMQ("mq","security")
     app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'security',callback_security))
     
     # database connection startup
     logger.info("connecting to DB 🍃...")
-    DBClient = MongoClient(URL)
+    DBClient = MongoClient(AZURE_DATABASE_URL)
     Database = DBClient.get_database("users_db")
     app.state.PatientsCollection = Database.get_collection("patients")
     app.state.DoctorsCollection = Database.get_collection("doctors")
