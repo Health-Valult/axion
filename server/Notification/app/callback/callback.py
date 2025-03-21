@@ -42,7 +42,7 @@ async def callback(request:RedRequest) -> None:
     runner = functions.get(request.body.task)
     if callable(runner):
         try:
-            result = runner(request.body.body)
+            result = await runner(request.body.body)
             return result
   
         except Exception as e:
