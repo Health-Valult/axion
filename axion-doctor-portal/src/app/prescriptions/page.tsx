@@ -16,6 +16,7 @@ import { RadioGroup, Radio, cn } from '@heroui/react';
 import { Autocomplete, AutocompleteItem } from '@heroui/react';
 
 import { now, getLocalTimeZone, DateValue } from '@internationalized/date';
+import ProtectedClientComponent from '../components/ProtectedClientComponent';
 
 const Prescriptions: React.FC = () => {
 	const [defaultDate, setDefaultDate] = useState<any>(null);
@@ -396,270 +397,281 @@ const Prescriptions: React.FC = () => {
 	};
 
 	return (
-		<div className="flex justify-center items-center min-h-screen overflow-hidden">
-			<div className="w-full bg-white dark:bg-black p-8 shadow-lg rounded-lg max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200">
-				<Form
-					className="flex flex-col gap-4"
-					validationBehavior="native"
-					onSubmit={(e) => {
-						e.preventDefault();
-						const formData = Object.fromEntries(
-							new FormData(e.currentTarget)
-						);
+		<ProtectedClientComponent>
+			<div className="flex justify-center items-center min-h-screen overflow-hidden">
+				<div className="w-full bg-white dark:bg-black p-8 shadow-lg rounded-lg max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200">
+					<Form
+						className="flex flex-col gap-4"
+						validationBehavior="native"
+						onSubmit={(e) => {
+							e.preventDefault();
+							const formData = Object.fromEntries(
+								new FormData(e.currentTarget)
+							);
 
-						// Ensure the date is stored correctly
-						const formattedData = {
-							...formData,
-							prescribedDate: selectedDate?.toISOString() || null, // Convert Date to ISO format
-							category: selectedIndication,
-							medicines: selectedMedicines.map(
-								(med) => med.label
-							), // Convert selected medicines to an array of strings
-						};
+							// Ensure the date is stored correctly
+							const formattedData = {
+								...formData,
+								prescribedDate:
+									selectedDate?.toISOString() || null, // Convert Date to ISO format
+								category: selectedIndication,
+								medicines: selectedMedicines.map(
+									(med) => med.label
+								), // Convert selected medicines to an array of strings
+							};
 
-						// Convert to JSON before sending to API
-						postPrescription(JSON.stringify(formattedData));
-					}}
-				>
-					<img
-						width="35"
-						height="35"
-						src="https://img.icons8.com/windows/32/prescription.png"
-						alt="prescription"
-					/>
-					<div className="w-full flex flex-row gap-4">
-						{defaultDate && (
-							<DatePicker
-								isReadOnly
-								hideTimeZone
-								name="prescribedDate"
-								showMonthAndYearPickers
-								defaultValue={defaultDate}
-								label="Prescribed Date"
-								variant="bordered"
-								onChange={(date) => {
-									if (date) {
-										setSelectedDate(
-											new Date(
-												date.year,
-												date.month - 1,
-												date.day
-											)
-										); // Convert CalendarDate to Date
-									} else {
-										setSelectedDate(null);
-									}
-								}}
-							/>
-						)}
-					</div>
-					<RadioGroup
-						isRequired
-						value={selectedIndication}
-						onValueChange={setSelectedIndication}
-						className="mx-auto"
-						orientation="horizontal"
-						description="Select the basis of medication"
-						label="Indication"
+							// Convert to JSON before sending to API
+							postPrescription(JSON.stringify(formattedData));
+						}}
 					>
-						<Radio
-							value="diagnosis"
-							classNames={{
-								base: cn(
-									'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
-									'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-									'data-[selected=true]:border-primary'
-								),
-							}}
-						>
-							Diagnosis
-						</Radio>
-						<Radio
-							value="symptoms"
-							classNames={{
-								base: cn(
-									'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
-									'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-									'data-[selected=true]:border-primary'
-								),
-							}}
-						>
-							Symptoms
-						</Radio>
-						<Radio
-							value="signs"
-							classNames={{
-								base: cn(
-									'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
-									'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-									'data-[selected=true]:border-primary'
-								),
-							}}
-						>
-							Signs
-						</Radio>
-					</RadioGroup>
-					{/* Dynamically update textarea label & placeholder */}
-					<Textarea
-						minRows={3}
-						className="w-full"
-						variant="bordered"
-						placeholder={`Enter patient's ${selectedIndication.toLowerCase()}`}
-					/>
-					<div className="flex flex-wrap gap-2">
-						{selectedMedicines.map((med) => (
-							<Chip
-								key={med.key}
-								onClose={() => handleRemoveChip(med.key)}
-								color="warning"
-								variant="shadow"
-							>
-								{med.label}
-							</Chip>
-						))}
-					</div>
-					<Autocomplete
-						className="max-w-md"
-						defaultItems={medicine}
-						label="Treatment"
-						placeholder="Start typing..."
-						size="md"
-						variant="bordered"
-						selectedKey={selectedValue} // Bind state to the input field
-						onInputChange={(value) => setSelectedValue(value)} // Keep track of input
-						onSelectionChange={handleMedicineSelection}
-					>
-						{(drug) => (
-							<AutocompleteItem key={drug.key}>
-								{drug.label}
-							</AutocompleteItem>
-						)}
-					</Autocomplete>
-
-					<div className="flex flex-wrap gap-4">
-						{selectedMedicines.map((med) => (
-							<div
-								key={med.key}
-								className="flex flex-col gap-4 border p-4 rounded-lg"
-							>
-								<div className="flex  justify-between items-center">
-									<div className="flex-1">{med.label}</div>
-
-									<div className="mx-4"></div>
-
-									{/* Frequency Dropdown */}
-									<Dropdown>
-										<DropdownTrigger>
-											<Button variant="bordered">
-												{med.frequency ||
-													'Select Frequency'}
-											</Button>
-										</DropdownTrigger>
-										<DropdownMenu
-											selectionMode="single"
-											selectedKeys={
-												new Set([med.frequency])
-											}
-											onSelectionChange={(keys) => {
-												const selectedKey =
-													Array.from(keys)[0];
-												updateMedicineField(
-													med.key,
-													'frequency',
-													selectedKey as string
-												);
-											}}
-										>
-											{dosageInstructions.map(
-												(instruction) => (
-													<DropdownItem
-														key={instruction.key}
-													>
-														{instruction.label}
-													</DropdownItem>
-												)
-											)}
-										</DropdownMenu>
-									</Dropdown>
-
-									<div className="mx-4"></div>
-
-									{/* Meal Timing Dropdown */}
-									<Dropdown>
-										<DropdownTrigger>
-											<Button variant="bordered">
-												{med.mealTiming ||
-													'Select Meal Timing'}
-											</Button>
-										</DropdownTrigger>
-										<DropdownMenu
-											selectionMode="single"
-											selectedKeys={
-												new Set([med.mealTiming])
-											}
-											onSelectionChange={(keys) => {
-												const selectedKey =
-													Array.from(keys)[0];
-												updateMedicineField(
-													med.key,
-													'mealTiming',
-													selectedKey as string
-												);
-											}}
-										>
-											{timingMeals.map((instruction) => (
-												<DropdownItem
-													key={instruction.key}
-												>
-													{instruction.label}
-												</DropdownItem>
-											))}
-										</DropdownMenu>
-									</Dropdown>
-								</div>
-
-								{/* Treatment Duration Picker */}
-								<DateRangePicker
-									label="Treatment Duration"
-									visibleMonths={2}
+						<img
+							width="35"
+							height="35"
+							src="https://img.icons8.com/windows/32/prescription.png"
+							alt="prescription"
+						/>
+						<div className="w-full flex flex-row gap-4">
+							{defaultDate && (
+								<DatePicker
+									isReadOnly
+									hideTimeZone
+									name="prescribedDate"
+									showMonthAndYearPickers
+									defaultValue={defaultDate}
+									label="Prescribed Date"
 									variant="bordered"
-									value={med.treatmentDuration || null}
-									onChange={(newRange) => {
-										updateMedicineField(
-											med.key,
-											'treatmentDuration',
-											newRange
-										);
+									onChange={(date) => {
+										if (date) {
+											setSelectedDate(
+												new Date(
+													date.year,
+													date.month - 1,
+													date.day
+												)
+											); // Convert CalendarDate to Date
+										} else {
+											setSelectedDate(null);
+										}
 									}}
 								/>
-							</div>
-						))}
-					</div>
-
-					<div className="flex gap-4">
-						<Chip
-							avatar={
-								<Avatar
-									name="JW"
-									src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
-								/>
-							}
-							variant="flat"
+							)}
+						</div>
+						<RadioGroup
+							isRequired
+							value={selectedIndication}
+							onValueChange={setSelectedIndication}
+							className="mx-auto"
+							orientation="horizontal"
+							description="Select the basis of medication"
+							label="Indication"
 						>
-							Dr. Steven James
-						</Chip>
-					</div>
-					<div className="flex gap-2">
-						<Button color="primary" type="submit">
-							Prescribe
-						</Button>
-						<Button type="reset" variant="flat">
-							Reset
-						</Button>
-					</div>
-				</Form>
+							<Radio
+								value="diagnosis"
+								classNames={{
+									base: cn(
+										'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
+										'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
+										'data-[selected=true]:border-primary'
+									),
+								}}
+							>
+								Diagnosis
+							</Radio>
+							<Radio
+								value="symptoms"
+								classNames={{
+									base: cn(
+										'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
+										'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
+										'data-[selected=true]:border-primary'
+									),
+								}}
+							>
+								Symptoms
+							</Radio>
+							<Radio
+								value="signs"
+								classNames={{
+									base: cn(
+										'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
+										'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
+										'data-[selected=true]:border-primary'
+									),
+								}}
+							>
+								Signs
+							</Radio>
+						</RadioGroup>
+						{/* Dynamically update textarea label & placeholder */}
+						<Textarea
+							minRows={3}
+							className="w-full"
+							variant="bordered"
+							placeholder={`Enter patient's ${selectedIndication.toLowerCase()}`}
+						/>
+						<div className="flex flex-wrap gap-2">
+							{selectedMedicines.map((med) => (
+								<Chip
+									key={med.key}
+									onClose={() => handleRemoveChip(med.key)}
+									color="warning"
+									variant="shadow"
+								>
+									{med.label}
+								</Chip>
+							))}
+						</div>
+						<Autocomplete
+							className="max-w-md"
+							defaultItems={medicine}
+							label="Treatment"
+							placeholder="Start typing..."
+							size="md"
+							variant="bordered"
+							selectedKey={selectedValue} // Bind state to the input field
+							onInputChange={(value) => setSelectedValue(value)} // Keep track of input
+							onSelectionChange={handleMedicineSelection}
+						>
+							{(drug) => (
+								<AutocompleteItem key={drug.key}>
+									{drug.label}
+								</AutocompleteItem>
+							)}
+						</Autocomplete>
+
+						<div className="flex flex-wrap gap-4">
+							{selectedMedicines.map((med) => (
+								<div
+									key={med.key}
+									className="flex flex-col gap-4 border p-4 rounded-lg"
+								>
+									<div className="flex  justify-between items-center">
+										<div className="flex-1">
+											{med.label}
+										</div>
+
+										<div className="mx-4"></div>
+
+										{/* Frequency Dropdown */}
+										<Dropdown>
+											<DropdownTrigger>
+												<Button variant="bordered">
+													{med.frequency ||
+														'Select Frequency'}
+												</Button>
+											</DropdownTrigger>
+											<DropdownMenu
+												selectionMode="single"
+												selectedKeys={
+													new Set([med.frequency])
+												}
+												onSelectionChange={(keys) => {
+													const selectedKey =
+														Array.from(keys)[0];
+													updateMedicineField(
+														med.key,
+														'frequency',
+														selectedKey as string
+													);
+												}}
+											>
+												{dosageInstructions.map(
+													(instruction) => (
+														<DropdownItem
+															key={
+																instruction.key
+															}
+														>
+															{instruction.label}
+														</DropdownItem>
+													)
+												)}
+											</DropdownMenu>
+										</Dropdown>
+
+										<div className="mx-4"></div>
+
+										{/* Meal Timing Dropdown */}
+										<Dropdown>
+											<DropdownTrigger>
+												<Button variant="bordered">
+													{med.mealTiming ||
+														'Select Meal Timing'}
+												</Button>
+											</DropdownTrigger>
+											<DropdownMenu
+												selectionMode="single"
+												selectedKeys={
+													new Set([med.mealTiming])
+												}
+												onSelectionChange={(keys) => {
+													const selectedKey =
+														Array.from(keys)[0];
+													updateMedicineField(
+														med.key,
+														'mealTiming',
+														selectedKey as string
+													);
+												}}
+											>
+												{timingMeals.map(
+													(instruction) => (
+														<DropdownItem
+															key={
+																instruction.key
+															}
+														>
+															{instruction.label}
+														</DropdownItem>
+													)
+												)}
+											</DropdownMenu>
+										</Dropdown>
+									</div>
+
+									{/* Treatment Duration Picker */}
+									<DateRangePicker
+										label="Treatment Duration"
+										visibleMonths={2}
+										variant="bordered"
+										value={med.treatmentDuration || null}
+										onChange={(newRange) => {
+											updateMedicineField(
+												med.key,
+												'treatmentDuration',
+												newRange
+											);
+										}}
+									/>
+								</div>
+							))}
+						</div>
+
+						<div className="flex gap-4">
+							<Chip
+								avatar={
+									<Avatar
+										name="JW"
+										src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
+									/>
+								}
+								variant="flat"
+							>
+								Dr. Steven James
+							</Chip>
+						</div>
+						<div className="flex gap-2">
+							<Button color="primary" type="submit">
+								Prescribe
+							</Button>
+							<Button type="reset" variant="flat">
+								Reset
+							</Button>
+						</div>
+					</Form>
+				</div>
 			</div>
-		</div>
+		</ProtectedClientComponent>
 	);
 };
 

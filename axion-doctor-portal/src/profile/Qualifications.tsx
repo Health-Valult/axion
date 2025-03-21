@@ -6,16 +6,15 @@ import { GraduationCap } from 'lucide-react';
 
 interface Education {
 	degree: string;
-	institution: string;
+	affliatedInstitute: string;
 	year: string;
-	description?: string;
 }
 
 interface EducationTimelineProps {
-	education: Education[];
+	qualifications: Education[];
 }
 
-export function EducationTimeline({ education }: EducationTimelineProps) {
+export function EducationTimeline({ qualifications }: EducationTimelineProps) {
 	return (
 		<motion.div
 			initial={{ opacity: 0, y: 20 }}
@@ -30,13 +29,13 @@ export function EducationTimeline({ education }: EducationTimelineProps) {
 				</CardHeader>
 				<CardContent>
 					<div className="relative">
-						{education.map((item, index) => (
+						{qualifications.map((item, index) => (
 							<div
 								key={index}
 								className="relative flex items-start gap-4 pb-8 last:pb-0"
 							>
 								{/* Faint Connecting Line (Only if not last item) */}
-								{index !== education.length - 1 && (
+								{index !== qualifications.length - 1 && (
 									<div
 										className="absolute left-[22px] top-10 w-0.5 bg-black dark:bg-white"
 										style={{ height: 'calc(100% - 2rem)' }}
@@ -62,14 +61,8 @@ export function EducationTimeline({ education }: EducationTimelineProps) {
 									</div>
 
 									<p className="text-sm text-foreground/80 mb-2">
-										{item.institution}
+										{item.affliatedInstitute}
 									</p>
-
-									{item.description && (
-										<p className="text-sm text-muted-foreground">
-											{item.description}
-										</p>
-									)}
 								</div>
 							</div>
 						))}

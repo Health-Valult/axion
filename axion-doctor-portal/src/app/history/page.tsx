@@ -6,6 +6,7 @@ import { Pagination } from '@heroui/react';
 import { DoctorsNote } from '../elements/DoctorsNote';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
+import ProtectedClientComponent from '../components/ProtectedClientComponent';
 
 const History: React.FC = () => {
 	// const notes = [
@@ -230,41 +231,43 @@ const History: React.FC = () => {
 	);
 
 	return (
-		<div className="p-4 bg-white rounded-l-sm overflow-y-auto flex flex-col justify-between h-full">
-			<div className="flex-grow">
-				<Accordion variant="splitted">
-					{paginatedNotes.map((note) => (
-						<AccordionItem
-							key={note.id}
-							aria-label={`Accordion ${note.id}`}
-							title={`${note.indication} by ${note.name}`}
-						>
-							<DoctorsNote
-								name={note.name}
-								dateTime={note.dateTime}
-								indication={note.indication}
-								content={note.content}
-								treatment={note.treatment}
-							/>
-						</AccordionItem>
-					))}
-				</Accordion>
-			</div>
-
-			{/* Pagination at the bottom */}
-			{totalPages > 1 && (
-				<div className="mt-4 flex justify-center">
-					<Pagination
-						showShadow
-						color="warning"
-						initialPage={1}
-						total={totalPages}
-						page={currentPage}
-						onChange={setCurrentPage}
-					/>
+		<ProtectedClientComponent>
+			<div className="p-4 bg-white rounded-l-sm overflow-y-auto flex flex-col justify-between h-full">
+				<div className="flex-grow">
+					<Accordion variant="splitted">
+						{paginatedNotes.map((note) => (
+							<AccordionItem
+								key={note.id}
+								aria-label={`Accordion ${note.id}`}
+								title={`${note.indication} by ${note.name}`}
+							>
+								<DoctorsNote
+									name={note.name}
+									dateTime={note.dateTime}
+									indication={note.indication}
+									content={note.content}
+									treatment={note.treatment}
+								/>
+							</AccordionItem>
+						))}
+					</Accordion>
 				</div>
-			)}
-		</div>
+
+				{/* Pagination at the bottom */}
+				{totalPages > 1 && (
+					<div className="mt-4 flex justify-center">
+						<Pagination
+							showShadow
+							color="warning"
+							initialPage={1}
+							total={totalPages}
+							page={currentPage}
+							onChange={setCurrentPage}
+						/>
+					</div>
+				)}
+			</div>
+		</ProtectedClientComponent>
 	);
 };
 

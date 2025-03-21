@@ -33,19 +33,9 @@ export interface DiagnosedAilment {
 }
 
 type Summary = {
-	chiefComplaint: string;
-	hpi: string;
-	pmh: string;
-	psh: string;
-	medications: string;
-	allergies: string;
-	fhx: string;
-	shx: string;
-	vitals: string;
-	recentLabs: string;
-	immunizations: string;
-	ros: string;
-};
+	title: string;
+	description: string;
+}[];
 
 // export interface Patient {
 //     id: string;
@@ -71,4 +61,11 @@ type Summary = {
 
 export interface Patient {
 	id: string;
+	firstName: string;
+	lastName: string;
+	nic: string;
+	name: string;
+	dateOfBirth: string;
+	gender: string;
+	summary: Summary;
 }

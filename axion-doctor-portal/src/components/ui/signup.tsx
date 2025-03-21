@@ -231,7 +231,7 @@ export function DoctorSignup() {
 				Password: values.password,
 			};
 
-			const response = await fetch('/api/proxy', {
+			const response = await fetch('http://localhost:3000/api/proxy2', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

@@ -6,8 +6,11 @@ import { Notes } from '@/components/ui/notes';
 import { Files, FileText, Link } from 'lucide-react';
 import { TextEffect } from '@/components/ui/text-effect';
 import ProtectedClientComponent from './components/ProtectedClientComponent';
+import { useSelector } from 'react-redux';
+import { RootState } from './store/store';
 
 const page: React.FC = async () => {
+	const user = useSelector((state: RootState) => state.user.state);
 	return (
 		<ProtectedClientComponent>
 			<div className="p-4 flex flex-col flex-1 bg-white dark:bg-black rounded-l-sm h-full overflow-y-auto">
@@ -17,7 +20,7 @@ const page: React.FC = async () => {
 					as="h3"
 					preset="slide"
 				>
-					Welcome Dr. John Doe
+					{`Welcome Dr. ${user?.fullName ?? 'Guest'}`}
 				</TextEffect>
 				<div className="flex flex-1 items-center gap-x-4 px-16 py-8">
 					<div className="flex-1">

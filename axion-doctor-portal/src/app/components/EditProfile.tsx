@@ -64,20 +64,18 @@ interface profileProps {
 	onOpenChange: (open: boolean) => void;
 	initialData: {
 		image: string;
-		firstName: string;
-		lastName: string;
-		designation: string;
+		fullName: string;
+		specialisation: string;
 		yearsOfExperience: string;
 		workingHospital: { name: string };
 		officeHours: string;
 		email: string;
 		phone: string;
 		location: string;
-		education: {
+		qualifications: {
 			degree: string;
-			institution: string;
+			affliatedInstitute: string;
 			year: string;
-			description: string;
 		}[];
 	};
 	onSave: (data: any) => void;
@@ -96,8 +94,8 @@ const EditProfileDialog: React.FC<profileProps> = ({
 	const personalForm = useForm<z.infer<typeof personalInfoSchema>>({
 		resolver: zodResolver(personalInfoSchema),
 		defaultValues: {
-			name: initialData.firstName,
-			title: initialData.designation,
+			name: initialData.fullName,
+			title: initialData.specialisation,
 			email: initialData.email,
 			phone: initialData.phone,
 			officeHours: initialData.officeHours,
@@ -117,27 +115,13 @@ const EditProfileDialog: React.FC<profileProps> = ({
 	});
 
 	// Education and achievements state
-	const [educationItems, setEducationItems] = useState([
-		{
-			degree: 'MD in Cardiology',
-			institution: 'Harvard Medical School',
-			year: '2005',
-		},
-		{
-			degree: 'Residency in Internal Medicine',
-			institution: 'Massachusetts General Hospital',
-			year: '2008',
-		},
-		{
-			degree: 'Fellowship in Interventional Cardiology',
-			institution: 'Cleveland Clinic',
-			year: '2010',
-		},
-	]);
+	const [educationItems, setEducationItems] = useState(
+		initialData.qualifications
+	);
 
 	const [newEducation, setNewEducation] = useState({
 		degree: '',
-		institution: '',
+		affliatedInstitute: '',
 		year: '',
 	});
 
@@ -167,11 +151,11 @@ const EditProfileDialog: React.FC<profileProps> = ({
 	const addEducation = () => {
 		if (
 			newEducation.degree &&
-			newEducation.institution &&
+			newEducation.affliatedInstitute &&
 			newEducation.year
 		) {
 			setEducationItems([...educationItems, newEducation]);
-			setNewEducation({ degree: '', institution: '', year: '' });
+			setNewEducation({ degree: '', affliatedInstitute: '', year: '' });
 		}
 	};
 
@@ -405,7 +389,8 @@ const EditProfileDialog: React.FC<profileProps> = ({
 												{item.degree}
 											</p>
 											<p className="text-sm text-muted-foreground">
-												{item.institution}, {item.year}
+												{item.affliatedInstitute},{' '}
+												{item.year}
 											</p>
 										</div>
 										<Button
@@ -448,11 +433,14 @@ const EditProfileDialog: React.FC<profileProps> = ({
 										</Label>
 										<Input
 											id="institution"
-											value={newEducation.institution}
+											value={
+												newEducation.affliatedInstitute
+											}
 											onChange={(e) =>
 												setNewEducation({
 													...newEducation,
-													institution: e.target.value,
+													affliatedInstitute:
+														e.target.value,
 												})
 											}
 											placeholder="Harvard Medical School"

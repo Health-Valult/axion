@@ -8,7 +8,9 @@ import { useId, useState, useEffect } from 'react';
 export default function ThemeSwitcher() {
 	const id = useId();
 	type Theme = 'light' | 'dark';
-	const [theme, setTheme] = useState<Theme>('light');
+	const [theme, setTheme] = useState<Theme>(
+		JSON.parse(localStorage.getItem('theme') || '"light"') as Theme
+	);
 
 	// Initialize the theme from localStorage when component mounts
 	useEffect(() => {
