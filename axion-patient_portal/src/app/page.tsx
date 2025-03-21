@@ -167,19 +167,19 @@ const Dashboard = () => {
                     },
                     body: JSON.stringify({
                         query: `
-                    query Medications {
-                        medications {
-                            medications {
-                                patientID
-                                code
-                                display
-                                dosage
-                                route
-                                prescriber
-                                meta
-                            }
-                        }
-                    }`,
+                            query Medications {
+                                medications {
+                                    medications {
+                                        patientID
+                                        code
+                                        display
+                                        dosage
+                                        route
+                                        prescriber
+                                        meta
+                                    }
+                                }
+                            }`,
                     }),
                 });
 
@@ -203,18 +203,18 @@ const Dashboard = () => {
                     },
                     body: JSON.stringify({
                         query: `
-                    query Labs {
-                        Labs {
-                            labs {
-                                id
-                                patientID
-                                code
-                                display
-                                timestamp
-                                meta
-                            }
-                        }
-                    }`,
+                            query Labs {
+                                Labs {
+                                    labs {
+                                        id
+                                        patientID
+                                        code
+                                        display
+                                        timestamp
+                                        meta
+                                    }
+                                }
+                            }`,
                     }),
                 });
 
@@ -422,6 +422,7 @@ const Dashboard = () => {
                     <ul className="text-black dark:text-white space-y-2">
                         <li>{t.name}: {healthInfo.name}</li>
                         <li>{t.age}: {healthInfo.age}</li>
+                        <li>{t.gender}: {healthInfo.gender}</li>
                     </ul>
                 </CardContent>
             </Card>

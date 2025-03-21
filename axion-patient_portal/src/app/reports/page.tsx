@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { jsPDF } from "jspdf";
+import { autoTable } from "jspdf-autotable";
 import { useLanguage } from "@/app/components/LanguageContext";
 import ReportCard from "@/app/components/ReportCard";
 import ReportModal from "@/app/components/ReportModal";
@@ -160,21 +161,52 @@ const ReportPage: React.FC = () => {
         }
     };
 
-    // Function to generate PDF of observations
     const generatePDF = () => {
         const doc = new jsPDF();
-        doc.text(`${selectedReport?.display}`, 10, 10);
-        let yPosition = 20;
-        doc.text("Observation Name", 10, yPosition);
-        doc.text("Result", 100, yPosition);
-        doc.text("Unit", 150, yPosition);
-        yPosition += 10;
-        observations.forEach((obs) => {
-            doc.text(obs.display, 10, yPosition);
-            doc.text(obs.value, 100, yPosition);
-            doc.text(obs.unit, 150, yPosition);
-            yPosition += 10;
+
+        // Set font for the report title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text(`${selectedReport?.display}`, 20, 20);
+
+        // Set font for the rest of the content
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text("Observations", 20, 30);
+
+        // Prepare table data
+        const tableData = observations.map(obs => [
+            obs.display,
+            obs.value,
+            obs.unit
+        ]);
+
+        const header = [
+            ["Observation Name", "Result", "Unit"] // This is your table header
+        ];
+
+        // Create the table
+        autoTable(doc, {
+            startY: 40, // Start below the title
+            head: header,
+            body: tableData,
+            theme: "grid",
+            headStyles: {
+                fillColor: [22, 160, 133], // Set a custom header background color
+                textColor: [255, 255, 255], // Set the header text color
+                fontSize: 12,
+                font: "helvetica",
+                halign: "center", // Center align header text
+            },
+            bodyStyles: {
+                fontSize: 10,
+                font: "helvetica",
+                halign: "left", // Align body text to the left
+            },
+            margin: { top: 20, bottom: 20 }, // Add margin to the table
         });
+
+        // Save the PDF with the selected report name
         doc.save(`${selectedReport?.display}.pdf`);
     };
 
@@ -221,7 +253,7 @@ const ReportPage: React.FC = () => {
 
             <div className="flex justify-between items-center mb-4">
                 <div />
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 dark:bg-gray-950">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 sm:mb-2 dark:bg-gray-950">
                     <Button variant="outline" onClick={handleSortChange}>
                         <ArrowUpDown className="mr-2" />
                         {sortOrder === "newest" ? `${t.newestFirst}` : `${t.oldestFirst}`}

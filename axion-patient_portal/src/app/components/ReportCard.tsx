@@ -21,7 +21,7 @@ const ReportCard: React.FC<ReportCardProps> = ({ report, onClick }) => {
 
     return (
         <Card
-            className="w-full bg-white dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer mb-4"
+            className="w-full bg-white overflow-x-hidden dark:bg-gray-950 dark:border-gray-700 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer mb-4"
             onClick={onClick}
         >
             <CardHeader className="p-4 items-center">
