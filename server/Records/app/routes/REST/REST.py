@@ -39,7 +39,7 @@ async def upload_report(type:str,report:Annotated[Union[
 @route.post(path="/records/select-patient")
 async def verify_doctor(request:Request,pateint:SelectPatient):
 
-    collection:Collection = request.app.state
+    collection:Collection = request.app.state.PatientsCollection
     cache:redis_AX = request.app.state.Cache
 
     NIC = pateint.NIC
