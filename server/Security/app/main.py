@@ -55,7 +55,7 @@ async def lifespan(app:FastAPI):
     Database = DBClient.get_database("users_db")
     app.state.PatientsCollection = Database.get_collection("patients")
     app.state.DoctorsCollection = Database.get_collection("doctors")
-    app.state.HospitalCollection = Database.get_collection("hospital")
+    app.state.HospitalCollection = Database.get_collection("hospitals")
     
     # cache connection startup
     logger.info("connecting to cache 📚...")
