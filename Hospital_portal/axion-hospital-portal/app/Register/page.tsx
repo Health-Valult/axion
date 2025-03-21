@@ -18,10 +18,10 @@ const Register = () => {
   const [formData, setFormData] = useState({
     // General Information
     fullName: "",
-    dateOfBirth: "",
+    dateOfBirth: 0,
     gender: "",
     nationalId: "",
-    contactNumber: 0,
+    contactNumber: "",
     email: "",
     address: "",
     city: "",
@@ -29,7 +29,7 @@ const Register = () => {
 
     // Work Informations
     hospitalName: "",
-    phoneNumber: 0,
+    phoneNumber: "",
     workLocation: "",
     department: "",
     medicalRegistrationNumber: "",
@@ -49,6 +49,9 @@ const Register = () => {
   // Function to validate phone number (10 digits)
   const validatePhoneNumber = (phoneNumber: string): boolean => /^[0-9]{10}$/.test(phoneNumber);
 
+  //const validateDateOfBirth = (dob: string): boolean => /^[0-3][0-9]-[0-1][0-9]-\d{4}$/.test(dob);
+
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -56,7 +59,7 @@ const Register = () => {
     const { name, value } = e.target;
 
     // Check if the field is yearsOfExperience and convert to integer
-    if (name === "yearsOfExperience" || name === "phoneNumber" || name === "contactNumber") {
+    if (name === "yearsOfExperience" || name === "dateOfBirth") { // 
       setFormData((prev) => ({
         ...prev,
         [name]: value ? parseInt(value, 10) : 0, // Default to 0 if the value is empty
@@ -188,32 +191,38 @@ const Register = () => {
 
     setIsLoading(true);
 
+
+
     try {
+      const body= {
+        FullName: formData.fullName,
+        NIC: formData.nationalId,
+        Gender: formData.gender,
+        DateOfBirth: formData.dateOfBirth,
+        ContactNumber: formData.contactNumber || formData.phoneNumber, // Use whichever is filled
+        Email: formData.email,
+        Department: formData.department,
+        MedicalRegistrationNumber: formData.medicalRegistrationNumber,
+        Experience: formData.yearsOfExperience,
+        Hospital: formData.hospitalName,
+        Address: formData.address,
+        City: formData.city,
+        PostalCode: formData.postalCode,
+        PhoneNumber: formData.phoneNumber,
+        WorkLocation: formData.workLocation,
+        ShiftType: formData.shiftType,
+        Password: formData.password,
+      }
+      console.log(body);
       const response = await fetch("/api/Register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          FullName: formData.fullName,
-          NIC: formData.nationalId,
-          Gender: formData.gender,
-          DateOfBirth: formData.dateOfBirth,
-          ContactNumber: formData.contactNumber || formData.phoneNumber, // Use whichever is filled
-          Email: formData.email,
-          Department: formData.department,
-          MedicalRegistrationNumber: formData.medicalRegistrationNumber,
-          Experience: formData.yearsOfExperience,
-          Hospital: formData.hospitalName,
-          Address: formData.address,
-          City: formData.city,
-          PostalCode: formData.postalCode,
-          PhoneNumber: formData.phoneNumber,
-          WorkLocation: formData.workLocation,
-          ShiftType: formData.shiftType,
-          Password: formData.password,
-        }),
+        body: JSON.stringify(body),
+
       });
+
 
       const data = await response.json();
       
@@ -289,7 +298,7 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <label htmlFor="dateOfBirth">Date of Birth *</label>
-                    <Input
+                    <input
                       id="dateOfBirth"
                       name="dateOfBirth"
                       placeholder="Enter your DOB"
