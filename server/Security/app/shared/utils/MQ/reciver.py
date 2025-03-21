@@ -25,7 +25,7 @@ class RedResponse(BaseModel):
 
 logger = logging.getLogger("uvicorn")
 
-redisax = redis_AX("redis://cache",10,service="security").connect()
+redisax = redis_AX("redis://cache",200,service="security").connect()
 
 import redis.asyncio as redis
 async def reader(channel: redis.client.PubSub,executer:Callable):

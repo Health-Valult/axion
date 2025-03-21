@@ -45,7 +45,7 @@ async def lifespan(app:FastAPI):
 
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://cache",10,service="records").connect()
+    app.state.Cache = redis_AX("redis://cache",100,service="records").connect()
 
 
     yield

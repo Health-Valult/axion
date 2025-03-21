@@ -44,6 +44,8 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
 
     NIC = pateint.NIC
     EMAIL = collection.find_one({"NIC":NIC},{"_id":0,"Email":1}).get("Email")
+    if not EMAIL:
+        JSONResponse(status_code=401,content={"Details":"patient does not exist"})
 
     name = f"otp::{id}"
     otp = generate_otp()
