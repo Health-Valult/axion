@@ -45,6 +45,8 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     NIC = pateint.NIC
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1}).get("Email")
 
+    logger.info(credentials)
+
     if not credentials:
         JSONResponse(status_code=401,content={"Details":"patient does not exist"})
 
