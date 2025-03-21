@@ -63,8 +63,8 @@ async def websocket_endpoint(websocket: WebSocket,):
             response = {
                 "packet":list(auto)
             }
-            jdic = json.dumps(response)
-            await websocket.send_json(jdic)
+            
+            await websocket.send_json(response)
 
     except WebSocketDisconnect:
         print(f"WebSocket Disconnected: {websocket.client}")
