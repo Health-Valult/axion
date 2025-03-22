@@ -26,7 +26,8 @@ logger = logging.getLogger("uvicorn")
 
 @route.post(path="/records/upload/{type}")
 async def upload_report(type:str,report:BaseReportTemplate):
-    logger.info("qwerty")
+    logger.info(type)
+    logger.warning(report.results)
 
 
 
