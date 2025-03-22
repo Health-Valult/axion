@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/loginSide/components/button.dart';
+import 'package:flutter_application_1/loginSide/components/button.dart'; // Your custom button.
 import 'package:flutter_application_1/loginSide/components/text_fieald.dart';
-import 'package:flutter_application_1/main.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/services/connectivity_service.dart';
+import 'package:flutter_application_1/main.dart'; // Assumes isLoggedIn is defined here.
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -22,9 +21,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final _authService = AuthService();
   final _connectivityService = ConnectivityService();
+
   bool _isLoading = false;
-  String? _error;
   bool _obscurePassword = true;
+
+  // Field-specific errors.
+  String? _emailError;
+  String? _passwordError;
+  // General error.
+  String? _error;
 
   @override
   void dispose() {
@@ -36,11 +41,17 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     final l10n = AppLocalizations.of(context)!;
 
+    // Reset previous errors.
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+      _error = null;
+    });
+
     if (!_loginForm.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
-      _error = null;
     });
 
     try {
@@ -58,58 +69,48 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text,
       );
 
-      if (mounted) {
-        if (result['success']) {
-          await Future.delayed(const Duration(milliseconds: 500)); // Give time for session to initialize
-          isLoggedIn = true;
-          if (mounted) {
-            context.go('/home');
+      if (result['success'] == true) {
+        await Future.delayed(const Duration(milliseconds: 500));
+        isLoggedIn = true;
+        context.go('/home');
+      } else {
+        final statusCode = result['statusCode'] as int?;
+        final errorText = (result['error'] ?? '').toLowerCase();
+
+        setState(() {
+          if (statusCode == 404) {
+            _emailError = l10n.loginErrorAccountNotFound;
+          } else if (statusCode == 401) {
+            _passwordError = l10n.loginErrorIncorrectPassword;
+          } else if (statusCode == 422) {
+            // Handle 422 (e.g., invalid email format or similar validation error).
+            _emailError = l10n.emailValidationInvalid; 
+          } else {
+            _error = result['error'] ?? l10n.unexpectedError;
           }
-        } else {
-          setState(() {
-            String errorMessage = l10n.loginFailed;
-
-            if (result['error']?.toLowerCase().contains('password')) {
-              errorMessage = l10n.loginErrorIncorrectPassword;
-            } else if (result['error']?.toLowerCase().contains('not found') || 
-                      result['error']?.toLowerCase().contains('no account')) {
-              errorMessage = l10n.loginErrorAccountNotFound;
-            } else if (result['error']?.toLowerCase().contains('verify')) {
-              errorMessage = l10n.loginErrorVerifyEmail;
-            } else if (result['error'] != null) {
-              errorMessage = result['error'];
-            }
-
-            _error = errorMessage;
-          });
-        }
+        });
       }
     } catch (e) {
       print('Login Screen Error: $e');
-      if (mounted) {
-        setState(() {
-          _error = l10n.unexpectedError;
-        });
-      }
+      setState(() {
+        _error = l10n.unexpectedError;
+      });
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyLarge?.color ?? Colors.white;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color),
+          icon: Icon(Icons.arrow_back, color: theme.iconTheme.color),
           onPressed: () => context.go('/'),
         ),
         backgroundColor: Colors.transparent,
@@ -121,6 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Logo / image section.
               Padding(
                 padding: const EdgeInsets.only(bottom: 60.0),
                 child: Hero(
@@ -137,6 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _loginForm,
                 child: Column(
                   children: [
+                    // General error container.
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
@@ -148,10 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: theme.colorScheme.error,
-                              ),
+                              Icon(Icons.error_outline,
+                                  color: theme.colorScheme.error),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
@@ -166,16 +167,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
+                    // Email text field.
                     Padding(
                       padding: const EdgeInsets.only(bottom: 30.0),
                       child: LoginTextFieald(
                         controller: _emailController,
                         label: l10n.emailLabel,
+                        errorText: _emailError,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return l10n.emailValidationEmpty;
                           }
-                          final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                          final emailRegex = RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                           if (!emailRegex.hasMatch(value)) {
                             return l10n.emailValidationInvalid;
                           }
@@ -183,12 +187,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
+                    // Password text field.
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40.0),
                       child: LoginTextFieald(
                         controller: _passwordController,
                         label: l10n.passwordLabel,
                         isPassword: _obscurePassword,
+                        errorText: _passwordError,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return l10n.passwordValidationEmpty;
@@ -200,17 +206,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
                           ),
                           onPressed: () {
                             setState(() {
                               _obscurePassword = !_obscurePassword;
                             });
                           },
-                          tooltip: _obscurePassword ? l10n.showPassword : l10n.hidePassword,
+                          tooltip: _obscurePassword
+                              ? l10n.showPassword
+                              : l10n.hidePassword,
                         ),
                       ),
                     ),
+                    // Login button using your custom LoginButton.
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40.0),
                       child: _isLoading
@@ -221,13 +232,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                             ),
                     ),
+                    // Biometric authentication button placeholder.
                     SizedBox(
                       width: 100,
                       height: 100,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : () {
-                          // TODO: Implement biometric authentication
-                        },
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                // TODO: Implement biometric authentication.
+                              },
                         style: ButtonStyle(
                           backgroundColor: MaterialStateProperty.all(
                             const Color.fromRGBO(21, 23, 28, 1),

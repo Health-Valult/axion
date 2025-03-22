@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 class FloatingNavBar extends StatelessWidget {
   final int currentIndex;
@@ -17,15 +18,15 @@ class FloatingNavBar extends StatelessWidget {
     return Container(
       // Use the same background color as the app’s scaffold
       color: theme.scaffoldBackgroundColor,
-      height: 60,
+      height: 50,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _navBarItem(context, icon: Icons.receipt_long, index: 1),
+          _navBarItem(context, icon: Icons.medication_outlined, index: 1),
           _navBarItem(context, icon: Icons.bar_chart,   index: 2),
-          _navBarItem(context, icon: Icons.home,        index: 0),
-          _navBarItem(context, icon: Icons.qr_code,     index: 4),
-          _navBarItem(context, icon: Icons.person,      index: 3),
+          _navBarItem(context, icon: CupertinoIcons.home,        index: 0),
+          _navBarItem(context, icon: Icons.link,     index: 4),
+          _navBarItem(context, icon: Icons.account_circle_outlined,      index: 3),
         ],
       ),
     );

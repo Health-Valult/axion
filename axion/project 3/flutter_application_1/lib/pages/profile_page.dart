@@ -11,11 +11,42 @@ class ProfilePage extends StatelessWidget {
 
   const ProfilePage({super.key, required this.user});
 
+  // Helper method to format DOB regardless of its type.
+  String formatDob(dynamic dob) {
+    // If dob is an int, assume it's in YYYYMMDD format.
+    if (dob is int) {
+      final dobStr = dob.toString();
+      if (dobStr.length == 8) {
+        return '${dobStr.substring(6, 8)}/${dobStr.substring(4, 6)}/${dobStr.substring(0, 4)}';
+      }
+      return dobStr;
+    }
+    // If dob is a String.
+    else if (dob is String) {
+      // Check if it appears to be an ISO string (contains '-' or 'T').
+      if (dob.contains('-') || dob.contains('T')) {
+        try {
+          final date = DateTime.parse(dob);
+          return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+        } catch (e) {
+          return dob;
+        }
+      } else if (dob.length == 8) {
+        // Otherwise, assume it's in YYYYMMDD format.
+        return '${dob.substring(6, 8)}/${dob.substring(4, 6)}/${dob.substring(0, 4)}';
+      }
+      return dob;
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDarkMode ? const Color.fromRGBO(13, 14, 18, 1) : const Color.fromRGBO(241, 241, 241, 1);
+    final cardColor = isDarkMode
+        ? const Color.fromRGBO(13, 14, 18, 1)
+        : const Color.fromRGBO(241, 241, 241, 1);
     final headlineStyle = Theme.of(context).textTheme.headlineMedium;
 
     return Scaffold(
@@ -32,13 +63,14 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundColor: isDarkMode 
-                            ? Colors.grey[700]
-                            : Colors.grey[200],
+                        backgroundColor:
+                            isDarkMode ? Colors.grey[700] : Colors.grey[200],
                         child: Text(
                           '${user.firstName[0]}${user.lastName[0]}',
                           style: headlineStyle?.copyWith(
-                            color: isDarkMode ? Colors.white : Colors.grey[800],
+                            color: isDarkMode
+                                ? Colors.white
+                                : Colors.grey[800],
                           ),
                         ),
                       ),
@@ -56,7 +88,6 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-
                 Card(
                   color: cardColor,
                   child: Padding(
@@ -84,7 +115,6 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
                 Card(
                   color: cardColor,
                   child: Padding(
@@ -100,23 +130,19 @@ class ProfilePage extends StatelessWidget {
                         ListTile(
                           leading: const Icon(Icons.person),
                           title: Text(loc.fullName),
-                          subtitle: Text('${user.firstName} ${user.lastName}'),
+                          subtitle:
+                              Text('${user.firstName} ${user.lastName}'),
                         ),
                         ListTile(
                           leading: const Icon(Icons.cake),
                           title: Text(loc.birthday),
-                          subtitle: Text(
-                            '${user.dateOfBirth.toString().substring(6, 8)}/'
-                            '${user.dateOfBirth.toString().substring(4, 6)}/'
-                            '${user.dateOfBirth.toString().substring(0, 4)}',
-                          ),
+                          subtitle: Text(formatDob(user.dateOfBirth)),
                         ),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 32),
-
                 ListTile(
                   leading: const Icon(Icons.settings_outlined),
                   title: Text(loc.settings),
@@ -129,7 +155,6 @@ class ProfilePage extends StatelessWidget {
                     );
                   },
                 ),
-
                 ListTile(
                   leading: const Icon(Icons.logout),
                   title: Text(loc.logout),
@@ -189,7 +214,8 @@ class ProfilePage extends StatelessWidget {
           context.go('/login');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${loc.logoutFailed}: ${result['error'] ?? ''}')),
+            SnackBar(
+                content: Text('${loc.logoutFailed}: ${result['error'] ?? ''}')),
           );
           if (!context.mounted) return;
           isLoggedIn = false;

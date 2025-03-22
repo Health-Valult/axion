@@ -190,5 +190,8 @@
   "confirmLogout": "පිටවීම තහවුරු කරන්න",
   "logoutMessage": "ඔබට පිටවීමට අවශ්‍ය බව තහවුරු කරන්නද?",
   "cancel": "අවලංගු කරන්න",
-  "logoutFailed": "පිටවීම අසාර්ථකයි"
+  "logoutFailed": "පිටවීම අසාර්ථකයි",
+  "otpSubmittedSuccess": "OTP සාර්ථකව ඉදිරිපත් කරන ලදි",
+  "otpFieldLabel": "අංක 6ක OTP එක ඇතුළත් කරන්න",
+  "submit": "ඉදිරිපත් කරන්න"
 }

@@ -167,6 +167,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Card(
       color: cardColor,
       child: SwitchListTile(
+        activeColor: Colors.blue,
         title: Text(loc.darkMode),
         value: _isDarkMode,
         onChanged: (bool value) {
@@ -187,6 +188,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text(loc.language),
           ),
           ...(_languageMap.keys.map((lang) => RadioListTile<String>(
+            activeColor: Colors.blue,
             title: Text(lang),
             value: lang,
             groupValue: _selectedLanguage,
@@ -212,6 +214,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text(loc.notifications),
           ),
           ...(_notificationPreferences.entries.map((entry) => SwitchListTile(
+            activeColor: Colors.blue,
             title: Text(_getNotificationTitle(entry.key, loc)),
             value: entry.value,
             onChanged: (bool value) async {
@@ -235,6 +238,7 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text(loc.privacy),
           ),
           ...(_privacySettings.entries.map((entry) => SwitchListTile(
+            activeColor: Colors.blue,
             title: Text(_getPrivacySettingTitle(entry.key, loc)),
             value: entry.value,
             onChanged: (bool value) async {

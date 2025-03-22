@@ -90,7 +90,8 @@ class _SignupStep3State extends State<SignupStep3>
       );
 
       if (response['success'] == true) {
-        final signupResponse = await _apiService.signupUser(widget.signupData.toJson());
+        final signupResponse =
+            await _apiService.signupUser(widget.signupData.toJson());
 
         if (signupResponse['success'] == true) {
           if (mounted) {
@@ -184,12 +185,15 @@ class _SignupStep3State extends State<SignupStep3>
                 isLoading: _isLoading,
               ),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: _isResending ? null : _resendOTP,
+              // Clickable red text for resending OTP
+              GestureDetector(
+                onTap: _isResending ? null : _resendOTP,
                 child: Text(
                   _isResending ? l10n.resending : l10n.resendOtp,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    decoration: TextDecoration.underline,
+                    fontSize: 16,
                   ),
                 ),
               ),

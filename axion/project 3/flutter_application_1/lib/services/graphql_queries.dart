@@ -1,7 +1,10 @@
 class GraphQLQueries {
   // Query to get medications for the authenticated user
-  static String getMedications = '''
-    query Medications {
+
+
+  // Combined query for medications, allergies, and immunizations
+  static String getAllHealthData = '''
+    query HealthData {
       medications {
         medications {
           patientID
@@ -13,12 +16,6 @@ class GraphQLQueries {
           meta
         }
       }
-    }
-  ''';
-
-  // Query to get allergies for the authenticated user
-  static String getAllergies = '''
-    query Allergys {
       allergys {
         allergyIntolerances {
           patientID
@@ -34,12 +31,6 @@ class GraphQLQueries {
           meta
         }
       }
-    }
-  ''';
-
-  // Query to get immunizations for the authenticated user
-  static String getImmunizations = '''
-    query Immunization {
       immunization {
         immunizations {
           patientID

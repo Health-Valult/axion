@@ -88,11 +88,7 @@ Future<void> main() async {
 
   final client = GraphQLConfig.initializeClient();
 
-  await Hive.initFlutter();
-  if (!Hive.isAdapterRegistered(0)) {
-    Hive.registerAdapter(ReportAdapter());
-  }
-  await Hive.openBox<Report>(HiveService.reportsBoxName);
+
 
   final themeMode = await loadThemeMode();
   final localeCode = await loadLocaleCode();

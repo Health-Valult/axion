@@ -6,27 +6,28 @@ class LoginTextFieald extends StatelessWidget {
   final String? Function(String?) validator;
   final TextEditingController? controller;
   final bool isPassword;
-  final Widget? suffixIcon; // New parameter for suffix icon
+  final Widget? suffixIcon;
+  // Optional errorText for field‑specific error messages.
+  final String? errorText;
 
   const LoginTextFieald({
-    Key? key, 
+    Key? key,
     required this.label,
     required this.validator,
     this.controller,
     this.isPassword = false,
     this.suffixIcon,
+    this.errorText,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // Determine border colors based on brightness.
-    final enabledBorderColor = theme.brightness == Brightness.dark 
-        ? Colors.white.withOpacity(0.5) 
+    final enabledBorderColor = theme.brightness == Brightness.dark
+        ? Colors.white.withOpacity(0.5)
         : Colors.black.withOpacity(0.5);
-    final focusedBorderColor = theme.brightness == Brightness.dark 
-        ? Colors.white 
-        : Colors.black;
+    final focusedBorderColor =
+        theme.brightness == Brightness.dark ? Colors.white : Colors.black;
     final errorBorderColor = Colors.red.withOpacity(0.5);
     final focusedErrorBorderColor = Colors.redAccent.withOpacity(0.5);
 
@@ -76,8 +77,9 @@ class LoginTextFieald extends StatelessWidget {
               color: Colors.red.withOpacity(0.75),
             ),
           ),
+          errorText: errorText,
           focusColor: focusedBorderColor,
-          suffixIcon: suffixIcon, // Insert the suffix icon here
+          suffixIcon: suffixIcon,
         ),
       ),
     );

@@ -81,6 +81,7 @@
   "noNotifications": "No Notifications",
   "markAsRead": "Mark as Read",
   "phoneRequired": "Phone is required",
+  "loginButtonLabel": "Login",
   "invalidEmail": "Invalid email",
   "emailRequired": "Email is required",
   "lastNameRequired": "Last name is required",
@@ -188,5 +189,8 @@
   "fullName": "Full Name",
   "birthday": "Birthday",
   "confirmLogout": "Confirm Logout",
-  "logoutFailed": "Logout failed"
+  "logoutFailed": "Logout failed",
+  "otpSubmittedSuccess": "OTP submitted successfully",
+  "otpFieldLabel": "Enter 6-digit OTP",
+  "submit": "Submit"
 }

@@ -24,26 +24,38 @@ class SessionService {
     return DateTime.now().isBefore(expiry);
   }
 
-  Future<void> setSession({
+  Future<bool> setSession({
     required String token,
     required String refreshToken,
     required DateTime expiry,
     required Map<String, dynamic> userData,
   }) async {
-    // First update the GraphQL client token to ensure it's ready immediately
-    GraphQLConfig.token = token;
-    GraphQLConfig.updateToken(token);
+    try {
+      // First update the GraphQL client token to ensure it's ready immediately
+      GraphQLConfig.token = token;
+      GraphQLConfig.updateToken(token);
 
-    // Then persist the data to secure storage
-    await Future.wait([
-      _storage.writeSecure(SecureStorageService.sessionTokenKey, token),
-      _storage.writeSecure(SecureStorageService.refreshTokenKey, refreshToken),
-      _storage.writeSecure(SecureStorageService.sessionExpiryKey, expiry.toIso8601String()),
-      _storage.writeSecure(SecureStorageService.userDataKey, json.encode(userData)),
-    ]);
+      // Store tokens sequentially to ensure order
+      await _storage.writeSecure(SecureStorageService.sessionTokenKey, token);
+      await _storage.writeSecure(SecureStorageService.refreshTokenKey, refreshToken);
+      await _storage.writeSecure(SecureStorageService.sessionExpiryKey, expiry.toIso8601String());
+      await _storage.writeSecure(SecureStorageService.userDataKey, json.encode(userData));
 
-    // Schedule token refresh
-    _scheduleTokenRefresh(expiry);
+      // Verify token was stored correctly
+      final storedToken = await _storage.readSecure(SecureStorageService.sessionTokenKey);
+      if (storedToken != token) {
+        print('❌ Token storage verification failed');
+        return false;
+      }
+
+      // Schedule token refresh
+      _scheduleTokenRefresh(expiry);
+      return true;
+    } catch (e) {
+      print('❌ Error storing session data: $e');
+      await clearSession(); // Clean up on error
+      return false;
+    }
   }
 
   Future<void> clearSession() async {

@@ -375,19 +375,30 @@ class ApiService {
       if (data['success'] && data.containsKey('data') && data['data'].containsKey('token')) {
         print('✅ Login Successful');
         final sessionService = SessionService();
-        await sessionService.setSession(
+        final sessionStored = await sessionService.setSession(
           token: data['data']['token'],
           refreshToken: data['data']['refresh_token'] ?? '',
           expiry: DateTime.now().add(const Duration(hours: 1)),
           userData: data['data']['user'] ?? {},
         );
-        print('Session data stored successfully');
+
+        if (!sessionStored) {
+          print('❌ Failed to store session data');
+          return {
+            'success': false,
+            'error': 'Failed to store session data. Please try again.',
+          };
+        }
+
+        print('✅ Session data stored successfully');
+        // Add a small delay to ensure storage is fully complete
+        await Future.delayed(const Duration(milliseconds: 100));
+        return data;
       } else {
         print('❌ Login Failed');
         print('Error: ${data['error'] ?? 'Unknown error'}');
+        return data;
       }
-      
-      return data;
     } on http.ClientException catch (e) {
       print('❌ Network Error: ${e.toString()}');
       return {
@@ -762,4 +773,66 @@ class ApiService {
     );
     await _handleResponse(response);
   }
+
+  // Connect with OTP method
+  Future<Map<String, dynamic>> connectWithOTP({required String otp}) async {
+    print('\n=== OTP Connect Request ===');
+
+    if (otp.isEmpty) {
+      print('❌ Validation Error: OTP is required');
+      return {
+        'success': false,
+        'error': 'OTP is required',
+      };
+    }
+
+    if (!RegExp(r'^[a-zA-Z0-9]{6}$').hasMatch(otp)) {
+      print('❌ Validation Error: Invalid OTP format');
+      return {
+        'success': false,
+        'error': 'Invalid OTP format',
+      };
+    }
+
+    final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.connectOTP);
+    print('Request URL: $url');
+
+    final requestData = {
+      'otp': otp,
+    };
+    print('Request Data:');
+    print(const JsonEncoder.withIndent('  ').convert(requestData));
+
+    try {
+      // Use the same headers pattern as your other API calls
+      final headers = await _getHeaders();
+
+      final result = await _makeApiCall(() => http.post(
+        url,
+        headers: headers,
+        body: jsonEncode(requestData),
+      ));
+
+      print('\n=== OTP Connect Response ===');
+      if (result['success']) {
+        print('✅ OTP Connect Successful');
+        print('Response Data:');
+        print(const JsonEncoder.withIndent('  ').convert(result['data']));
+      } else {
+        print('❌ OTP Connect Failed');
+        print('Error: ${result['error']}');
+      }
+
+      return result;
+    } catch (e) {
+      print('❌ OTP Connect Error: ${e.toString()}');
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
+    } finally {
+      print('=====================\n');
+    }
+  }
+
 }

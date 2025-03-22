@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:flutter_application_1/models/base_report.dart';
 
-part 'report.g.dart';
+
 
 @HiveType(typeId: 0)
 @JsonSerializable()
@@ -38,8 +38,7 @@ class Report extends BaseReport {
     placeholderImageUrl: null,
   );
 
-  factory Report.fromJson(Map<String, dynamic> json) => _$ReportFromJson(json);
-  Map<String, dynamic> toJson() => _$ReportToJson(this);
+
 
   factory Report.fromProcedure(Map<String, dynamic> procedure) {
     return Report(

@@ -9,6 +9,7 @@ import 'package:flutter_application_1/pages/medical_notifications_page.dart';
 import 'package:flutter_application_1/services/notification_service.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_application_1/services/env_config.dart';
+import 'package:intl/intl.dart'; // Added for date formatting
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -38,6 +39,17 @@ class _HomePageState extends State<HomePage> {
     _loadData();
     _loadNotifications();
     _loadMedicalNotifications();
+  }
+
+  // Helper function to format date strings
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'Unknown';
+    try {
+      final dateTime = DateTime.parse(dateStr);
+      return DateFormat('MMM dd, yyyy, h:mm a').format(dateTime);
+    } catch (e) {
+      return dateStr;
+    }
   }
 
   Future<void> _loadNotifications() async {
@@ -74,101 +86,95 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadData() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _error = null;
-      });
+    if (!mounted) return;
 
-      try {
-        final profile = await _apiService.getUserProfile();
-        if (mounted) {
-          setState(() {
-            _userProfile = profile;
-          });
-        }
-      } catch (_) {}
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Load profile first and wait for it to complete
+      final profile = await _apiService.getUserProfile();
+      if (!mounted) return;
+      
+      setState(() {
+        _userProfile = profile;
+      });
 
       final client = GraphQLProvider.of(context).value;
 
-      final medicationsResult = await client.query(QueryOptions(
-        document: gql(GraphQLQueries.getMedications),
+      // Use the combined query for health data
+      final healthDataResult = await client.query(QueryOptions(
+        document: gql(GraphQLQueries.getAllHealthData),
         fetchPolicy: FetchPolicy.noCache,
         errorPolicy: ErrorPolicy.all,
       ));
 
       List<Map<String, dynamic>> medications = [];
-      if (medicationsResult.data?['medications']?['medications'] != null) {
-        medications = (medicationsResult.data!['medications']['medications'] as List).map((m) => {
-          'title': m['display'] ?? 'Unknown',
-          'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
+      List<Map<String, dynamic>> allergies = [];
+      List<Map<String, dynamic>> immunizations = [];
+
+      if (healthDataResult.data?['medications']?['medications'] != null) {
+        medications = (healthDataResult.data!['medications']['medications'] as List)
+            .map((m) => {
+                  'title': m['display'] ?? 'Unknown',
+                  'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
 Route: ${m['route'] ?? 'Unknown route'}
 Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
 Code: ${m['code'] ?? 'No code'}
-Prescribed: ${m['meta']?['created'] ?? 'Unknown'}
+Prescribed: ${_formatDate(m['meta']?['created'])}
 Source: ${m['meta']?['source'] ?? 'Unknown'}''',
-          'type': 'medication'
-        }).toList();
+                  'type': 'medication'
+                })
+            .toList();
       }
 
-      final allergiesResult = await client.query(QueryOptions(
-        document: gql(GraphQLQueries.getAllergies),
-        fetchPolicy: FetchPolicy.noCache,
-        errorPolicy: ErrorPolicy.all,
-      ));
-
-      List<Map<String, dynamic>> allergies = [];
-      if (allergiesResult.data?['allergys']?['allergyIntolerances'] != null) {
-        allergies = (allergiesResult.data!['allergys']['allergyIntolerances'] as List).map((a) => {
-          'title': a['display'] ?? 'Unknown',
-          'detail': '''Severity: ${a['severity'] ?? 'Unknown'}
+      if (healthDataResult.data?['allergys']?['allergyIntolerances'] != null) {
+        allergies = (healthDataResult.data!['allergys']['allergyIntolerances'] as List)
+            .map((a) => {
+                  'title': a['display'] ?? 'Unknown',
+                  'detail': '''Severity: ${a['severity'] ?? 'Unknown'}
 Category: ${a['category'] ?? 'Unknown'}
 Criticality: ${a['criticality'] ?? 'Unknown'}
 Status: ${a['verificationStatus'] ?? 'Unknown'}
 Source: ${a['source'] ?? 'Unknown'}
-Created: ${a['meta']?['created'] ?? 'Unknown'}
-Updated: ${a['meta']?['updated'] ?? 'Unknown'}
+Created: ${_formatDate(a['meta']?['created'])}
+Updated: ${_formatDate(a['meta']?['updated'])}
 System: ${a['meta']?['source'] ?? 'Unknown'}''',
-          'type': 'allergy'
-        }).toList();
+                  'type': 'allergy'
+                })
+            .toList();
       }
 
-      final immunizationsResult = await client.query(QueryOptions(
-        document: gql(GraphQLQueries.getImmunizations),
-        fetchPolicy: FetchPolicy.noCache,
-        errorPolicy: ErrorPolicy.all,
-      ));
-
-      List<Map<String, dynamic>> immunizations = [];
-      if (immunizationsResult.data?['immunization']?['immunizations'] != null) {
-        immunizations = (immunizationsResult.data!['immunization']['immunizations'] as List).map((i) => {
-          'title': i['display'] ?? 'Unknown',
-          'detail': '''Vaccine: ${i['display'] ?? 'Unknown'}
-Site: ${i['site'] ?? 'Not specified'}
-Dosage: ${i['dosage'] ?? 'Unknown'} ${i['unit'] ?? ''}
-Date: ${i['timestamp'] ?? 'Unknown'}
-Source: ${i['meta']?['source'] ?? 'Unknown'}
-Created: ${i['meta']?['created'] ?? 'Unknown'}
-Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
-          'type': 'immunization'
-        }).toList();
+      if (healthDataResult.data?['immunization']?['immunizations'] != null) {
+        immunizations = (healthDataResult.data!['immunization']['immunizations'] as List)
+            .map((i) => {
+                  'title': i['display'] ?? 'Unknown',
+                  'detail': '''Dosage: ${i['dosage'] ?? 'Unknown'}
+Unit: ${i['unit'] ?? 'Unknown'}
+Site: ${i['site'] ?? 'Unknown'}
+Date: ${_formatDate(i['timestamp'])}
+Code: ${i['code'] ?? 'No code'}
+Created: ${_formatDate(i['meta']?['created'])}
+Source: ${i['meta']?['source'] ?? 'Unknown'}''',
+                  'type': 'immunization'
+                })
+            .toList();
       }
 
-      if (mounted) {
-        setState(() {
-          _medicalRecords = [...medications, ...allergies, ...immunizations];
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
 
+      setState(() {
+        _medicalRecords = [...medications, ...allergies, ...immunizations];
+        _isLoading = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _medicalRecords = null;
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
@@ -176,7 +182,8 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final reminders = MedicalNotificationsPage.reminders;
-    final earliestReminder = reminders.isNotEmpty ? Map<String, String>.from(reminders.first) : null;
+    final earliestReminder =
+        reminders.isNotEmpty ? Map<String, String>.from(reminders.first) : null;
 
     if (_isLoading) {
       return const Scaffold(
@@ -234,6 +241,7 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
+          color: Colors.blue,
           onRefresh: _handleRefresh,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
@@ -354,7 +362,10 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
                               Text(
                                 loc.tapToSeeFullList,
                                 style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withOpacity(0.6),
                                 ),
                               ),
                             ],
@@ -375,7 +386,8 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
                   items: medicationList,
                   iconData: Icons.medical_services,
                   isSectionExpanded: _isMedicationExpanded,
-                  onSectionToggle: () => setState(() => _isMedicationExpanded = !_isMedicationExpanded),
+                  onSectionToggle: () =>
+                      setState(() => _isMedicationExpanded = !_isMedicationExpanded),
                   expandedItems: _expandedMedicationItems,
                 ),
                 const SizedBox(height: 16),
@@ -385,7 +397,8 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
                   items: allergiesList,
                   iconData: Icons.warning,
                   isSectionExpanded: _isAllergiesExpanded,
-                  onSectionToggle: () => setState(() => _isAllergiesExpanded = !_isAllergiesExpanded),
+                  onSectionToggle: () =>
+                      setState(() => _isAllergiesExpanded = !_isAllergiesExpanded),
                   expandedItems: _expandedAllergyItems,
                 ),
                 const SizedBox(height: 16),
@@ -395,7 +408,8 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
                   items: immunizationsList,
                   iconData: Icons.vaccines,
                   isSectionExpanded: _isImmunizationsExpanded,
-                  onSectionToggle: () => setState(() => _isImmunizationsExpanded = !_isImmunizationsExpanded),
+                  onSectionToggle: () =>
+                      setState(() => _isImmunizationsExpanded = !_isImmunizationsExpanded),
                   expandedItems: _expandedImmunizationItems,
                 ),
               ],
@@ -438,14 +452,14 @@ Updated: ${i['meta']?['updated'] ?? 'Unknown'}''',
               if (hasMore)
                 Row(
                   children: [
-                   if (!isSectionExpanded)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        loc.moreCount(items.length - defaultCount),
-                        style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
+                    if (!isSectionExpanded)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          loc.moreCount(items.length - defaultCount),
+                          style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
+                        ),
                       ),
-                    ),
                     GestureDetector(
                       onTap: onSectionToggle,
                       child: Icon(

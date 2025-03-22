@@ -25,26 +25,27 @@ class EnvConfig {
 class _AuthEndpoints {
   const _AuthEndpoints();
   
-  String get signupUser => '/auth/signup/patient';
+  String get signupUser => '/axion/auth/signup/patient';
   String get validateEmail => '/axion/auth/validate/email';
   String get validateOTP => '/axion/auth/validate/otp';
-  String get sendOTP => '/auth/send/otp';
-  String get verifyOTP => '/auth/verify/otp';
-  String get loginUser => '/auth/login/patient';
+  String get sendOTP => '/axion/auth/send/otp';
+  String get verifyOTP => '/axion/auth/verify/otp';
+  String get loginUser => '/axion/auth/login/patient';
   String get refreshToken => '/axion/auth/refresh';
   String get logout => '/axion/auth/logout';
   String get resetPassword => '/user/reset-password';
+  String get connectOTP => '/axion/otp/connect';
 }
 
 /// Profile-related endpoints
 class _ProfileEndpoints {
   const _ProfileEndpoints();
   
-  String get profile => '/user/profile';
+  String get profile => '/axion/user/profile';
   String get update => '/axion/user/profile/update';
   String get changePassword => '/axion/user/reset-password';
   String get uploadPicture => '/axion/user/profile/picture';
-  String get delete => '/user/profile/delete';
+  String get delete => '/axion/user/profile/delete';
 }
 
 /// Settings-related endpoints

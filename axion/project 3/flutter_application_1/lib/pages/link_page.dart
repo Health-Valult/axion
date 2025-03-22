@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_application_1/services/api_service.dart';
-import 'package:flutter_application_1/models/link.dart';
-// ignore: depend_on_referenced_packages
-import 'package:share_plus/share_plus.dart';
 
 class LinkPage extends StatefulWidget {
   const LinkPage({super.key});
@@ -15,40 +12,49 @@ class LinkPage extends StatefulWidget {
 
 class _LinkPageState extends State<LinkPage> {
   final _apiService = ApiService();
-  List<Link>? _links;
-  bool _isLoading = true;
+  final _otpController = TextEditingController();
+  bool _isLoading = false;
   String? _error;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadLinks();
-  }
+  Future<void> _submitOTP() async {
+    if (_otpController.text.length != 6) {
+      setState(() => _error = 'OTP must be 6 characters long');
+      return;
+    }
 
-  Future<void> _loadLinks() async {
+    if (!RegExp(r'^[a-zA-Z0-9]{6}$').hasMatch(_otpController.text)) {
+      setState(() => _error = 'OTP must contain only letters and numbers');
+      return;
+    }
+
     try {
-      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _error = null;
       });
 
-      // Only load links, no editing functionality
-      final links = await _apiService.getLinks();
+      final result = await _apiService.connectWithOTP(
+        otp: _otpController.text,
+      );
+
       if (!mounted) return;
-      
-      if (links.isEmpty) {
+
+      if (result['success']) {
+        _otpController.clear();
+        setState(() => _isLoading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.otpSubmittedSuccess),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
         setState(() {
-          _error = 'No active links available';
+          _error = result['error'];
           _isLoading = false;
         });
-        return;
       }
-      
-      setState(() {
-        _links = links;
-        _isLoading = false;
-      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -58,61 +64,19 @@ class _LinkPageState extends State<LinkPage> {
     }
   }
 
-  Future<void> _shareLink(Link link) async {
-    await Share.share('${link.title}\n${link.url}', subject: link.title);
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context)!;
-
-    if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(localizations.appTitle),
-          centerTitle: true,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(localizations.appTitle),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Error: $_error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadLinks,
-                child: Text(localizations.retry),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_links == null || _links!.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(localizations.appTitle),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Text(localizations.noLinksAvailable),
-        ),
-      );
-    }
-
-    final activeLink = _links!.first; // Use the first link or implement link selection
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode
+        ? const Color.fromRGBO(13, 14, 18, 1)
+        : const Color.fromRGBO(241, 241, 241, 1);
 
     return Scaffold(
       appBar: AppBar(
@@ -131,72 +95,107 @@ class _LinkPageState extends State<LinkPage> {
         ),
         centerTitle: true,
       ),
-      body: RefreshIndicator(
-        onRefresh: _loadLinks,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final availableHeight = constraints.maxHeight - 170;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              child: SizedBox(
-                height: availableHeight > 0 ? availableHeight : constraints.maxHeight,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        activeLink.title,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight - 60,
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      localizations.enterOtp,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    Card(
+                      color: cardColor,
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 20),
-                      Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: _otpController,
+                              decoration: InputDecoration(
+                                labelText: localizations.otpFieldLabel,
+                                floatingLabelStyle: TextStyle(
+                                  color: isDarkMode ? Colors.white : Colors.black,
+                                ),
+                                errorText: _error,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                filled: true,
+                                fillColor:
+                                    isDarkMode ? Colors.grey[900] : Colors.grey[50],
+                              ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[a-zA-Z0-9]')),
+                                LengthLimitingTextInputFormatter(6),
+                              ],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                letterSpacing: 8,
+                                fontSize: 20,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _submitOTP,
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.blue,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(localizations.submit),
+                              ),
+                            ),
+                          ],
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: QrImageView(
-                            data: activeLink.url,
-                            version: QrVersions.auto,
-                            size: 200.0,
-                            backgroundColor: Colors.white,
-                            semanticsLabel: activeLink.title,
-                          ),
-                        ),
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        activeLink.description ?? '',
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 30),
-                      ElevatedButton.icon(
-                        onPressed: () => _shareLink(activeLink),
-                        icon: const Icon(Icons.share),
-                        label: Text(localizations.shareButton),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
