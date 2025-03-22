@@ -39,4 +39,4 @@ async def send_email(email_content:dict):
         logger.warning(response)
         logger.warning(f"Email sent to {email_content.get("email")}: {email_content.get("subject")}")
     except Exception as e:
-        print(f"Failed to send email: {e}")
+        logger.warning(f"Failed to send email: {e}")

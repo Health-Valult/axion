@@ -133,3 +133,12 @@ class Procedure(BaseModel):
     code:str
     display:str
     timestamp:datetime
+
+class Diagnosis(BaseModel):
+    id:str = Field(default_factory=lambda:str(uuid.uuid4()))
+    patientID:str
+    DoctorID:str
+    name:str
+    timestamp:str
+    content:str
+    treatments:List[str]

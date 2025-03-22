@@ -22,7 +22,7 @@ def generate_otp(length=6):
 route = APIRouter()
 connected_clients:dict = {}
 logger = logging.getLogger("uvicorn")
-@route.post(path="records/upload/{type}")
+"""@route.post(path="records/upload/{type}")
 async def upload_report(type:str,report:Annotated[Union[
         CBCReportTemplate,
         UFRTemplate,
@@ -36,7 +36,7 @@ async def upload_report(type:str,report:Annotated[Union[
         ESRReportTemplate,
         TFTReportTemplate
         ]]): # type: ignore
-    pass
+    pass"""
 
 @route.post(path="/records/select-patient",dependencies=[Depends(Authenticate)])
 async def verify_doctor(request:Request,pateint:SelectPatient):
@@ -114,7 +114,10 @@ async def verify_doctor_request(request:Request,cred:OTP):
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
-@route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
+
+@route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
+async def add_prescriptions():
+    pass
 
 
 @route.websocket("/records/search",)

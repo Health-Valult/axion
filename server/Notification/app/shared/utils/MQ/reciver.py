@@ -40,7 +40,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             try:
                 response = await executer(request)
             except Exception as e:
-                logger.critical(f"{e}")
+                logger.warning(f"{e}")
             logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
             body = Body(
                 task = "verifiedToken",
