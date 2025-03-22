@@ -15,7 +15,7 @@ observationsResult={
 
 allergysResult={
     "_id":0,
-    "patientID": 1,
+
     "code": 1,
     "display": 1,
     "timestamp":1,
@@ -30,7 +30,7 @@ allergysResult={
 
 medicationsResult={
     "_id":0,
-    "patientID": 1,
+
     "code": 1,
     "display": 1,
     "dosage": 1,
@@ -44,7 +44,6 @@ immunizationResult={
     "patientID": 1,
     "code": 1,
     "display": 1,
-    "status": 1,
     "dosage": 1,
     "unit": 1,
     "site": 1,

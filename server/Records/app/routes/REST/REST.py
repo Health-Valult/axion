@@ -75,6 +75,7 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     cache.scarletSender("notification",body=body)
     return JSONResponse(status_code=200,content={"Details":"pending verification status"})
 
+
 @route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
 async def verify_doctor_request(request:Request,cred:OTP):
     state:FastAPI = request.app.state
@@ -118,6 +119,22 @@ async def verify_doctor_request(request:Request,cred:OTP):
 @route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
 async def add_prescriptions():
     pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @route.websocket("/records/search",)
