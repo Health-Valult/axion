@@ -37,13 +37,16 @@ class RedResponse(BaseModel):
 
 
 async def callback(request:RedRequest) -> None:
-    logger.warning("qwertyui")
-    logger.warning(request.body.task)
-    runner = functions.get(request.body.task)
-    if callable(runner):
-        try:
-            result = await runner(request.body.body)
-            return result
-  
-        except Exception as e:
-            return {}
+    try:
+        logger.warning("qwertyui")
+        logger.warning(request.body.task)
+        runner = functions.get(request.body.task)
+        if callable(runner):
+            try:
+                result = await runner(request.body.body)
+                return result
+    
+            except Exception as e:
+                return {}
+    except Exception as e:
+        logger.warning(e)
