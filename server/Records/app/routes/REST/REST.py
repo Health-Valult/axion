@@ -6,6 +6,7 @@ import random
 from typing import Annotated, Union
 import uuid
 from fastapi.responses import JSONResponse
+import pymongo
 from starlette.requests import Request
 from app.models.upload_models import *
 from fastapi import APIRouter,FastAPI,Depends, WebSocketDisconnect, WebSocketException
@@ -19,19 +20,37 @@ import requests
 def generate_otp(length=6):
     return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
+URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 route = APIRouter()
 connected_clients:dict = {}
+
 logger = logging.getLogger("uvicorn")
+
+DBClient = pymongo.MongoClient(URL)
+Terminology_DB = DBClient.get_database("terminology_db")
+LIONC_collection = Terminology_DB.get_collection("LIONC")
+
+
+
+async def observate(patientID:str,key:str,value:str):
+    res = LIONC_collection.findOne({"COMPONENT": { "$regex": f"^{key}", "$options": "i" }})
+    logger.warning(res)
+    """ obs = ObservationModel(
+        patientID=patientID,
+        value=value
+    )"""
 
 
 @route.post(path="/records/upload/{type}")
-async def upload_report(type:str,report:BaseReportTemplate):
-    logger.info(type)
-    logger.warning(report.results)
-
-
-
-
+async def upload_report(request:Request,type:str,report:BaseReportTemplate):
+    collection:Collection = request.app.state.PatientsCollection
+    NIC = report.mata.patientNIC
+    credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
+    patientID = credentials.get("UserID")
+    
+    report:dict = report.results.model_dump()
+    for key, value in report.items():
+        await observate(patientID=patientID,key=key,value=value)
 
 
 
@@ -43,7 +62,9 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
 
     collection:Collection = request.app.state.PatientsCollection
     cache:redis_AX = request.app.state.Cache
+
     c_uuid = request.state.meta.get("uuid")
+
     NIC = pateint.NIC
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1})
 
