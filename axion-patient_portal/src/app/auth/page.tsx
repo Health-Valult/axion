@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import toast, {Toaster} from "react-hot-toast";
 import { v4 as uuidv4 } from 'uuid';
-import {getLocationData} from "@/app/api/getLocation";
+import {getLocationData} from "@/lib/utils";
 
 interface FormData {
     firstName: string;
