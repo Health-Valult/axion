@@ -43,12 +43,14 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
                 except Exception as e:
                     logger.warning(f"{e}")
                 logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
-                body = Body(
-                    task = "verifiedToken",
-                    body = response
-                )
-                print(request.returnChannel)
-                redisax.scarletSender(request.returnChannel,body=body)
+                if request.returnChannel != "no response":
+                    body = Body(
+                        task = "verifiedToken",
+                        body = response
+                    )
+                    print(request.returnChannel)
+                    redisax.scarletSender(request.returnChannel,body=body)
+                    
         except Exception as e:
             logger.warning(e)
 
