@@ -118,8 +118,7 @@ class BaseMetaTemplate(BaseModel):
   recorder: str
   instructions:str
 
-ReportTemplate = Annotated[
-    Union[
+ReportTemplate = Union[
         CBCReportTemplate,
         UFRTemplate,
         LFTReportTemplate,
@@ -132,11 +131,11 @@ ReportTemplate = Annotated[
         ESRReportTemplate,
         TFTReportTemplate],
 
-] # type: ignore
+
 
 class BaseReportTemplate(BaseModel):
     mata:BaseMetaTemplate
-    results: ReportTemplate
+    results: ReportTemplate # type: ignore
 
 
 
