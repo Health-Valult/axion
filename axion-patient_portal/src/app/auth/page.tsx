@@ -68,6 +68,7 @@ const Auth: React.FC = () => {
         const generatedUuid = uuidv4();
         setUuid(generatedUuid);
         sessionStorage.setItem("uuid", generatedUuid);
+        console.log(uuid)
     }, []);
 
     const validateLogin = (loginFormData: LoginFormData): LoginFormErrors => {
@@ -339,8 +340,8 @@ const Auth: React.FC = () => {
                                         if (response.ok) {
                                             const responseData = await response.json();
                                             await registerUser(formData); // Ensure registerUser is properly implemented
-                                            return responseData;
                                             toast.success("OTP Verified successfully! Login to access your profile");
+                                            return responseData;
                                         } else {
                                             // If response is not successful, show an error
                                             const errorData = await response.json();
@@ -364,7 +365,7 @@ const Auth: React.FC = () => {
                                     await fetch("https://axiontestgateway.azure-api.net/axion/auth/send/otp", {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },
-                                        body: JSON.stringify({ tempID: uuid, type: "email", data: formData.email }),
+                                        body: JSON.stringify({ tempID: sessionStorage.getItem('uuid'), type: "email", data: formData.email }),
                                     });
 
                                     toast.success("OTP Resent!");
