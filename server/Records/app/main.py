@@ -16,11 +16,28 @@ from app.routes.GQL.Doctor import Query as d_query
 from app.utils import load_to_redis
 from app.routes.REST.REST import route as w_route
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 URL = "mongodb+srv://TestAxionAdmin:YRmx2JtrK44FDLV@axion-test-cluster.mongocluster.cosmos.azure.com/?tls=true&authMechanism=SCRAM-SHA-256&retrywrites=false&maxIdleTimeMS=120000"
 warnings.filterwarnings("ignore", message="You appear to be connected to a CosmosDB cluster")
 
 logger = logging.getLogger("uvicorn")
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="Custom title",
+        version="2.5.0",
+        summary="This is a very custom OpenAPI schema",
+        description="Here's a longer description of the custom **OpenAPI** schema",
+        routes=app.routes,
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
 
 
 # startup events
@@ -60,7 +77,7 @@ async def lifespan(app:FastAPI):
 # instantiating FastAPI server
 app = FastAPI(title="record",lifespan=lifespan)
 
-
+app.openapi = custom_openapi
 # aGts37rYk@fVrFJ
        
 patient_schema = strawberry.Schema(PatientQuery)
