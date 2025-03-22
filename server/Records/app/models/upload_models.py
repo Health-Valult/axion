@@ -118,7 +118,13 @@ class BaseMetaTemplate(BaseModel):
   recorder: str
   instructions:str
 
-ReportTemplate = Union[
+
+
+
+
+class BaseReportTemplate(BaseModel):
+    mata:BaseMetaTemplate
+    results: Union[
         CBCReportTemplate,
         UFRTemplate,
         LFTReportTemplate,
@@ -129,13 +135,7 @@ ReportTemplate = Union[
         LipidProfileReportTemplate,
         HbA1cReportTemplate,
         ESRReportTemplate,
-        TFTReportTemplate],
-
-
-
-class BaseReportTemplate(BaseModel):
-    mata:BaseMetaTemplate
-    results: ReportTemplate # type: ignore
+        TFTReportTemplate]
 
 
 
