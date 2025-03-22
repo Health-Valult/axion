@@ -23,22 +23,7 @@ warnings.filterwarnings("ignore", message="You appear to be connected to a Cosmo
 
 logger = logging.getLogger("uvicorn")
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(
-        title="record",
-        version="3.1.0",
-        summary="This is a very custom OpenAPI schema",
-        description="Here's a longer description of the custom **OpenAPI** schema",
-        routes=app.routes,
-    )
-    openapi_schema["openapi"] = "3.1.0"
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
-    }
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+
 
 
 # startup events
@@ -78,7 +63,6 @@ async def lifespan(app:FastAPI):
 # instantiating FastAPI server
 app = FastAPI(title="record",lifespan=lifespan)
 
-app.openapi = custom_openapi
 # aGts37rYk@fVrFJ
        
 patient_schema = strawberry.Schema(PatientQuery)
