@@ -1,6 +1,6 @@
 from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
-
+import datetime
 
 
 
@@ -138,3 +138,69 @@ class BaseReportTemplate(BaseModel):
     results: ReportTemplate
 
 
+
+class SymptomsAndSigns(BaseModel):
+    timeStamp:datetime
+    indications:Literal["symptoms","signs"]
+    #medications:list[]
+
+
+
+
+{
+  "prescribedDate": "2025-03-22T09:45:00.000Z",
+  "indications": ["diagnosis"],
+  "diagnosedCondition": "Type 2 Diabetes Mellitus",
+  "medicines": [
+    {
+      "name": "Metformin",
+      "key": "med005",
+      "frequency": "BID",
+      "mealTiming": "PC",
+      "treatmentDuration": {
+        "start": "2025-03-22",
+        "end": None
+      }
+    },
+    {
+      "name": "Glimepiride",
+      "key": "med006",
+      "frequency": "OD",
+      "mealTiming": "AC",
+      "treatmentDuration": {
+        "start": "2025-03-22",
+        "end": None
+      }
+    }
+  ],
+  "doctorName": "Dr. Steven James"
+}
+
+
+{
+  "prescribedDate": "2025-03-22T10:00:00.000Z",
+  "indications": ["symptoms", "signs"],
+  "medicines": [
+    {
+      "name": "Paracetamol",
+      "key": "med001",
+      "frequency": "QID",
+      "mealTiming": "PC",
+      "treatmentDuration": {
+        "start": "2025-03-22",
+        "end": "2025-03-29"
+      }
+    },
+    {
+      "name": "Ibuprofen",
+      "key": "med002",
+      "frequency": "TID",
+      "mealTiming": "CC",
+      "treatmentDuration": {
+        "start": "2025-03-22",
+        "end": "2025-03-25"
+      }
+    }
+  ],
+  "doctorName": "Dr. Steven James"
+}

@@ -142,3 +142,7 @@ class Diagnosis(BaseModel):
     timestamp:str
     content:str
     treatments:List[str]
+
+
+
+

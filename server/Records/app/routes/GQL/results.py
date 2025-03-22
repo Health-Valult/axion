@@ -30,7 +30,7 @@ allergysResult={
 
 medicationsResult={
     "_id":0,
-
+    "patientID": 1,
     "code": 1,
     "display": 1,
     "dosage": 1,
