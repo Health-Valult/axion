@@ -1,11 +1,11 @@
-from typing import Union
-from pydantic import BaseModel
+from typing import Annotated, Literal, Union
+from pydantic import BaseModel, Field
 
 
 
 
 class CBCReportTemplate(BaseModel) :
-
+    reportType: Literal["CBC"]
     hemoglobin: str
     totalLeukocyteCount: str
     neutrophils: str
@@ -22,7 +22,7 @@ class CBCReportTemplate(BaseModel) :
 
 
 class UFRTemplate(BaseModel) :
-
+    reportType: Literal["UFR"]
     quantity: str
     color: str
     transparency: str
@@ -41,12 +41,12 @@ class UFRTemplate(BaseModel) :
 
 
 class CRPReportTemplate(BaseModel) :
-
+    reportType: Literal["CRP"]
     crpLevel: str
 
 
 class LFTReportTemplate(BaseModel) :
-
+    reportType: Literal["LFT"]
     serumBilirubinTotal: str
     serumBilirubinDirect: str
     serumBilirubinIndirect: str
@@ -60,17 +60,17 @@ class LFTReportTemplate(BaseModel) :
 
 
 class FBSReportTemplate(BaseModel) :
-
+    reportType: Literal["FBS"]
     fastingBloodSugar: str
 
 
 class SerumCreatinineReportTemplate(BaseModel) :
-
+    reportType: Literal["SerumCreatinine"]
     serumCreatinine: str
 
 
 class SerumElectrolytesReportTemplate(BaseModel) :
-
+    reportType: Literal["SerumElectrolytes"]
     sodium: str
     potassium: str
     chloride: str
@@ -80,7 +80,7 @@ class SerumElectrolytesReportTemplate(BaseModel) :
 
 
 class LipidProfileReportTemplate(BaseModel) :
-
+    reportType: Literal["LipidProfile"]
     totalCholesterol: str
     triglycerides: str
     hdl: str
@@ -93,18 +93,18 @@ class LipidProfileReportTemplate(BaseModel) :
 
 
 class HbA1cReportTemplate(BaseModel) :
-
+    reportType: Literal["HbA1c"]
     hba1c: str
     estimatedAvgGlucose: str
 
 
 class ESRReportTemplate(BaseModel) :
-
+    reportType: Literal["ESR"]
     esr: str
 
 
 class TFTReportTemplate(BaseModel) :
-
+    reportType: Literal["TFT"]
     tsh: str
     t3: str
     t4: str
@@ -116,9 +116,9 @@ class BaseMetaTemplate(BaseModel):
     gender:str
     date: str
     investigations: str
-class BaseReportTemplate(BaseModel):
-    mata:BaseMetaTemplate
-    results: Union[
+
+ReportTemplate = Annotated[
+    Union[
         CBCReportTemplate,
         UFRTemplate,
         LFTReportTemplate,
@@ -129,6 +129,12 @@ class BaseReportTemplate(BaseModel):
         LipidProfileReportTemplate,
         HbA1cReportTemplate,
         ESRReportTemplate,
-        TFTReportTemplate]
+        TFTReportTemplate],
+        Field(discriminator="reportType")
+] # type: ignore
+
+class BaseReportTemplate(BaseModel):
+    mata:BaseMetaTemplate
+    results: ReportTemplate
 
 

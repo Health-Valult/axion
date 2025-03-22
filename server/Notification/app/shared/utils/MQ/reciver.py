@@ -32,12 +32,12 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
         
         if message is not None:
             data:str = message.get("data").decode("utf-8")
-            #logger.warning(data)
+            logger.warning(data)
             
             request = RedRequest.model_validate_json(data)
             
-            #logger.warning(e)
-            #logger.warning(request)
+            logger.warning(e)
+            logger.warning(request)
             response = await executer(request)
             logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
             body = Body(

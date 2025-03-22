@@ -42,6 +42,8 @@ class Query:
             collection:Collection = request.app.state.LabsCollection
             query = {"patientID": patient}
             Aggregate:Cursor = collection.find(query,labsResult)
+            if Aggregate.retrieved == 0 and Aggregate.alive is False:
+                return GraphQLError("No Data found")
             return LabStack(labs=[Lab(**obs) for obs in Aggregate])
     
     @strawberry.field
@@ -59,6 +61,8 @@ class Query:
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"LabID":LabID,"code":code}
         Aggregate:Cursor = collection.find_one(query,observationsResult)   
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         observationQueryResult = Observation(**Aggregate)  
         return observationQueryResult
 
@@ -77,7 +81,8 @@ class Query:
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"labID":LabID}
         Aggregate:Cursor = collection.find(query,observationsResult)   
-
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         return ObservationStack(Observations=[Observation(**obs) for obs in Aggregate])
         
 
@@ -96,6 +101,8 @@ class Query:
         collection:Collection = request.app.state.ObservationCollection
         query = {"patientID": patient,"code":code}
         Aggregate:Cursor = collection.find(query,observationsResult)
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         return ObservationStack(Observations=[Observation(**obs) for obs in Aggregate])
        
 
@@ -114,6 +121,8 @@ class Query:
         collection:Collection = request.app.state.AllergiesCollection
         query = {"patientID": patient}
         Aggregate:Cursor = collection.find(query,allergysResult)
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         return AllergyIntoleranceStack(allergyIntolerances=[AllergyIntolerance(**obs) for obs in Aggregate])
             
        
@@ -132,6 +141,8 @@ class Query:
         collection:Collection = request.app.state.MedicationsCollection
         query = {"patientID": patient}
         Aggregate:Cursor = collection.find(query,medicationsResult)
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         return MedicationStack(medications=[Medication(**obs) for obs in Aggregate])
 
 
@@ -149,7 +160,11 @@ class Query:
  
         collection:Collection = request.app.state.ImmunizationsCollection
         query = {"patientID": patient}        
-        Aggregate:Cursor = collection.find(query,immunizationResult)            
+        Aggregate:Cursor = collection.find(query,immunizationResult)     
+
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
+        
         return ImmunizationStack(immunizations=[Immunization(**obs) for obs in Aggregate])
     
 
@@ -168,4 +183,6 @@ class Query:
         collection:Collection = request.app.state.ProceduresCollection
         query = {"patientID": patient}
         Aggregate:Cursor = collection.find(query,proceduresResult)
+        if Aggregate.retrieved == 0 and Aggregate.alive is False:
+            return GraphQLError("No Data found")
         return ProcedureStack(Procedures=[Procedure(**obs) for obs in Aggregate])

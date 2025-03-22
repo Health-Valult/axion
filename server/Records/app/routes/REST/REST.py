@@ -14,6 +14,7 @@ from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
 from app.shared.utils.Cache.redis import Body, redis_AX
 from app.models.models import *
+import requests
 
 def generate_otp(length=6):
     return ''.join([str(random.randint(0, 9)) for _ in range(length)])
@@ -21,7 +22,7 @@ def generate_otp(length=6):
 route = APIRouter()
 connected_clients:dict = {}
 logger = logging.getLogger("uvicorn")
-"""@route.post(path="records/upload/{type}")
+@route.post(path="records/upload/{type}")
 async def upload_report(type:str,report:Annotated[Union[
         CBCReportTemplate,
         UFRTemplate,
@@ -36,7 +37,7 @@ async def upload_report(type:str,report:Annotated[Union[
         TFTReportTemplate
         ]]): # type: ignore
     pass
-"""
+
 @route.post(path="/records/select-patient",dependencies=[Depends(Authenticate)])
 async def verify_doctor(request:Request,pateint:SelectPatient):
 
