@@ -147,7 +147,7 @@ class SymptomsAndSigns(BaseModel):
 
 
 
-{
+"""{
   "prescribedDate": "2025-03-22T09:45:00.000Z",
   "indications": ["diagnosis"],
   "diagnosedCondition": "Type 2 Diabetes Mellitus",
@@ -203,4 +203,4 @@ class SymptomsAndSigns(BaseModel):
     }
   ],
   "doctorName": "Dr. Steven James"
-}
+}"""
