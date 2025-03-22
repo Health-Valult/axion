@@ -78,7 +78,7 @@ class HospitalStaff(BaseModel):
     FullName: str
     NIC: str
     Gender: str
-    DateOfBirth: int
+    DateOfBirth: datetime.datetime
     ContactNumber: constr(pattern=r'^\d{10}$') # type: ignore
     Email: EmailStr
     Department: str

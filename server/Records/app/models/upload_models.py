@@ -1,11 +1,23 @@
+from enum import Enum
 from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 import datetime
 
-
+class ReportType(str, Enum):
+    CBC = "CBC"
+    UFR = "UFR"
+    CRP = "CRP"
+    LFT = "LFT"
+    FBS = "FBS"
+    SerumCreatinine = "SerumCreatinine"
+    SerumElectrolytes = "SerumElectrolytes"
+    LipidProfile = "LipidProfile"
+    HbA1c = "HbA1c"
+    ESR = "ESR"
+    TFT = "TFT"
 
 class CBCReportTemplate(BaseModel) :
-    reportType: Literal["CBC"]
+    reportType: ReportType = Field(default=ReportType.CBC, const=True)
     hemoglobin: str
     totalLeukocyteCount: str
     neutrophils: str
@@ -22,7 +34,7 @@ class CBCReportTemplate(BaseModel) :
 
 
 class UFRTemplate(BaseModel) :
-    reportType: Literal["UFR"]
+    reportType: ReportType = Field(default=ReportType.UFR, const=True)
     quantity: str
     color: str
     transparency: str
@@ -41,12 +53,12 @@ class UFRTemplate(BaseModel) :
 
 
 class CRPReportTemplate(BaseModel) :
-    reportType: Literal["CRP"]
+    reportType: ReportType = Field(default=ReportType.CRP, const=True)
     crpLevel: str
 
 
 class LFTReportTemplate(BaseModel) :
-    reportType: Literal["LFT"]
+    reportType: ReportType = Field(default=ReportType.LFT, const=True)
     serumBilirubinTotal: str
     serumBilirubinDirect: str
     serumBilirubinIndirect: str
@@ -60,17 +72,17 @@ class LFTReportTemplate(BaseModel) :
 
 
 class FBSReportTemplate(BaseModel) :
-    reportType: Literal["FBS"]
+    reportType: ReportType = Field(default=ReportType.FBS, const=True)
     fastingBloodSugar: str
 
 
 class SerumCreatinineReportTemplate(BaseModel) :
-    reportType: Literal["SerumCreatinine"]
+    reportType: ReportType = Field(default=ReportType.SerumCreatinine, const=True)
     serumCreatinine: str
 
 
 class SerumElectrolytesReportTemplate(BaseModel) :
-    reportType: Literal["SerumElectrolytes"]
+    reportType: ReportType = Field(default=ReportType.SerumElectrolytes, const=True)
     sodium: str
     potassium: str
     chloride: str
@@ -80,7 +92,7 @@ class SerumElectrolytesReportTemplate(BaseModel) :
 
 
 class LipidProfileReportTemplate(BaseModel) :
-    reportType: Literal["LipidProfile"]
+    reportType: ReportType = Field(default=ReportType.LipidProfile, const=True)
     totalCholesterol: str
     triglycerides: str
     hdl: str
@@ -93,18 +105,18 @@ class LipidProfileReportTemplate(BaseModel) :
 
 
 class HbA1cReportTemplate(BaseModel) :
-    reportType: Literal["HbA1c"]
+    reportType: ReportType = Field(default=ReportType.HbA1c, const=True)
     hba1c: str
     estimatedAvgGlucose: str
 
 
 class ESRReportTemplate(BaseModel) :
-    reportType: Literal["ESR"]
+    reportType: ReportType = Field(default=ReportType.ESR, const=True)
     esr: str
 
 
 class TFTReportTemplate(BaseModel) :
-    reportType: Literal["TFT"]
+    reportType: ReportType = Field(default=ReportType.TFT, const=True)
     tsh: str
     t3: str
     t4: str
@@ -133,6 +145,9 @@ ReportTemplate = Annotated[
         TFTReportTemplate],
         Field(discriminator="reportType")
 ] # type: ignore
+
+
+
 
 class BaseReportTemplate(BaseModel):
     mata:BaseMetaTemplate
