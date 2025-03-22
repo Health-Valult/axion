@@ -24,7 +24,7 @@ connected_clients:dict = {}
 logger = logging.getLogger("uvicorn")
 
 
-@route.post(path="records/upload/{type}")
+@route.post(path="/records/upload/{type}")
 async def upload_report(type:str,report:BaseReportTemplate):
     logger.info("qwerty")
 
