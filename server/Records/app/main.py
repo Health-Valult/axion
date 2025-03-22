@@ -33,6 +33,7 @@ def custom_openapi():
         description="Here's a longer description of the custom **OpenAPI** schema",
         routes=app.routes,
     )
+    openapi_schema["openapi"] = "3.1.0"
     openapi_schema["info"]["x-logo"] = {
         "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
     }
