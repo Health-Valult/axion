@@ -297,11 +297,7 @@ const Auth: React.FC = () => {
                             className={`w-[80%] ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} mb-4 relative text-black`}
                             required
                             value={formData.dateOfBirth}
-                            onChange={(e) => {
-                                const date = new Date(e.target.value); // Convert the value to a Date object
-                                const formattedDate = `${date.getDate().toString().padStart(2, '0')}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getFullYear()}`;
-                                setFormData({ ...formData, dateOfBirth: formattedDate });
-                            }}
+                            onChange={(e) => {setFormData({ ...formData, dateOfBirth: e.target.value });}}
                         />
 
                         <div className="flex space-x-4 mt-4">
@@ -488,6 +484,14 @@ const Auth: React.FC = () => {
 };
 
 const registerUser = async (formData: FormData) => {
+    const formattedDateOfBirth = (date: string) => {
+        const parsedDate = new Date(date);
+        const day = parsedDate.getDate().toString().padStart(2, '0');
+        const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
+        const year = parsedDate.getFullYear();
+        return `${day}${month}${year}`; // Return as DDMMYYYY
+    };
+
     try {
         const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/signup/patient`, {
             method: "POST",
@@ -501,7 +505,7 @@ const registerUser = async (formData: FormData) => {
                     "LastName": formData.lastName,
                     "Email": formData.email,
                     "Telephone": formData.mobileNumber,
-                    "DateOfBirth":formData.dateOfBirth ,
+                    "DateOfBirth":formattedDateOfBirth(formData.dateOfBirth) ,
                     "Password": formData.password
                 }
             ),
