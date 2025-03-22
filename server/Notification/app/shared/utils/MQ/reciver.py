@@ -36,9 +36,11 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             
             request = RedRequest.model_validate_json(data)
             
-            logger.warning(e)
             logger.warning(request)
-            response = await executer(request)
+            try:
+                response = await executer(request)
+            except Exception as e:
+                logger.critical(f"{e}")
             logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
             body = Body(
                 task = "verifiedToken",
