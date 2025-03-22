@@ -168,13 +168,6 @@ function ProfileForm() {
             </div>
 
             <div className="mt-6 w-full max-w-lg">
-                {/*<Button*/}
-                {/*    onClick={handleSave}*/}
-                {/*    className="w-full py-2 bg-purple-600 dark:bg-orange-300 text-white dark:text-black font-semibold rounded-md hover:bg-purple-700 dark:hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-blue-500"*/}
-                {/*>*/}
-                {/*    Save Changes*/}
-                {/*</Button>*/}
-
                 <Button
                     onClick={() => setIsResetPasswordModalOpen(true)}
                     className="w-full font-semibold mt-4 overflow-hidden"

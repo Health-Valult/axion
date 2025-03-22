@@ -172,7 +172,6 @@ const ReportPage: React.FC = () => {
         // Set font for the rest of the content
         doc.setFont("helvetica", "normal");
         doc.setFontSize(12);
-        doc.text("Observations", 20, 30);
 
         // Prepare table data
         const tableData = observations.map(obs => [

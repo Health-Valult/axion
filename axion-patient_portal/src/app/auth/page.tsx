@@ -59,6 +59,7 @@ const Auth: React.FC = () => {
     });
     const [errors, setErrors] = useState<FormErrors>({});
     const [loginErrors, setLoginErrors] = useState<LoginFormErrors>({});
+    const [resendCooldown, setResendCooldown] = useState(0);
 
     const handleRegister = () => setIsActive(true);
     const handleLogin = () => setIsActive(false);
@@ -66,6 +67,7 @@ const Auth: React.FC = () => {
     useEffect(() => {
         const generatedUuid = uuidv4();
         setUuid(generatedUuid);
+        sessionStorage.setItem("uuid", generatedUuid);
     }, []);
 
     const validateLogin = (loginFormData: LoginFormData): LoginFormErrors => {
@@ -80,8 +82,8 @@ const Auth: React.FC = () => {
 
         if (!loginFormData.password.trim()) {
             errors.password = "Password is required.";
-        } else if (loginFormData.password.length < 6) {
-            errors.password = "Password must be at least 6 characters long.";
+        } else if (loginFormData.password.length < 8) {
+            errors.password = "Password must be at least 8 characters long including 2 capital letters and a special character.";
         }
 
         return errors;
@@ -107,8 +109,8 @@ const Auth: React.FC = () => {
 
         if (!formData.password.trim()) {
             errors.password = "Password is required.";
-        } else if (formData.password.length < 6) {
-            errors.password = "Password must be at least 6 characters long.";
+        } else if (formData.password.length < 8) {
+            errors.password = "Password must be at least 8 characters long including 2 capital letters and a special character.";
         }
 
         return errors;
@@ -176,7 +178,7 @@ const Auth: React.FC = () => {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            tempID: uuid, // Using the generated UUID
+                            tempID: sessionStorage.getItem('uuid'), // Using the generated UUID
                             type: 'email', // Hardcoded type as 'email'
                             data: formData.email, // Use email or any other data for this step
                         }),
@@ -184,6 +186,7 @@ const Auth: React.FC = () => {
 
                     if (response.ok) {
                         setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to next step (Step 3)
+                        toast.custom("Enter the OTP sent to your Email")
                     } else {
                         const errorData = await response.json();
                         console.log(errorData);
@@ -329,18 +332,15 @@ const Auth: React.FC = () => {
                                             headers: {
                                                 "Content-Type": "application/json",
                                             },
-                                            body: JSON.stringify({ tempID: uuid, otp: value }),
+                                            body: JSON.stringify({ tempID: sessionStorage.getItem('uuid'), otp: value }),
                                         });
 
                                         // Handle the response
                                         if (response.ok) {
                                             const responseData = await response.json();
-                                            // If successful, proceed to register the user
-                                            toast.success("OTP Verified successfully!");
-
-                                            // Register the user after OTP verification is successful
                                             await registerUser(formData); // Ensure registerUser is properly implemented
                                             return responseData;
+                                            toast.success("OTP Verified successfully! Login to access your profile");
                                         } else {
                                             // If response is not successful, show an error
                                             const errorData = await response.json();
@@ -355,6 +355,31 @@ const Auth: React.FC = () => {
                                 }}
                             >
                                 Verify
+                            </Button>
+                            <Button
+                                className="bg-gray-500 text-white py-2 px-6 rounded-lg uppercase"
+                                onClick={async () => {
+                                    if (resendCooldown > 0) return; // Prevent spamming
+
+                                    await fetch("https://axiontestgateway.azure-api.net/axion/auth/send/otp", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ tempID: uuid, type: "email", data: formData.email }),
+                                    });
+
+                                    toast.success("OTP Resent!");
+                                    setResendCooldown(30); // Start cooldown timer
+
+                                    const interval = setInterval(() => {
+                                        setResendCooldown((prev) => {
+                                            if (prev <= 1) clearInterval(interval);
+                                            return prev - 1;
+                                        });
+                                    }, 1000);
+                                }}
+                                disabled={resendCooldown > 0}
+                            >
+                                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
                             </Button>
                         </div>
                     </FormProvider>
@@ -495,6 +520,13 @@ const registerUser = async (formData: FormData) => {
 
 const loginUser = async (email: string, password: string) => {
     try {
+        const ipResponse = await fetch("http://ip-api.com/json");
+        const ipData = await ipResponse.json();
+
+        const latitude = ipData.lat || 0;
+        const longitude = ipData.lon || 0;
+        const ipAddress = ipData.query || "Unknown";
+
         const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
             method: "POST",
             headers: {
@@ -505,10 +537,10 @@ const loginUser = async (email: string, password: string) => {
                 Email: email,
                 Password: password,
                 Location: {
-                    Latitude: 12.3456,
-                    Longitude: 78.9012
+                    Latitude: latitude,
+                    Longitude: longitude
                 },
-                IpAddress: "192.168.1.1",
+                IpAddress: ipAddress,
                 AndroidId: "unique_device_id"
             }),
         });

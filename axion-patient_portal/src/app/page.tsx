@@ -15,6 +15,7 @@ import { useDarkMode } from "@/app/components/DarkModeContext";
 import useAuth from "@/hooks/useAuth";
 import toast, { Toaster } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {InputOTP, InputOTPGroup, InputOTPSlot} from "@/components/ui/input-otp";
 
 export default function DashboardLayout() {
     return (
@@ -85,6 +86,7 @@ const Dashboard = () => {
     const router = useRouter();
     const isAuthenticated = useAuth();
 
+    const [value, setValue] = useState("");
     const [token, setToken] = useState<string | null>(null);
     const [allergies, setAllergies] = useState<Allergy[]>([]);
     const [immunizations, setImmunizations] = useState<Immunization[]>([]);
@@ -95,6 +97,29 @@ const Dashboard = () => {
     useEffect(() => {
         const token = sessionStorage.getItem("session_token");
         setToken(token);
+
+        const socket = new WebSocket(`ws://axiontestgateway.azure-api.net/socket?token=${token}`);
+
+        // Handle WebSocket open event
+        socket.onopen = () => {
+            console.log('WebSocket connection established');
+        };
+
+        // Handle incoming messages from WebSocket
+        socket.onmessage = (event) => {
+            console.log('Received message:', event.data);
+            toast.custom(event.data);
+        };
+
+        // Handle WebSocket error event
+        socket.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+        };
+
+        // Handle WebSocket close event
+        socket.onclose = () => {
+            console.log('WebSocket connection closed');
+        };
 
         const fetchProfileData = async () => {
             try {
@@ -308,6 +333,10 @@ const Dashboard = () => {
             fetchAllergies();
             fetchImmunizations();
         }
+
+        return () => {
+            socket.close();
+        };
     }, [isAuthenticated, token]);
 
     if (!isAuthenticated) {
@@ -529,6 +558,62 @@ const Dashboard = () => {
                                 ))}
                             </ul>
                         )}
+                    </CardContent>
+                </Card>
+
+                <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
+                            {t.connectWithDoctor}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="bg-white dark:bg-gray-950 rounded-lg overflow-hidden">
+                        <InputOTP maxLength={6} value={value} onChange={value => setValue(value)}>
+                            <InputOTPGroup>
+                                <InputOTPSlot index={0} />
+                                <InputOTPSlot index={1} />
+                                <InputOTPSlot index={2} />
+                                <InputOTPSlot index={3} />
+                                <InputOTPSlot index={4} />
+                                <InputOTPSlot index={5} />
+                            </InputOTPGroup>
+                        </InputOTP>
+                        <div className="flex space-x-4 mt-4">
+                            <Button
+                                className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch("https://axiontestgateway.azure-api.net/records/records/verify-request", {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type": "application/json",
+                                                "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
+                                            },
+                                            body: JSON.stringify({ otp: value }),
+                                        });
+
+                                        // Handle the response
+                                        if (response.ok) {
+                                            const responseData = await response.json();
+                                            // If successful, proceed to register the user
+                                            toast.success("Access Given successfully!");
+                                            return responseData;
+                                        } else {
+                                            // If response is not successful, show an error
+                                            const errorData = await response.json();
+                                            toast.error("Access Failed");
+                                            return errorData;
+                                        }
+                                    } catch (error) {
+                                        // Handle any errors (network issues, etc.)
+                                        console.error("Error during OTP verification:", error);
+                                        toast.error("Something went wrong. Please try again.");
+                                    }
+                                }}
+                            >
+                                Give Access
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
