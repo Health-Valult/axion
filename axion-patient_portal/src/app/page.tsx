@@ -98,7 +98,7 @@ const Dashboard = () => {
         const token = sessionStorage.getItem("session_token");
         setToken(token);
 
-        const socket = new WebSocket(`ws://axiontestgateway.azure-api.net/socket?token=Bearer ${token}`);
+        const socket = new WebSocket(`wss://axiontestgateway.azure-api.net/socket?token=Bearer ${token}`);
 
         // Handle WebSocket open event
         socket.onopen = () => {
