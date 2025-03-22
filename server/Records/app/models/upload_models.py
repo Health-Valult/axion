@@ -17,7 +17,7 @@ class ReportType(str, Enum):
     TFT = "TFT"
 
 class CBCReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.CBC, const=True)
+    reportType: ReportType = Field(default=ReportType.CBC)
     hemoglobin: str
     totalLeukocyteCount: str
     neutrophils: str
@@ -34,7 +34,7 @@ class CBCReportTemplate(BaseModel) :
 
 
 class UFRTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.UFR, const=True)
+    reportType: ReportType = Field(default=ReportType.UFR)
     quantity: str
     color: str
     transparency: str
@@ -53,12 +53,12 @@ class UFRTemplate(BaseModel) :
 
 
 class CRPReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.CRP, const=True)
+    reportType: ReportType = Field(default=ReportType.CRP)
     crpLevel: str
 
 
 class LFTReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.LFT, const=True)
+    reportType: ReportType = Field(default=ReportType.LFT)
     serumBilirubinTotal: str
     serumBilirubinDirect: str
     serumBilirubinIndirect: str
@@ -72,17 +72,17 @@ class LFTReportTemplate(BaseModel) :
 
 
 class FBSReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.FBS, const=True)
+    reportType: ReportType = Field(default=ReportType.FBS)
     fastingBloodSugar: str
 
 
 class SerumCreatinineReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.SerumCreatinine, const=True)
+    reportType: ReportType = Field(default=ReportType.SerumCreatinine)
     serumCreatinine: str
 
 
 class SerumElectrolytesReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.SerumElectrolytes, const=True)
+    reportType: ReportType = Field(default=ReportType)
     sodium: str
     potassium: str
     chloride: str
@@ -92,7 +92,7 @@ class SerumElectrolytesReportTemplate(BaseModel) :
 
 
 class LipidProfileReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.LipidProfile, const=True)
+    reportType: ReportType = Field(default=ReportType.LipidProfile)
     totalCholesterol: str
     triglycerides: str
     hdl: str
@@ -105,18 +105,18 @@ class LipidProfileReportTemplate(BaseModel) :
 
 
 class HbA1cReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.HbA1c, const=True)
+    reportType: ReportType = Field(default=ReportType.HbA1c)
     hba1c: str
     estimatedAvgGlucose: str
 
 
 class ESRReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.ESR, const=True)
+    reportType: ReportType = Field(default=ReportType.ESR)
     esr: str
 
 
 class TFTReportTemplate(BaseModel) :
-    reportType: ReportType = Field(default=ReportType.TFT, const=True)
+    reportType: ReportType = Field(default=ReportType.TFT)
     tsh: str
     t3: str
     t4: str
@@ -220,3 +220,55 @@ class SymptomsAndSigns(BaseModel):
   ],
   "doctorName": "Dr. Steven James"
 }"""
+
+
+
+
+
+
+
+
+
+
+
+"""
+class CBCReportTemplate(BaseModel) :
+    reportType: ReportType = Field(default=ReportType.CBC, const=True)
+    hemoglobin: str
+    totalLeukocyteCount: str
+    neutrophils: str
+    lymphocytes: str
+    eosinophils: str
+    monocytes: str
+    basophils: str
+    plateletCount: str
+    totalRBCCount: str
+    hematocrit: str
+    meanCorpuscularVolume: str
+    meanCellHemoglobin: str
+    meanCellHemoglobinConcentration: str
+
+    class BaseMetaTemplate(BaseModel):
+  patientNIC: str
+  date: str
+  time: str
+  practitioner: str
+  clinic: str
+  recorder: str
+  instructions:str
+
+ReportTemplate = Annotated[
+    Union[
+        CBCReportTemplate,
+        UFRTemplate,
+        LFTReportTemplate,
+        CRPReportTemplate,
+        FBSReportTemplate,
+        SerumCreatinineReportTemplate,
+        SerumElectrolytesReportTemplate,
+        LipidProfileReportTemplate,
+        HbA1cReportTemplate,
+        ESRReportTemplate,
+        TFTReportTemplate],
+        Field(discriminator="reportType")
+"""
