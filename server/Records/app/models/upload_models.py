@@ -110,12 +110,13 @@ class TFTReportTemplate(BaseModel) :
     t4: str
 
 class BaseMetaTemplate(BaseModel):
-    patientName: str
-    referredBy: str
-    age: str
-    gender:str
-    date: str
-    investigations: str
+  patientNIC: str
+  date: str
+  time: str
+  practitioner: str
+  clinic: str
+  recorder: str
+  instructions:str
 
 ReportTemplate = Annotated[
     Union[

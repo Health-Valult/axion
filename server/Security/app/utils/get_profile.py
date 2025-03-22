@@ -2,6 +2,7 @@ from typing import Literal
 from uuid import UUID
 import bson
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from pymongo.collection import Collection
 
 
@@ -31,6 +32,6 @@ endpoints = {"doctor" : {
 
 def _get_profile(collection:Collection,c_uuid:UUID,endpoint:Literal["patient","doctor","hospital"]):
     currunt = collection.find_one({"UserID":c_uuid}, endpoints.get(endpoint))
-    
-    return JSONResponse(status_code=200, content=currunt)
+    encoded = jsonable_encoder(currunt)
+    return JSONResponse(status_code=200, content=encoded)
 
