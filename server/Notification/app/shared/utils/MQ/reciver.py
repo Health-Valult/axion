@@ -28,34 +28,39 @@ redisax = redis_AX("redis://cache",10,service="notification").connect()
 import redis.asyncio as redis
 async def reader(channel: redis.client.PubSub,executer:Callable):
     while True:
-        message:dict = await channel.get_message(ignore_subscribe_messages=True)
-        
-        if message is not None:
-            data:str = message.get("data").decode("utf-8")
-            logger.warning(data)
+        try:
+            message:dict = await channel.get_message(ignore_subscribe_messages=True)
             
-            request = RedRequest.model_validate_json(data)
-            
-            logger.warning(request)
-            try:
-                response = await executer(request)
-            except Exception as e:
-                logger.warning(f"{e}")
-            logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
-            body = Body(
-                task = "verifiedToken",
-                body = response
-            )
-            print(request.returnChannel)
-            redisax.scarletSender(request.returnChannel,body=body)
+            if message is not None:
+                data:str = message.get("data").decode("utf-8")
+                logger.warning(data)
+                
+                request = RedRequest.model_validate_json(data)
+                
+                logger.warning(request)
+                try:
+                    response = await executer(request)
+                except Exception as e:
+                    logger.warning(f"{e}")
+                logger.warning(f"asdkhjsdjahkasdhjksdakhjkhjdsasdahjkasdhjkasdujkshujkaasdhjksadhjiasdjkhasdhjkshjkadhjkdashjkds{response}")
+                body = Body(
+                    task = "verifiedToken",
+                    body = response
+                )
+                print(request.returnChannel)
+                redisax.scarletSender(request.returnChannel,body=body)
+        except Exception as e:
+            logger.warning(e)
 
 async def RedReciver(host:str,channel:str,executer:Callable):
 
     
+    try:
+        r = redis.from_url(host)
+        logger.info(f"server now reciving on 🟥is channel: {channel}")
+        async with r.pubsub() as pubsub:
+            await pubsub.subscribe(channel)
 
-    r = redis.from_url(host)
-    logger.info(f"server now reciving on 🟥is channel: {channel}")
-    async with r.pubsub() as pubsub:
-        await pubsub.subscribe(channel)
-
-        await reader(pubsub,executer=executer)
+            await reader(pubsub,executer=executer)
+    except Exception as e:
+        logger.warning(e)
