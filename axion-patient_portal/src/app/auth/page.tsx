@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import toast, {Toaster} from "react-hot-toast";
 import { v4 as uuidv4 } from 'uuid';
+import {getLocationData} from "@/app/api/getLocation";
 
 interface FormData {
     firstName: string;
@@ -268,7 +269,7 @@ const Auth: React.FC = () => {
                         {errors.mobileNumber && <p className="text-red-500 text-sm">{errors.mobileNumber}</p>}
                         <Input
                             name="mobileNumber"
-                            type="text"
+                            type="number"
                             placeholder="Mobile Number"
                             className={`w-[80%] sm:w-[320px] ${errors.mobileNumber ? 'border-red-500' : 'border-gray-300'} mb-4 relative  text-black`}
                             required
@@ -296,7 +297,11 @@ const Auth: React.FC = () => {
                             className={`w-[80%] ${errors.dateOfBirth ? 'border-red-500' : 'border-gray-300'} mb-4 relative text-black`}
                             required
                             value={formData.dateOfBirth}
-                            onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                            onChange={(e) => {
+                                const date = new Date(e.target.value); // Convert the value to a Date object
+                                const formattedDate = `${date.getDate().toString().padStart(2, '0')}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getFullYear()}`;
+                                setFormData({ ...formData, dateOfBirth: formattedDate });
+                            }}
                         />
 
                         <div className="flex space-x-4 mt-4">
@@ -340,7 +345,7 @@ const Auth: React.FC = () => {
                                         if (response.ok) {
                                             const responseData = await response.json();
                                             await registerUser(formData); // Ensure registerUser is properly implemented
-                                            toast.success("OTP Verified successfully! Login to access your profile");
+                                            toast.success("OTP verification success! Login to access your account")
                                             return responseData;
                                         } else {
                                             // If response is not successful, show an error
@@ -520,14 +525,9 @@ const registerUser = async (formData: FormData) => {
 };
 
 const loginUser = async (email: string, password: string) => {
+    const { latitude, longitude, ipAddress } = getLocationData();
+
     try {
-        const ipResponse = await fetch("http://ip-api.com/json");
-        const ipData = await ipResponse.json();
-
-        const latitude = ipData.lat || 0;
-        const longitude = ipData.lon || 0;
-        const ipAddress = ipData.query || "Unknown";
-
         const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
             method: "POST",
             headers: {
