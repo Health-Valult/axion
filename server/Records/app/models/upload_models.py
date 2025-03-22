@@ -140,7 +140,7 @@ class BaseReportTemplate(BaseModel):
 
 
 class SymptomsAndSigns(BaseModel):
-    timeStamp:datetime
+    #timeStamp:datetime
     indications:Literal["symptoms","signs"]
     #medications:list[]
 
