@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 from strawberry import Info
 import strawberry
@@ -13,7 +12,7 @@ from starlette.requests import Request
 from app.routes.GQL.results import *
 from pymongo.cursor import Cursor
 from pymongo.collection import Collection
-logger = logging.getLogger("uvicorn")
+
 @strawberry.type
 class PatientQuery:
 
@@ -80,7 +79,7 @@ class PatientQuery:
         collection:Collection = request.app.state.MedicationsCollection
         query = {"patientID": patient}
         Aggregate:Cursor = collection.find(query,medicationsResult)
-        logger.warning(Aggregate.clone())
+        
         return MedicationStack(medications=[Medication(**obs) for obs in Aggregate])
 
 
