@@ -22,16 +22,27 @@ def generate_otp(length=6):
 route = APIRouter()
 connected_clients:dict = {}
 logger = logging.getLogger("uvicorn")
+
+
 @route.post(path="records/upload/{type}")
 async def upload_report(type:str,report:BaseReportTemplate):
     logger.info("qwerty")
+
+
+
+
+
+
+
+
+
 
 @route.post(path="/records/select-patient",dependencies=[Depends(Authenticate)])
 async def verify_doctor(request:Request,pateint:SelectPatient):
 
     collection:Collection = request.app.state.PatientsCollection
     cache:redis_AX = request.app.state.Cache
-    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+    c_uuid = request.state.meta.get("uuid")
     NIC = pateint.NIC
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"Email":1,"UserID":1})
 
@@ -64,13 +75,16 @@ async def verify_doctor(request:Request,pateint:SelectPatient):
     return JSONResponse(status_code=200,content={"Details":"pending verification status"})
 
 
+
+
+
+
 @route.post(path="/records/verify-request",dependencies=[Depends(Authenticate)])
 async def verify_doctor_request(request:Request,cred:OTP):
-    state:FastAPI = request.app.state
+
     cache:redis_AX = request.app.state.Cache
-    collection:Collection = request.app.state.DoctorsCollection
     c_otp = cred.otp
-    c_uuid,role = request.state.meta.get("uuid"),request.state.meta.get("role")
+    c_uuid = request.state.meta.get("uuid")
     
    
     name = f"otp::verify:records::request::{c_uuid}"
@@ -78,28 +92,35 @@ async def verify_doctor_request(request:Request,cred:OTP):
     logger.warning(otp_payload)
     if not otp_payload:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
-
-    otp = otp_payload.get(b"otp").decode()
-    requester = otp_payload.get(b"uuid").decode()
+    try:
+        otp = otp_payload.get(b"otp").decode()
+        requester = otp_payload.get(b"uuid").decode()
+    except Exception as e:
+        return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
+    
     if otp is None:
         return JSONResponse(status_code=200,content={"msg":"otp expired or invalid"})
     
     if not hmac.compare_digest(otp,c_otp):
         return JSONResponse(status_code=200,content={"msg":"otp invalid"})
     
+    # TODO future extensive record viewing
+
+    """
     new_patients = {
         "UserID":c_uuid
     }
 
-    """collection.update_one(
+    collection.update_one(
         {"UserID":requester},
           {"$addToSet": {"patients": {"$each": [new_patients]}}}
-    )"""
-    cache.set_item(
-        name=f"verified::doc::{requester}",
-        payload={"patient":c_uuid},
-        ttl=60
     )
+    """
+
+    payload = {"patient":c_uuid}
+    name = f"verified::doc::{requester}"
+
+    cache.set_item(name=name,payload=payload,ttl=60)
 
     return JSONResponse(status_code=200,content={"msg":"otp verified"})
 
