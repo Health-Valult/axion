@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import { Accordion, AccordionItem } from '@heroui/react';
@@ -8,10 +9,43 @@ import { RootState } from '../store/store';
 import ProtectedClientComponent from '../components/ProtectedClientComponent';
 
 const Diagnosis: React.FC = () => {
-	const patient = useSelector((state: RootState) => state.patient.state);
+	// const patient = useSelector((state: RootState) => state.patient.state);
 
-	// Ensure patient is not null and has diagnoses
-	if (!patient || !patient.diagnosedAilments) return null;
+	const diagnosedAilments = [
+		{
+			disease: 'Chronic Kidney Disease',
+			currentMedication: 'Losartan 50mg',
+			progression: [
+				{
+					date: '2018-07-10',
+					update: 'Diagnosed with CKD Stage 2',
+					doctor: {
+						name: 'Dr. Martinez',
+						designation: 'Nephrologist',
+						email: 'martinez@example.com',
+					},
+				},
+				{
+					date: '2019-03-05',
+					update: 'Started Losartan 50mg',
+					doctor: {
+						name: 'Dr. Martinez',
+						designation: 'Nephrologist',
+						email: 'martinez@example.com',
+					},
+				},
+				{
+					date: '2022-12-18',
+					update: 'CKD progressed to Stage 3',
+					doctor: {
+						name: 'Dr. Hernandez',
+						designation: 'Nephrologist',
+						email: 'hernandez@example.com',
+					},
+				},
+			],
+		},
+	];
 
 	return (
 		<ProtectedClientComponent>
@@ -21,7 +55,7 @@ const Diagnosis: React.FC = () => {
 					words="Diagnosed Chronic Conditions"
 				/>
 				<Accordion variant="shadow">
-					{patient.diagnosedAilments.map((illness) => (
+					{diagnosedAilments.map((illness) => (
 						<AccordionItem
 							key={illness.disease}
 							aria-label={`${illness.disease}`}

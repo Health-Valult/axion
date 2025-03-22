@@ -12,20 +12,28 @@ import {
 } from '@heroui/react';
 import { Chip, Avatar } from '@heroui/react';
 import { Textarea } from '@heroui/react';
-import { RadioGroup, Radio, cn } from '@heroui/react';
+import { RadioGroup, Radio, cn, CheckboxGroup, Checkbox } from '@heroui/react';
 import { Autocomplete, AutocompleteItem } from '@heroui/react';
+import { Input } from '@heroui/react';
 
 import { now, getLocalTimeZone, DateValue } from '@internationalized/date';
 import ProtectedClientComponent from '../components/ProtectedClientComponent';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 const Prescriptions: React.FC = () => {
+	const user = useSelector((state: RootState) => state.user);
 	const [defaultDate, setDefaultDate] = useState<any>(null);
-
-	const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
-		new Set(['Indication'])
+	const [selectedIndications, setSelectedIndications] = useState<string[]>(
+		[]
 	);
-
+	const [diagnosedCondition, setDiagnosedCondition] = useState<string>('');
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+	const [medicine, setMedicine] = useState<
+		Array<{ key: string; label: string; description: string }>
+	>([]);
+	const [selectedValue, setSelectedValue] = useState<string>('');
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const dosageInstructions = [
 		{ key: 'OD', label: 'Once daily', sig: 'Take once per day' },
@@ -56,291 +64,14 @@ const Prescriptions: React.FC = () => {
 		{ key: 'SF', label: 'Without food', sig: 'Take on an empty stomach' },
 	];
 
-	const postPrescription = async (data: string) => {
-		try {
-			const token = localStorage.getItem('jwt'); // Retrieve JWT from localStorage
-			if (!token) {
-				throw new Error('User is not authenticated');
-			}
-
-			const response = await fetch('https://your-api.com/prescriptions', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`, // Attach JWT token
-				},
-				body: data, // Send JSON string
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to submit prescription');
-			}
-
-			const result = await response.json();
-			console.log('Prescription submitted successfully:', result);
-		} catch (error) {
-			console.error('Error submitting prescription:', error);
-		}
-	};
-
-	const [selectedIndication, setSelectedIndication] = useState('');
-
-	useEffect(() => {
-		setDefaultDate(now(getLocalTimeZone())); // Ensures it only runs on the client
-	}, []);
-
-	const medicine = [
-		{
-			key: 'paracetamol_500mg',
-			label: 'Paracetamol 500mg',
-			description: 'Do not prescribe with Alcohol, Warfarin (high doses)',
-		},
-		{
-			key: 'paracetamol_650mg',
-			label: 'Paracetamol 650mg',
-			description: 'Do not prescribe with Alcohol, Warfarin (high doses)',
-		},
-		{
-			key: 'paracetamol_1000mg',
-			label: 'Paracetamol 1000mg',
-			description: 'Do not prescribe with Alcohol, Warfarin (high doses)',
-		},
-
-		{
-			key: 'ibuprofen_200mg',
-			label: 'Ibuprofen 200mg',
-			description:
-				'Do not prescribe with Aspirin, Warfarin, Corticosteroids, Lithium',
-		},
-		{
-			key: 'ibuprofen_400mg',
-			label: 'Ibuprofen 400mg',
-			description:
-				'Do not prescribe with Aspirin, Warfarin, Corticosteroids, Lithium',
-		},
-		{
-			key: 'ibuprofen_600mg',
-			label: 'Ibuprofen 600mg',
-			description:
-				'Do not prescribe with Aspirin, Warfarin, Corticosteroids, Lithium',
-		},
-		{
-			key: 'ibuprofen_800mg',
-			label: 'Ibuprofen 800mg',
-			description:
-				'Do not prescribe with Aspirin, Warfarin, Corticosteroids, Lithium',
-		},
-
-		{
-			key: 'aspirin_81mg',
-			label: 'Aspirin 81mg',
-			description:
-				'Do not prescribe with Warfarin, Ibuprofen, Corticosteroids',
-		},
-		{
-			key: 'aspirin_325mg',
-			label: 'Aspirin 325mg',
-			description:
-				'Do not prescribe with Warfarin, Ibuprofen, Corticosteroids',
-		},
-		{
-			key: 'aspirin_500mg',
-			label: 'Aspirin 500mg',
-			description:
-				'Do not prescribe with Warfarin, Ibuprofen, Corticosteroids',
-		},
-
-		{
-			key: 'metformin_500mg',
-			label: 'Metformin 500mg',
-			description:
-				'Do not prescribe with Alcohol, Iodinated Contrast Media',
-		},
-		{
-			key: 'metformin_850mg',
-			label: 'Metformin 850mg',
-			description:
-				'Do not prescribe with Alcohol, Iodinated Contrast Media',
-		},
-		{
-			key: 'metformin_1000mg',
-			label: 'Metformin 1000mg',
-			description:
-				'Do not prescribe with Alcohol, Iodinated Contrast Media',
-		},
-
-		{
-			key: 'lisinopril_5mg',
-			label: 'Lisinopril 5mg',
-			description:
-				'Do not prescribe with Potassium supplements, NSAIDs, Lithium',
-		},
-		{
-			key: 'lisinopril_10mg',
-			label: 'Lisinopril 10mg',
-			description:
-				'Do not prescribe with Potassium supplements, NSAIDs, Lithium',
-		},
-		{
-			key: 'lisinopril_20mg',
-			label: 'Lisinopril 20mg',
-			description:
-				'Do not prescribe with Potassium supplements, NSAIDs, Lithium',
-		},
-		{
-			key: 'lisinopril_40mg',
-			label: 'Lisinopril 40mg',
-			description:
-				'Do not prescribe with Potassium supplements, NSAIDs, Lithium',
-		},
-
-		{
-			key: 'atorvastatin_10mg',
-			label: 'Atorvastatin 10mg',
-			description:
-				'Do not prescribe with Grapefruit juice, Clarithromycin, Warfarin',
-		},
-		{
-			key: 'atorvastatin_20mg',
-			label: 'Atorvastatin 20mg',
-			description:
-				'Do not prescribe with Grapefruit juice, Clarithromycin, Warfarin',
-		},
-		{
-			key: 'atorvastatin_40mg',
-			label: 'Atorvastatin 40mg',
-			description:
-				'Do not prescribe with Grapefruit juice, Clarithromycin, Warfarin',
-		},
-		{
-			key: 'atorvastatin_80mg',
-			label: 'Atorvastatin 80mg',
-			description:
-				'Do not prescribe with Grapefruit juice, Clarithromycin, Warfarin',
-		},
-
-		{
-			key: 'warfarin_1mg',
-			label: 'Warfarin 1mg',
-			description:
-				'Do not prescribe with NSAIDs, Aspirin, Antibiotics (Ciprofloxacin), Leafy greens (Vitamin K)',
-		},
-		{
-			key: 'warfarin_2mg',
-			label: 'Warfarin 2mg',
-			description:
-				'Do not prescribe with NSAIDs, Aspirin, Antibiotics (Ciprofloxacin), Leafy greens (Vitamin K)',
-		},
-		{
-			key: 'warfarin_2.5mg',
-			label: 'Warfarin 2.5mg',
-			description:
-				'Do not prescribe with NSAIDs, Aspirin, Antibiotics (Ciprofloxacin), Leafy greens (Vitamin K)',
-		},
-		{
-			key: 'warfarin_5mg',
-			label: 'Warfarin 5mg',
-			description:
-				'Do not prescribe with NSAIDs, Aspirin, Antibiotics (Ciprofloxacin), Leafy greens (Vitamin K)',
-		},
-		{
-			key: 'warfarin_10mg',
-			label: 'Warfarin 10mg',
-			description:
-				'Do not prescribe with NSAIDs, Aspirin, Antibiotics (Ciprofloxacin), Leafy greens (Vitamin K)',
-		},
-
-		{
-			key: 'fluoxetine_10mg',
-			label: 'Fluoxetine 10mg',
-			description: 'Do not prescribe with MAOIs, Tramadol, Warfarin',
-		},
-		{
-			key: 'fluoxetine_20mg',
-			label: 'Fluoxetine 20mg',
-			description: 'Do not prescribe with MAOIs, Tramadol, Warfarin',
-		},
-		{
-			key: 'fluoxetine_40mg',
-			label: 'Fluoxetine 40mg',
-			description: 'Do not prescribe with MAOIs, Tramadol, Warfarin',
-		},
-		{
-			key: 'fluoxetine_60mg',
-			label: 'Fluoxetine 60mg',
-			description: 'Do not prescribe with MAOIs, Tramadol, Warfarin',
-		},
-
-		{
-			key: 'sertraline_25mg',
-			label: 'Sertraline 25mg',
-			description: 'Do not prescribe with MAOIs, NSAIDs, Warfarin',
-		},
-		{
-			key: 'sertraline_50mg',
-			label: 'Sertraline 50mg',
-			description: 'Do not prescribe with MAOIs, NSAIDs, Warfarin',
-		},
-		{
-			key: 'sertraline_100mg',
-			label: 'Sertraline 100mg',
-			description: 'Do not prescribe with MAOIs, NSAIDs, Warfarin',
-		},
-
-		{
-			key: 'alprazolam_0.25mg',
-			label: 'Alprazolam 0.25mg',
-			description: 'Do not prescribe with Alcohol, Opioids, Ketoconazole',
-		},
-		{
-			key: 'alprazolam_0.5mg',
-			label: 'Alprazolam 0.5mg',
-			description: 'Do not prescribe with Alcohol, Opioids, Ketoconazole',
-		},
-		{
-			key: 'alprazolam_1mg',
-			label: 'Alprazolam 1mg',
-			description: 'Do not prescribe with Alcohol, Opioids, Ketoconazole',
-		},
-		{
-			key: 'alprazolam_2mg',
-			label: 'Alprazolam 2mg',
-			description: 'Do not prescribe with Alcohol, Opioids, Ketoconazole',
-		},
-
-		{
-			key: 'morphine_10mg',
-			label: 'Morphine 10mg',
-			description:
-				'Do not prescribe with Alcohol, Benzodiazepines, Antihistamines',
-		},
-		{
-			key: 'morphine_15mg',
-			label: 'Morphine 15mg',
-			description:
-				'Do not prescribe with Alcohol, Benzodiazepines, Antihistamines',
-		},
-		{
-			key: 'morphine_30mg',
-			label: 'Morphine 30mg',
-			description:
-				'Do not prescribe with Alcohol, Benzodiazepines, Antihistamines',
-		},
-		{
-			key: 'morphine_60mg',
-			label: 'Morphine 60mg',
-			description:
-				'Do not prescribe with Alcohol, Benzodiazepines, Antihistamines',
-		},
-		{
-			key: 'morphine_100mg',
-			label: 'Morphine 100mg',
-			description:
-				'Do not prescribe with Alcohol, Benzodiazepines, Antihistamines',
-		},
+	const routes = [
+		{ key: 'PO', label: 'Oral', description: 'By mouth' },
+		{ key: 'IV', label: 'Intravenous', description: 'Into a vein' },
+		{ key: 'IM', label: 'Intramuscular', description: 'Into a muscle' },
+		{ key: 'SC', label: 'Subcutaneous', description: 'Under the skin' },
+		{ key: 'TOP', label: 'Topical', description: 'Applied to the skin' },
+		{ key: 'INH', label: 'Inhalation', description: 'Breathed in' },
 	];
-
-	const [selectedValue, setSelectedValue] = useState<string>('');
 
 	const [selectedMedicines, setSelectedMedicines] = useState<
 		{
@@ -350,8 +81,82 @@ const Prescriptions: React.FC = () => {
 			frequency: string;
 			mealTiming: string;
 			treatmentDuration: RangeValue<DateValue> | null;
+			dosage: string;
+			route: string;
 		}[]
 	>([]);
+
+	// Fetch medicine data from RxNorm API
+	const fetchMedicineData = async (query: string) => {
+		if (!query || query.length < 2) {
+			setMedicine([]);
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			const response = await fetch(
+				`http://localhost:3000/api/proxy10?name=${encodeURIComponent(
+					query
+				)}`
+			);
+
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+
+			const data = await response.json();
+
+			console.log(data);
+
+			// Process the response data
+			let medicines: Array<{
+				key: string;
+				label: string;
+				description: string;
+			}> = [];
+
+			if (data && data.drugGroup && data.drugGroup.conceptGroup) {
+				// Iterate through all concept groups
+				data.drugGroup.conceptGroup.forEach((group: any) => {
+					if (group.conceptProperties) {
+						// Extract properties from each concept
+						const groupMedicines = group.conceptProperties.map(
+							(prop: any) => ({
+								key: prop.rxcui,
+								label: prop.name,
+								description: prop.synonym || prop.name,
+							})
+						);
+
+						medicines = [...medicines, ...groupMedicines];
+					}
+				});
+			}
+
+			setMedicine(medicines);
+		} catch (error) {
+			console.error('Error fetching medicine data:', error);
+			setMedicine([]);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Debounce function for medicine search
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (selectedValue) {
+				fetchMedicineData(selectedValue);
+			}
+		}, 300); // 300ms debounce time
+
+		return () => clearTimeout(timer);
+	}, [selectedValue]);
+
+	useEffect(() => {
+		setDefaultDate(now(getLocalTimeZone())); // Ensures it only runs on the client
+	}, []);
 
 	const handleMedicineSelection = (key: Key | null) => {
 		if (!key) return;
@@ -370,7 +175,9 @@ const Prescriptions: React.FC = () => {
 					...selectedDrug,
 					frequency: '',
 					mealTiming: '',
-					treatmentDuration: null, // Uses RangeValue<DateValue>
+					treatmentDuration: null,
+					dosage: '',
+					route: '',
 				},
 			]);
 		}
@@ -380,7 +187,12 @@ const Prescriptions: React.FC = () => {
 
 	const updateMedicineField = (
 		key: string,
-		field: 'frequency' | 'mealTiming' | 'treatmentDuration',
+		field:
+			| 'frequency'
+			| 'mealTiming'
+			| 'treatmentDuration'
+			| 'dosage'
+			| 'route',
 		value: string | RangeValue<DateValue> | null
 	) => {
 		setSelectedMedicines((prev) =>
@@ -393,7 +205,39 @@ const Prescriptions: React.FC = () => {
 	const handleRemoveChip = (key: string) => {
 		setSelectedMedicines(
 			selectedMedicines.filter((med) => med.key !== key)
-		); // Remove selected drug
+		);
+	};
+
+	const postPrescription = async (data: string) => {
+		try {
+			const token = localStorage.getItem('jwt');
+			if (!token) {
+				throw new Error('User is not authenticated');
+			}
+
+			const response = await fetch('https://your-api.com/prescriptions', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: data,
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to submit prescription');
+			}
+
+			const result = await response.json();
+			console.log('Prescription submitted successfully:', result);
+
+			// Reset form after successful submission
+			setSelectedMedicines([]);
+			setSelectedIndications([]);
+			setDiagnosedCondition('');
+		} catch (error) {
+			console.error('Error submitting prescription:', error);
+		}
 	};
 
 	return (
@@ -409,43 +253,58 @@ const Prescriptions: React.FC = () => {
 								new FormData(e.currentTarget)
 							);
 
+							// Format medications according to the required schema
 							const formattedMedicines = selectedMedicines.map(
 								(med) => ({
-									name: med.label,
-									key: med.key,
+									format: 'AxionDataX-1.0',
+									resourceType: 'medication',
+									id: crypto.randomUUID(), // Generate UUID on the client
+									patientID:
+										formData.patientID ||
+										'default-patient-id', // Get from form or use default
+									coding_system: 'RxNorm',
+									code: med.key, // RxCUI from RxNorm
+									display: med.label,
 									frequency: med.frequency,
 									mealTiming: med.mealTiming,
-									treatmentDuration: med.treatmentDuration
-										? {
-												start: med.treatmentDuration
-													.start
-													? med.treatmentDuration.start.toString()
-													: null,
-												end: med.treatmentDuration.end
-													? med.treatmentDuration.end.toString()
-													: null,
-										  }
-										: null,
+									dosage: med.dosage || '1 tablet',
+									route: med.route || 'PO',
+									prescriber: 'Dr. Steven James',
+									meta: {
+										treatmentDuration: med.treatmentDuration
+											? {
+													start: med.treatmentDuration
+														.start
+														? med.treatmentDuration.start.toString()
+														: null,
+													end: med.treatmentDuration
+														.end
+														? med.treatmentDuration.end.toString()
+														: null,
+											  }
+											: null,
+										diagnosis: selectedIndications.includes(
+											'diagnosis'
+										)
+											? diagnosedCondition
+											: null,
+										indications: selectedIndications,
+										prescribedDate:
+											selectedDate?.toISOString() ||
+											new Date().toISOString(),
+									},
 								})
 							);
 
-							// Create the complete prescription data object
-							const prescriptionData = {
-								...formData,
-								prescribedDate:
-									selectedDate?.toISOString() || null,
-								category: selectedIndication,
-								medicines: formattedMedicines,
-								doctorName: 'Dr. Steven James', // This is hardcoded in the UI
-							};
-
 							console.log(
 								'Sending prescription data:',
-								prescriptionData
+								formattedMedicines
 							);
 
 							// Convert to JSON before sending to API
-							postPrescription(JSON.stringify(prescriptionData));
+							postPrescription(
+								JSON.stringify(formattedMedicines)
+							);
 						}}
 					>
 						<img
@@ -454,6 +313,7 @@ const Prescriptions: React.FC = () => {
 							src="https://img.icons8.com/windows/32/prescription.png"
 							alt="prescription"
 						/>
+
 						<div className="w-full flex flex-row gap-4">
 							{defaultDate && (
 								<DatePicker
@@ -472,24 +332,33 @@ const Prescriptions: React.FC = () => {
 													date.month - 1,
 													date.day
 												)
-											); // Convert CalendarDate to Date
+											);
 										} else {
 											setSelectedDate(null);
 										}
 									}}
 								/>
 							)}
+
+							<Input
+								label="Patient ID"
+								placeholder="Enter patient ID"
+								name="patientID"
+								variant="bordered"
+								isRequired
+							/>
 						</div>
-						<RadioGroup
+
+						<CheckboxGroup
 							isRequired
-							value={selectedIndication}
-							onValueChange={setSelectedIndication}
+							value={selectedIndications}
+							onValueChange={setSelectedIndications}
 							className="mx-auto"
 							orientation="horizontal"
 							description="Select the basis of medication"
 							label="Indication"
 						>
-							<Radio
+							<Checkbox
 								value="diagnosis"
 								classNames={{
 									base: cn(
@@ -500,8 +369,8 @@ const Prescriptions: React.FC = () => {
 								}}
 							>
 								Diagnosis
-							</Radio>
-							<Radio
+							</Checkbox>
+							<Checkbox
 								value="symptoms"
 								classNames={{
 									base: cn(
@@ -512,8 +381,8 @@ const Prescriptions: React.FC = () => {
 								}}
 							>
 								Symptoms
-							</Radio>
-							<Radio
+							</Checkbox>
+							<Checkbox
 								value="signs"
 								classNames={{
 									base: cn(
@@ -524,15 +393,36 @@ const Prescriptions: React.FC = () => {
 								}}
 							>
 								Signs
-							</Radio>
-						</RadioGroup>
-						{/* Dynamically update textarea label & placeholder */}
+							</Checkbox>
+						</CheckboxGroup>
+
+						{selectedIndications.includes('diagnosis') && (
+							<Input
+								label="Diagnosed Condition"
+								placeholder="Enter the diagnosed condition"
+								name="diagnosedCondition"
+								value={diagnosedCondition}
+								onChange={(e) =>
+									setDiagnosedCondition(e.target.value)
+								}
+								variant="bordered"
+								className="w-full"
+								isRequired
+							/>
+						)}
+
 						<Textarea
+							name="notes"
 							minRows={3}
 							className="w-full"
 							variant="bordered"
-							placeholder={`Enter patient's ${selectedIndication.toLowerCase()}`}
+							placeholder={`Enter patient's ${
+								selectedIndications
+									.join(' and ')
+									.toLowerCase() || 'clinical information'
+							}`}
 						/>
+
 						<div className="flex flex-wrap gap-2">
 							{selectedMedicines.map((med) => (
 								<Chip
@@ -545,15 +435,16 @@ const Prescriptions: React.FC = () => {
 								</Chip>
 							))}
 						</div>
+
 						<Autocomplete
 							className="max-w-md"
 							defaultItems={medicine}
 							label="Treatment"
-							placeholder="Start typing..."
+							placeholder="Start typing to search medications..."
 							size="md"
 							variant="bordered"
-							selectedKey={selectedValue} // Bind state to the input field
-							onInputChange={(value) => setSelectedValue(value)} // Keep track of input
+							isLoading={isLoading}
+							onInputChange={(value) => setSelectedValue(value)}
 							onSelectionChange={handleMedicineSelection}
 						>
 							{(drug) => (
@@ -567,20 +458,81 @@ const Prescriptions: React.FC = () => {
 							{selectedMedicines.map((med) => (
 								<div
 									key={med.key}
-									className="flex flex-col gap-4 border p-4 rounded-lg"
+									className="flex flex-col gap-4 border p-4 rounded-lg w-full"
 								>
-									<div className="flex  justify-between items-center">
-										<div className="flex-1">
+									<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+										<div className="flex-1 font-semibold">
 											{med.label}
 										</div>
 
-										<div className="mx-4"></div>
+										{/* Input for dosage */}
+										<Input
+											label="Dosage"
+											placeholder="e.g., 1 tablet"
+											value={med.dosage}
+											onChange={(e) =>
+												updateMedicineField(
+													med.key,
+													'dosage',
+													e.target.value
+												)
+											}
+											size="sm"
+											variant="bordered"
+											className="w-40"
+										/>
+
+										{/* Route Dropdown */}
+										<Dropdown>
+											<DropdownTrigger>
+												<Button
+													variant="bordered"
+													size="sm"
+												>
+													{routes.find(
+														(r) =>
+															r.key === med.route
+													)?.label || 'Select Route'}
+												</Button>
+											</DropdownTrigger>
+											<DropdownMenu
+												selectionMode="single"
+												selectedKeys={
+													new Set([med.route])
+												}
+												onSelectionChange={(keys) => {
+													const selectedKey =
+														Array.from(keys)[0];
+													updateMedicineField(
+														med.key,
+														'route',
+														selectedKey as string
+													);
+												}}
+											>
+												{routes.map((route) => (
+													<DropdownItem
+														key={route.key}
+													>
+														{route.label} (
+														{route.description})
+													</DropdownItem>
+												))}
+											</DropdownMenu>
+										</Dropdown>
 
 										{/* Frequency Dropdown */}
 										<Dropdown>
 											<DropdownTrigger>
-												<Button variant="bordered">
-													{med.frequency ||
+												<Button
+													variant="bordered"
+													size="sm"
+												>
+													{dosageInstructions.find(
+														(d) =>
+															d.key ===
+															med.frequency
+													)?.label ||
 														'Select Frequency'}
 												</Button>
 											</DropdownTrigger>
@@ -606,20 +558,26 @@ const Prescriptions: React.FC = () => {
 																instruction.key
 															}
 														>
-															{instruction.label}
+															{instruction.label}{' '}
+															({instruction.sig})
 														</DropdownItem>
 													)
 												)}
 											</DropdownMenu>
 										</Dropdown>
 
-										<div className="mx-4"></div>
-
 										{/* Meal Timing Dropdown */}
 										<Dropdown>
 											<DropdownTrigger>
-												<Button variant="bordered">
-													{med.mealTiming ||
+												<Button
+													variant="bordered"
+													size="sm"
+												>
+													{timingMeals.find(
+														(t) =>
+															t.key ===
+															med.mealTiming
+													)?.label ||
 														'Select Meal Timing'}
 												</Button>
 											</DropdownTrigger>
@@ -645,7 +603,8 @@ const Prescriptions: React.FC = () => {
 																instruction.key
 															}
 														>
-															{instruction.label}
+															{instruction.label}{' '}
+															({instruction.sig})
 														</DropdownItem>
 													)
 												)}
@@ -681,9 +640,10 @@ const Prescriptions: React.FC = () => {
 								}
 								variant="flat"
 							>
-								Dr. Steven James
+								{user?.state?.fullName || 'Unknown User'}
 							</Chip>
 						</div>
+
 						<div className="flex gap-2">
 							<Button color="primary" type="submit">
 								Prescribe

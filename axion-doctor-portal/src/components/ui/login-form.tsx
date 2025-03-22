@@ -1,26 +1,17 @@
 'use client';
 
-import { Mail, KeyRound, ArrowRight, CircleAlert, Check } from 'lucide-react';
+import { Mail, KeyRound, ArrowRight } from 'lucide-react';
 import { Button } from './button';
-import { useActionState } from 'react';
 // import { authenticate } from '@/lib/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
 import { loginDoctor } from '@/app/store/userSlice';
 import { useDispatch } from 'react-redux';
-import { determineGenderFromNIC } from '@/app/utils/nicutils';
-// import { getUserLocation, getUserIP } from '@/app/utils/geolocation-utils';
+import { mapApiResponseToUserModel } from '@/app/utils/useMapper';
 
 export default function LoginForm() {
 	const searchParams = useSearchParams();
@@ -28,6 +19,7 @@ export default function LoginForm() {
 	const callbackUrl = searchParams.get('callbackUrl') || '/';
 
 	const [authError, setAuthError] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 	const dispatch = useDispatch();
 	const [userLocation, setUserLocation] = useState({
 		Latitude: 0,
@@ -57,106 +49,103 @@ export default function LoginForm() {
 		fetchLocationData();
 	}, [searchParams]);
 
-	async function storeTokensInCookies(
-		sessionToken: string,
-		refreshToken: string
-	) {
-		try {
-			// Store the tokens in cookies via an API route
-			await fetch('/api/auth/set-cookies', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					session_token: sessionToken,
-					refresh_token: refreshToken,
-				}),
-			});
-		} catch (error) {
+	function storeTokensInCookies(sessionToken: string, refreshToken: string) {
+		return fetch('/api/auth/set-cookies', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				session_token: sessionToken,
+				refresh_token: refreshToken,
+			}),
+		}).catch((error) => {
 			console.error('Error storing tokens:', error);
 			throw error;
-		}
+		});
 	}
 
-	// Custom action to include location and IP data
-	async function handleSubmit(formData: FormData) {
-		try {
-			// Extract values from form
-			const email = formData.get('email') as string;
-			const password = formData.get('password') as string;
+	// Modified to use promise chains instead of async/await
+	function handleSubmit(formData: FormData) {
+		// Extract values from form
+		const email = formData.get('email');
+		const password = formData.get('password');
 
-			// Create login data object
-			const loginData = {
-				Email: email,
-				Password: password,
-				Location: {
-					Latitude: userLocation.Latitude,
-					Longitude: userLocation.Longitude,
-				},
-				IpAddress: userIP,
-				AndroidId: '',
-			};
+		// Create login data object
+		const loginData = {
+			Email: email,
+			Password: password,
+			Location: {
+				Latitude: userLocation.Latitude,
+				Longitude: userLocation.Longitude,
+			},
+			IpAddress: userIP,
+			AndroidId: '',
+		};
 
-			// Submit login request
-			const response = await fetch(`http://localhost:3000/api/proxy`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(loginData),
-				cache: 'no-store',
-			});
+		// Submit login request using promise chains
+		fetch(`http://localhost:3000/api/proxy`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(loginData),
+			cache: 'no-store',
+		})
+			.then((response) => {
+				if (!response.ok) {
+					return response.json().then((errorData) => {
+						throw new Error(errorData.message || 'Login failed');
+					});
+				}
+				return response.json();
+			})
+			.then((tokens) => {
+				console.log(tokens);
 
-			if (!response.ok) {
-				const errorData = await response.json();
-				setAuthError(errorData.message || 'Login failed');
-				return;
-			}
-
-			const tokens = await response.json();
-
-			// Store tokens in cookies
-			await storeTokensInCookies(
-				tokens.session_token,
-				tokens.refresh_token
-			);
-
-			const userDataResponse = await fetch(
-				`http://localhost:3000/api/user`,
-				{
-					method: 'POST',
+				// Store tokens in cookies and then fetch user data
+				return storeTokensInCookies(
+					tokens.session_token,
+					tokens.refresh_token
+				).then(() => tokens);
+			})
+			.then((tokens) => {
+				// Fetch user data
+				return fetch(`http://localhost:3000/api/auth/user`, {
+					method: 'GET',
 					headers: {
 						'Content-Type': 'application/json',
 						Authorization: `Bearer ${tokens.session_token}`,
 					},
-					body: JSON.stringify({
-						Token: tokens.refresh_token,
-					}),
 					cache: 'no-store',
-				}
-			);
+				})
+					.then((userDataResponse) => {
+						if (!userDataResponse.ok) {
+							console.error(
+								'Failed to fetch user data',
+								userDataResponse.statusText
+							);
+							return null;
+						}
+						return userDataResponse.json();
+					})
+					.then((userData) => {
+						if (userData) {
+							const mappedUserData =
+								mapApiResponseToUserModel(userData);
+							console.log('Mapped user data:', mappedUserData);
 
-			if (!userDataResponse.ok) {
-				console.error('Failed to fetch user data');
-				// Continue with login process even if user data fetch fails
-			} else {
-				// Parse user data and update Redux store
-				const userData = await userDataResponse.json();
+							// Update Redux store with properly mapped user data
+							dispatch(loginDoctor({ state: mappedUserData }));
+						}
 
-				if (userData.nic) {
-					userData.gender = determineGenderFromNIC(userData.nic);
-					console.log(
-						`Determined gender from NIC: ${userData.gender}`
-					);
-				}
-
-				// Dispatch action to update Redux store with user data
-				dispatch(loginDoctor({ state: userData }));
-			}
-
-			// Redirect to callback URL
-			router.replace(callbackUrl);
-		} catch (error) {
-			console.error('Login error:', error);
-			setAuthError('An error occurred during login');
-		}
+						// Redirect to callback URL
+						router.replace(callbackUrl);
+					});
+			})
+			.catch((error) => {
+				console.error('Login error:', error);
+				setAuthError(error.message || 'An error occurred during login');
+			})
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}
 
 	return (
@@ -165,6 +154,7 @@ export default function LoginForm() {
 				onSubmit={(e) => {
 					e.preventDefault();
 					const formData = new FormData(e.currentTarget);
+					setIsLoading(true);
 					handleSubmit(formData);
 				}}
 				className="space-y-3"
@@ -173,6 +163,11 @@ export default function LoginForm() {
 					<h1 className="mb-3 text-2xl">
 						Please log in to continue.
 					</h1>
+					{authError && (
+						<div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+							<p>{authError}</p>
+						</div>
+					)}
 					<div className="w-full">
 						<div>
 							<Label
@@ -189,6 +184,7 @@ export default function LoginForm() {
 									name="email"
 									placeholder="Enter your email address"
 									required
+									disabled={isLoading}
 								/>
 								<Mail className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 dark:text-gray-100 peer-focus:text-gray-900 dark:peer-focus:text-gray-200" />
 							</div>
@@ -209,6 +205,7 @@ export default function LoginForm() {
 									placeholder="Enter password"
 									required
 									minLength={6}
+									disabled={isLoading}
 								/>
 								<KeyRound className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 dark:text-gray-100 text-gray-500 peer-focus:text-gray-900 dark:peer-focus:text-gray-200" />
 							</div>
@@ -220,9 +217,15 @@ export default function LoginForm() {
 						value={callbackUrl}
 					/>
 
-					<Button className="my-4 w-full" type="submit">
-						Log in{' '}
-						<ArrowRight className="ml-auto h-5 w-5 text-gray-50 dark:text-gray-950" />
+					<Button
+						className="my-4 w-full"
+						type="submit"
+						disabled={isLoading}
+					>
+						{isLoading ? 'Logging in...' : 'Log in'}
+						{!isLoading && (
+							<ArrowRight className="ml-auto h-5 w-5 text-gray-50 dark:text-gray-950" />
+						)}
 					</Button>
 
 					<CardFooter>

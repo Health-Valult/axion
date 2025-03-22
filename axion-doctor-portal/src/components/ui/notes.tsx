@@ -1,15 +1,17 @@
+/* eslint-disable */
 'use client';
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon, Trash2 } from 'lucide-react';
+import { Files, FileText, Link } from 'lucide-react';
 import {
 	MorphingPopover,
 	MorphingPopoverTrigger,
 	MorphingPopoverContent,
 } from './morph';
 import { motion } from 'framer-motion';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { ArrowLeftIcon } from 'lucide-react';
 import { Button } from '@heroui/react';
 import {
@@ -21,7 +23,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 interface EmptyStateProps {
 	title: string;
@@ -33,7 +34,7 @@ interface EmptyStateProps {
 export function Notes({
 	title,
 	description,
-	icons = [],
+	icons = [FileText, Link, Files],
 	className,
 }: EmptyStateProps) {
 	const uniqueId = useId();

@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +21,7 @@ import {
 	StepperSeparator,
 	StepperTrigger,
 } from './stepper';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
 	Select,
 	SelectContent,

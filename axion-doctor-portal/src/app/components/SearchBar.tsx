@@ -1,21 +1,18 @@
 'use client';
 
 import React from 'react';
-import { Patient } from '../models/Patient';
 import { AsyncSelect } from '@/components/ui/async-select';
 import { Avatar } from '@heroui/react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store/store';
+import { useDispatch } from 'react-redux';
 import { selectPatient } from '../store/patientSlice';
-import { useState, useEffect } from 'react';
-
+import { useState } from 'react';
 import {
 	Dialog,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { determineGenderFromNIC } from '../utils/nicutils';
+import { getTokensFromCookies } from '../utils/auth';
 
 // const patients: Patient[] = [
 // 	{
@@ -345,9 +342,46 @@ import { determineGenderFromNIC } from '../utils/nicutils';
 // 	);
 // };
 
+// const searchPatients = async (query = '') => {
+// 	// Create a new WebSocket connection
+// 	const socket = new WebSocket('ws://your-websocket-endpoint');
+
+// 	// Create a promise that resolves when the WebSocket connection is open
+// 	await new Promise<void>((resolve) => {
+// 		socket.onopen = () => {
+// 			resolve();
+// 		};
+// 	});
+
+// 	// Send the search query to the WebSocket server
+// 	socket.send(JSON.stringify({ query }));
+
+// 	// Create a promise that resolves when the WebSocket server sends a response
+// 	const patients = await new Promise<Patient[]>((resolve) => {
+// 		socket.onmessage = (event) => {
+// 			const data = JSON.parse(event.data);
+// 			resolve(data.patients);
+// 		};
+// 	});
+
+// 	// Close the WebSocket connection
+// 	socket.close();
+
+// 	return patients;
+// };
+
+type PatientProfile = {
+	NIC: string;
+	FirstName: string;
+};
+
 const searchPatients = async (query = '') => {
-	// Create a new WebSocket connection
-	const socket = new WebSocket('ws://your-websocket-endpoint');
+	// Get the session token from the cookie
+	const { sessionToken } = await getTokensFromCookies();
+	// Create a new WebSocket connection with the session token as a parameter
+	const socket = new WebSocket(
+		`wss://axiontestgateway.azure-api.net/patients-search?token=${sessionToken}`
+	);
 
 	// Create a promise that resolves when the WebSocket connection is open
 	await new Promise<void>((resolve) => {
@@ -356,14 +390,14 @@ const searchPatients = async (query = '') => {
 		};
 	});
 
-	// Send the search query to the WebSocket server
-	socket.send(JSON.stringify({ query }));
+	// Send the search query to the WebSocket server in the specified format
+	socket.send(JSON.stringify({ packet: query }));
 
 	// Create a promise that resolves when the WebSocket server sends a response
-	const patients = await new Promise<Patient[]>((resolve) => {
+	const patients = await new Promise<PatientProfile[]>((resolve) => {
 		socket.onmessage = (event) => {
 			const data = JSON.parse(event.data);
-			resolve(data.patients);
+			resolve(data.packet);
 		};
 	});
 
@@ -375,11 +409,12 @@ const searchPatients = async (query = '') => {
 
 const SearchBar = () => {
 	const dispatch = useDispatch();
-	const selectedPatient = useSelector(
-		(state: RootState) => state.patient.state
-	);
+	// const selectedPatient = useSelector(
+	// 	(state: RootState) => state.patient.state
+	// );
 	const [showDialog, setShowDialog] = useState(false);
-	const [randomNumber, setRandomNumber] = useState<number | null>(null);
+	const [selectedPatient, setSelectedPatient] =
+		useState<PatientProfile | null>(null);
 
 	// const handleSelectPatient = (patient: Patient | null) => {
 	// 	if (patient) {
@@ -393,27 +428,25 @@ const SearchBar = () => {
 	// };
 
 	const handleSelectPatient = async (patientId: string | null) => {
+		const { sessionToken } = await getTokensFromCookies();
 		if (patientId) {
 			try {
-				const response = await fetch(`/api/patients/${patientId}`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
+				const response = await fetch(
+					`http://localhost:3000/api/proxy8`,
+					{
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${sessionToken}`,
+						},
+						body: JSON.stringify({ NIC: patientId }),
+					}
+				);
 
 				if (!response.ok) {
 					throw new Error('Failed to fetch patient data');
 				}
 
-				const patient = await response.json();
-				if (patient.nic) {
-					const gender = determineGenderFromNIC(patient.nic);
-					// Enrich the patient data with gender
-					patient.gender = gender;
-				}
-				dispatch(selectPatient({ state: patient }));
-				setRandomNumber(Math.floor(100000 + Math.random() * 900000));
 				setShowDialog(true);
 				setTimeout(() => setShowDialog(false), 5000); // Hide after 5 seconds
 			} catch (error) {
@@ -464,7 +497,7 @@ const SearchBar = () => {
 				}}
 				width="375px"
 			/> */}
-			<AsyncSelect
+			{/* <AsyncSelect
 				fetcher={searchPatients}
 				renderOption={(patient) => (
 					<div className="flex items-center gap-2">
@@ -498,9 +531,45 @@ const SearchBar = () => {
 					handleSelectPatient(patientId || null);
 				}}
 				width="375px"
+			/> */}
+			<AsyncSelect
+				fetcher={searchPatients}
+				renderOption={(patient) => (
+					<div className="flex items-center gap-2">
+						<Avatar
+							isBordered
+							name={patient.FirstName}
+							className="h-7 w-7 rounded-full"
+							src="https://i.pravatar.cc/300?u=a042581f4e29026709d"
+						/>
+						<div className="flex flex-col">
+							<div className="font-medium">{patient.NIC}</div>
+							<div className="text-xs text-muted-foreground">
+								{patient.FirstName}
+							</div>
+						</div>
+					</div>
+				)}
+				getOptionValue={(patient) => patient.NIC}
+				getDisplayValue={(patient) => patient.FirstName}
+				notFound={
+					<div className="py-6 text-center text-sm">
+						No Patients found
+					</div>
+				}
+				label="Patient"
+				placeholder="Search patients..."
+				value={selectedPatient?.NIC || ''}
+				onChange={(patientNIC) => {
+					handleSelectPatient(patientNIC || null);
+				}}
+				//   onInputChange={(value) => {
+				//     searchPatients(value);
+				//   }}
+				width="375px"
 			/>
 			<p className="text-sm text-muted-foreground">
-				Selected Patient ID: {selectedPatient?.id || 'none'}
+				Selected Patient: {selectedPatient?.FirstName || 'none'}
 			</p>
 
 			{/* Dialog */}
@@ -509,12 +578,8 @@ const SearchBar = () => {
 					<DialogHeader>
 						<DialogTitle className="text-center m-3">
 							Axion sent a notification to the patient's phone.
-							Tap the number shown here to sign in.
 						</DialogTitle>
 					</DialogHeader>
-					<div className="text-3xl font-bold text-center border-gray-500 p-8">
-						{randomNumber}
-					</div>
 				</DialogContent>
 			</Dialog>
 		</div>

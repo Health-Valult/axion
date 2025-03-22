@@ -1,4 +1,5 @@
-// middleware.ts (place in the project root)
+/* eslint-disable */
+// middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 

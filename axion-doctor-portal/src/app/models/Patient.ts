@@ -1,25 +1,3 @@
-interface Prescription {
-	id: number;
-	name: string;
-	dateTime: string;
-	indication: Indication;
-	content: string;
-	treatment: string[];
-}
-
-type Indication = 'Diagnosis' | 'Symptoms' | 'Signs';
-
-interface Record {
-	date: string;
-	hospital: {
-		name: string;
-		address: string;
-		tel: string;
-	};
-	record: string;
-	pdf?: Buffer;
-}
-
 interface Physician {
 	name: string;
 	designation: string;

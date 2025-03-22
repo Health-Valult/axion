@@ -1,7 +1,7 @@
+/* eslint-disable */
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import {
 	Avatar,
 	Chip,
@@ -41,7 +41,6 @@ const EditProfilePage: React.FC = () => {
 
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [profileData, setProfileData] = useState({
-		image: 'https://originui.com/avatar-72-01.jpg',
 		fullName: user?.fullName,
 		specialisation: user?.specialisation,
 		yearsOfExperience: user?.yearsOfExperience,
@@ -60,7 +59,6 @@ const EditProfilePage: React.FC = () => {
 	// Destructure user object
 	if (user) {
 		const {
-			image,
 			fullName,
 			specialisation,
 			yearsOfExperience,
@@ -73,7 +71,6 @@ const EditProfilePage: React.FC = () => {
 		} = user;
 
 		setProfileData({
-			image,
 			fullName,
 			specialisation,
 			yearsOfExperience,
@@ -105,7 +102,7 @@ const EditProfilePage: React.FC = () => {
 									>
 										<Avatar
 											className="h-32 w-32 md:h-40 md:w-40 border-4 border-primary/10 shadow-lg"
-											src={image}
+											src="/images/doctor.png"
 										/>
 									</motion.div>
 

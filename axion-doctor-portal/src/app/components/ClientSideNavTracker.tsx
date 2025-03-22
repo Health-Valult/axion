@@ -35,7 +35,7 @@ export function ClientSideNavTracker({
 		<>
 			{showSidebar ? (
 				<Providers>
-					<SideBar children={children} />
+					<SideBar>{children}</SideBar>
 				</Providers>
 			) : (
 				<Providers>{children}</Providers>

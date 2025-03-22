@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CRPChart from './CRPChart';
 
-const mockData = [{ month: 'January', CRP: 15 }];
+// const mockData = [{ month: 'January', CRP: 15 }];
 
 describe('CRPChart', () => {
 	it('renders chart title', () => {
