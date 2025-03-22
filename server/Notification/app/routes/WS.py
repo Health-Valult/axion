@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, WebSocketException
 from app.shared.middleware.authentication import Authenticate_WS
 
 import datetime
@@ -10,9 +10,13 @@ connected_clients:dict = {}
 
 @route.websocket("/",)
 async def websocket_endpoint(websocket: WebSocket,):
-    print("reached")
-    c_uuid,role = await Authenticate_WS(webSocket=websocket)
     await websocket.accept()
+    token = websocket.query_params.get("token")
+    
+    if token is None:
+        raise WebSocketException(code=1008, reason="session token not sent")
+    c_uuid,role = await Authenticate_WS(webSocket=websocket,token=token)
+
 
     connected_clients[c_uuid] = {
         "time":datetime.datetime.now(datetime.timezone.utc),

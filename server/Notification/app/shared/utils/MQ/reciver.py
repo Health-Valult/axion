@@ -50,9 +50,11 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
                     )
                     print(request.returnChannel)
                     redisax.scarletSender(request.returnChannel,body=body)
-                    
+
         except Exception as e:
+
             logger.warning(e)
+            continue
 
 async def RedReciver(host:str,channel:str,executer:Callable):
 
