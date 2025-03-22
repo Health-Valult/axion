@@ -22,21 +22,9 @@ def generate_otp(length=6):
 route = APIRouter()
 connected_clients:dict = {}
 logger = logging.getLogger("uvicorn")
-"""@route.post(path="records/upload/{type}")
-async def upload_report(type:str,report:Annotated[Union[
-        CBCReportTemplate,
-        UFRTemplate,
-        CRPReportTemplate,
-        LFTReportTemplate,
-        FBSReportTemplate,
-        SerumCreatinineReportTemplate,
-        SerumElectrolytesReportTemplate,
-        LipidProfileReportTemplate,
-        HbA1cReportTemplate,
-        ESRReportTemplate,
-        TFTReportTemplate
-        ]]): # type: ignore
-    pass"""
+@route.post(path="records/upload/{type}")
+async def upload_report(type:str,report:BaseReportTemplate):
+    logger.info("qwerty")
 
 @route.post(path="/records/select-patient",dependencies=[Depends(Authenticate)])
 async def verify_doctor(request:Request,pateint:SelectPatient):

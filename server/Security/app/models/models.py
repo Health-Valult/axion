@@ -1,3 +1,4 @@
+import datetime
 from typing_extensions import Annotated
 from pydantic import AfterValidator, BaseModel,EmailStr,Field, constr
 import re
@@ -22,7 +23,7 @@ class User(BaseModel):
     LastName:str
     Email:EmailStr
     Telephone:constr(pattern=r'^\d{10}$') # type: ignore
-    DateOfBirth:int 
+    DateOfBirth:datetime.datetime
     Password:Annotated[str,AfterValidator(PasswordValidator)]
     
 

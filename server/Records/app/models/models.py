@@ -107,6 +107,8 @@ class Medication(BaseModel):
     coding_system:str = "RxNorm"
     code:str
     display:str
+    frequency:str
+    mealTiming:str
     dosage: str
     route: str
     prescriber: str

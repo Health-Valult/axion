@@ -140,7 +140,7 @@ class BaseReportTemplate(BaseModel):
 
 
 class SymptomsAndSigns(BaseModel):
-    #timeStamp:datetime
+    timeStamp:datetime.datetime
     indications:Literal["symptoms","signs"]
     #medications:list[]
 
@@ -153,18 +153,18 @@ class SymptomsAndSigns(BaseModel):
   "diagnosedCondition": "Type 2 Diabetes Mellitus",
   "medicines": [
     {
-      "name": "Metformin",
-      "key": "med005",
+      "display": "Metformin",
+      "code": "med005",
       "frequency": "BID",
       "mealTiming": "PC",
-      "treatmentDuration": {
+      "meta": {
         "start": "2025-03-22",
         "end": None
       }
     },
     {
       "name": "Glimepiride",
-      "key": "med006",
+      "code": "med006",
       "frequency": "OD",
       "mealTiming": "AC",
       "treatmentDuration": {
