@@ -85,7 +85,9 @@ const Auth: React.FC = () => {
         if (!loginFormData.password.trim()) {
             errors.password = "Password is required.";
         } else if (loginFormData.password.length < 8) {
-            errors.password = "Password must be at least 8 characters long including 2 capital letters and a special character.";
+            errors.password = "Password must be at least 8 characters long.";
+        } else if (!/^(?=.*[A-Z].*[A-Z])(?=.*\d)(?=.*[@_&#]).+$/.test(loginFormData.password)) {
+            errors.password = "Password must contain at least 2 capital letters, 3 numbers, and a special character";
         }
 
         return errors;
@@ -112,7 +114,9 @@ const Auth: React.FC = () => {
         if (!formData.password.trim()) {
             errors.password = "Password is required.";
         } else if (formData.password.length < 8) {
-            errors.password = "Password must be at least 8 characters long including 2 capital letters and a special character.";
+            errors.password = "Password must be at least 8 characters long.";
+        } else if (!/^(?=.*[A-Z].*[A-Z])(?=.*\d)(?=.*[@_&#]).+$/.test(formData.password)) {
+            errors.password = "Password must contain at least 2 capital letters, 3 numbers, and a special character";
         }
 
         return errors;
@@ -174,7 +178,7 @@ const Auth: React.FC = () => {
                 // setSignUpStep((prev) => Math.min(prev + 1, 3)); // Move to Step 3
                 try {
                     // Send the POST request with the appropriate data
-                    const response = await fetch('https://axiontestgateway.azure-api.net/axion/auth/send/otp', {
+                    const response = await fetch('api/send-otp', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -329,13 +333,14 @@ const Auth: React.FC = () => {
                                 className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
                                 onClick={async () => {
                                     try {
-                                        const response = await fetch("https://axiontestgateway.azure-api.net/axion/auth/verify/otp", {
+                                        const response = await fetch("api/verify-otp", {
                                             method: "POST",
                                             headers: {
                                                 "Content-Type": "application/json",
                                             },
                                             body: JSON.stringify({ tempID: sessionStorage.getItem('uuid'), otp: value }),
                                         });
+                                        console.log(value)
 
                                         // Handle the response
                                         if (response.ok) {
@@ -363,7 +368,7 @@ const Auth: React.FC = () => {
                                 onClick={async () => {
                                     if (resendCooldown > 0) return; // Prevent spamming
 
-                                    await fetch("https://axiontestgateway.azure-api.net/axion/auth/send/otp", {
+                                    await fetch("api/send-otp", {
                                         method: "POST",
                                         headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({ tempID: sessionStorage.getItem('uuid'), type: "email", data: formData.email }),
@@ -484,16 +489,8 @@ const Auth: React.FC = () => {
 };
 
 const registerUser = async (formData: FormData) => {
-    const formattedDateOfBirth = (date: string) => {
-        const parsedDate = new Date(date);
-        const day = parsedDate.getDate().toString().padStart(2, '0');
-        const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
-        const year = parsedDate.getFullYear();
-        return `${day}${month}${year}`; // Return as DDMMYYYY
-    };
-
     try {
-        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/signup/patient`, {
+        const response = await fetch(`api/signup`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -505,7 +502,7 @@ const registerUser = async (formData: FormData) => {
                     "LastName": formData.lastName,
                     "Email": formData.email,
                     "Telephone": formData.mobileNumber,
-                    "DateOfBirth":formattedDateOfBirth(formData.dateOfBirth) ,
+                    "DateOfBirth": new Date(formData.dateOfBirth).toISOString(),
                     "Password": formData.password
                 }
             ),
@@ -532,7 +529,7 @@ const loginUser = async (email: string, password: string) => {
     const { latitude, longitude, ipAddress } = getLocationData();
 
     try {
-        const response = await fetch(`https://axiontestgateway.azure-api.net/axion/auth/login/patient`, {
+        const response = await fetch(`api/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
