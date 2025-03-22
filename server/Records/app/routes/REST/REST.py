@@ -33,7 +33,7 @@ LIONC_collection = Terminology_DB.get_collection("LIONC")
 
 
 async def observate(patientID:str,key:str,value:str):
-    res = LIONC_collection.findOne({"COMPONENT": { "$regex": f"^{key}", "$options": "i" }})
+    res = LIONC_collection.find_one({"COMPONENT": { "$regex": f"^{key}", "$options": "i" }})
     logger.warning(res)
     """ obs = ObservationModel(
         patientID=patientID,
