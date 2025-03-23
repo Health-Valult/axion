@@ -43,7 +43,7 @@ async def get_patient_details(request:Request,credentials:SelectPatient):
     if not response:
         return JSONResponse(status_code=401,content={"details":"patient not found"})
     
-    return JSONResponse(status_code=200,content=dict(response))
+    return JSONResponse(status_code=200,content=response)
 
 @route.get(path="/records/doctor/recent-patients",dependencies=[Depends(Authenticate)])
 async def get_recent_patients(request:Request):
