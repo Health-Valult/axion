@@ -151,6 +151,7 @@ class Precription(BaseModel):
     resourceType:str = Field("precription",frozen=True)
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     patientID:str
+    doctorName:str
     doctorID:str
     diagnosedCondition: Optional[str] = None  # optional 
     timeStamp:datetime

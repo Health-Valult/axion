@@ -39,11 +39,14 @@ async def get_patient_details(request:Request,credentials:SelectPatient):
     NIC = credentials.NIC
     PatientsCollection:Collection = request.app.state.PatientsCollection
 
-    response = PatientsCollection.find_one({"NIC":NIC},{"_id":1,"NIC":1,"FirstName":1,"LastName":1,"Telephone":1,"Email":1})
-    if not response:
+    data = PatientsCollection.find_one({"NIC":NIC},{"_id":1,"NIC":1,"FirstName":1,"LastName":1,"Telephone":1,"Email":1})
+    if not data:
         return JSONResponse(status_code=401,content={"details":"patient not found"})
-    
-    return JSONResponse(status_code=200,content=jsonable_encoder(response))
+    logger.warning(data)
+    return JSONResponse(status_code=200,content=jsonable_encoder(data))
+
+
+
 
 @route.get(path="/records/doctor/recent-patients",dependencies=[Depends(Authenticate)])
 async def get_recent_patients(request:Request):
@@ -276,6 +279,7 @@ async def add_prescriptions(request:Request,prescriptionData:SymptomsSignsDiagno
         return JSONResponse(status_code=403,content={"Details":"patient not available"})
     prescription = Precription(
         doctorID=c_uuid,
+        doctorName=prescriptionData.doctorName,
         patientID=patient,
         indications=prescriptionData.indications,
         diagnosedConditions=getattr(prescriptionData, "diagnosedCondition", None),
