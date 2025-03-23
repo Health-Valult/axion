@@ -274,9 +274,10 @@ async def add_prescriptions(request:Request,prescriptionData:SymptomsSignsDiagno
     cache:redis_AX = request.app.state.Cache
     try:
         patient = get_patient(uuid=c_uuid,CACHE=cache)
-        
+        logger.warning(patient)
     except Exception as e:
         return JSONResponse(status_code=403,content={"Details":"patient not available"})
+    
     prescription = Precription(
         doctorID=c_uuid,
         doctorName=prescriptionData.doctorName,
