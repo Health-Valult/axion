@@ -163,3 +163,4 @@ class Notes(BaseModel):
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     doctorID:str
     note:str
+
