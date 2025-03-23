@@ -49,7 +49,7 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
     patientID = credentials.get("UserID")
     
     
-    for val, value in report.model_fields.items():
+    for val, value in report.results.model_fields.items():
         logger.error(val)
         logger.warning(value)
 
