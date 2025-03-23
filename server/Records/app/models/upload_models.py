@@ -157,15 +157,16 @@ class SymptomsAndSigns(BaseModel):
     medications:list[
         MedicationUploadModel
     ]
-
+    note:str
 class Diagnosis(BaseModel):
     timeStamp:datetime
     indications:str = "diagnosis"
     doctorName:str
+    doctorID:str
     medications:list[
         MedicationUploadModel
     ]
-
+    note:str
 
 
 
