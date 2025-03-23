@@ -21,6 +21,7 @@ import ProtectedClientComponent from '../components/ProtectedClientComponent';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { getTokensFromCookies } from '../utils/auth';
+import { toast } from 'sonner';
 
 const Prescriptions: React.FC = () => {
 	const user = useSelector((state: RootState) => state.user);
@@ -316,6 +317,7 @@ const Prescriptions: React.FC = () => {
 			setDiagnosedCondition('');
 		} catch (error) {
 			console.error('Error submitting prescription:', error);
+			toast("Couldn't submit prescription. Please try again.");
 		}
 	};
 
@@ -363,16 +365,16 @@ const Prescriptions: React.FC = () => {
 
 							if (selectedIndications.includes('diagnosis')) {
 								// Use the original formatting for diagnosis
-								requestBody = formattedMedicines.map((med) => ({
-									...med,
-									meta: {
-										...med.meta,
-										diagnosis: diagnosedCondition,
-										prescribedDate:
-											selectedDate?.toISOString() ||
-											new Date().toISOString(),
-									},
-								}));
+								requestBody = {
+									timeStamp:
+										selectedDate?.toISOString() ||
+										new Date().toISOString(),
+									indications: 'diagnosis',
+									doctorName: user?.state?.fullName,
+									note: formData.notes,
+									diagnosedCondition: diagnosedCondition,
+									medications: formattedMedicines,
+								};
 							} else {
 								// Use the SymptomsAndSigns model
 								requestBody = {
@@ -383,6 +385,8 @@ const Prescriptions: React.FC = () => {
 										selectedIndications.length > 0
 											? selectedIndications[0]
 											: 'symptoms', // Default to symptoms if none selected
+									doctorName: user?.state?.fullName,
+									note: formData.notes,
 									medications: formattedMedicines,
 								};
 							}
@@ -393,7 +397,12 @@ const Prescriptions: React.FC = () => {
 							);
 
 							// Convert to JSON before sending to API
-							postPrescription(JSON.stringify(requestBody));
+							postPrescription(JSON.stringify(requestBody)).then(
+								() => {
+									// Reset form after successful submission
+									formData.notes = '';
+								}
+							);
 						}}
 					>
 						<img

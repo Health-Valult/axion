@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Input } from '@heroui/react';
+import { DatePicker, Input, InputOtp } from '@heroui/react';
 import { DateInput } from '@heroui/react';
 import { Listbox, ListboxItem } from '@heroui/react';
 import { Chip } from '@heroui/react';
@@ -52,9 +52,9 @@ export const DoctorsNote = ({
 			/>
 
 			<div className="w-full max-w-xl flex flex-row gap-4">
-				<DateInput
-					hideTimeZone
-					defaultValue={parseZonedDateTime(dateTime)}
+				<Input
+					isReadOnly
+					value={dateTime}
 					label="Prescribed Time"
 					className="mb-2"
 				/>

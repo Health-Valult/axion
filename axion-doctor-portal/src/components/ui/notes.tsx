@@ -11,7 +11,7 @@ import {
 	MorphingPopoverContent,
 } from './morph';
 import { motion } from 'framer-motion';
-import { useId, useState } from 'react';
+import { useId, useState, useEffect } from 'react';
 import { ArrowLeftIcon } from 'lucide-react';
 import { Button } from '@heroui/react';
 import {
@@ -40,8 +40,63 @@ export function Notes({
 	const uniqueId = useId();
 	const [note, setNote] = useState('');
 	const [isOpen, setIsOpen] = useState(false);
-
 	const [notesList, setNotesList] = useState<string[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+
+	const notesApiUrl =
+		'https://axiontestgateway.azure-api.net/records/records/notes';
+
+	// Fetch notes when component loads
+	useEffect(() => {
+		fetchNotes();
+	}, []);
+
+	// Function to fetch notes from API
+	const fetchNotes = async () => {
+		setIsLoading(true);
+		try {
+			const response = await fetch(notesApiUrl);
+			if (!response.ok) {
+				throw new Error('Failed to fetch notes');
+			}
+			const data = await response.json();
+			// Assuming the API returns an array of notes or an object with a notes array
+			if (Array.isArray(data)) {
+				setNotesList(data);
+			} else if (data.notes && Array.isArray(data.notes)) {
+				setNotesList(data.notes);
+			}
+		} catch (error) {
+			console.error('Error fetching notes:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	// Function to add a note via API
+	const addNote = async (noteContent: string) => {
+		setIsLoading(true);
+		try {
+			const response = await fetch(notesApiUrl, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ note: noteContent }),
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to add note');
+			}
+
+			// After successfully adding the note, fetch the updated list
+			fetchNotes();
+		} catch (error) {
+			console.error('Error adding note:', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const closeMenu = () => {
 		setNote('');
@@ -50,68 +105,21 @@ export function Notes({
 
 	const handleSubmit = (newNote: string) => {
 		if (newNote.trim() !== '') {
+			// Optimistically update the UI
 			setNotesList((prevNotesList) => [...prevNotesList, newNote]);
-			console.log(newNote);
+
+			// Send the note to the API
+			addNote(newNote);
 		}
 	};
 
 	const handleDelete = (indexToDelete: number): void => {
+		// Implement delete functionality if API supports it
+		// For now, just update the local state
 		setNotesList((prevNotesList) =>
 			prevNotesList.filter((_, index) => index !== indexToDelete)
 		);
 	};
-
-	const notesApiUrl = '/api/notes';
-
-	// useEffect(() => {
-	// 	const fetchInitialNotes = async () => {
-	// 		try {
-	// 			const response = await fetch(notesApiUrl);
-	// 			if (!response.ok) {
-	// 				throw new Error(`HTTP error! status: ${response.status}`);
-	// 			}
-	// 			const data = await response.json();
-	// 			if (Array.isArray(data)) {
-	// 				setNotesList(data); // Assuming API returns an array of notes
-	// 			} else {
-	// 				toast('Error', {
-	// 					description: 'API response is not an array.',
-	// 				});
-	// 			}
-	// 		} catch (error) {
-	// 			toast('Error', {
-	// 				description: 'There was a problem fetching your notes.',
-	// 			});
-	// 		}
-	// 	};
-
-	// 	fetchInitialNotes();
-	// }, []); // Empty dependency array to run only once on mount
-
-	// Save notes to API on notesList changes
-	// useEffect(() => {
-	// 	const saveNotes = async () => {
-	// 		try {
-	// 			const response = await fetch(notesApiUrl, {
-	// 				method: 'POST',
-	// 				headers: {
-	// 					'Content-Type': 'application/json',
-	// 				},
-	// 				body: JSON.stringify(notesList), // Send the updated notesList
-	// 			});
-	// 			if (!response.ok) {
-	// 				throw new Error(`HTTP error! status: ${response.status}`);
-	// 			}
-	// 			console.log('Notes saved successfully to API');
-	// 		} catch (error) {
-	// 			toast('Error', {
-	// 				description: 'There was a problem connecting to database.',
-	// 			});
-	// 		}
-	// 	};
-
-	// 	saveNotes();
-	// }, [notesList]); // Dependency array containing notesList - effect runs when notesList changes
 
 	let gridColumnsClass = 'grid-cols-1'; // Default to single column
 	if (notesList.length > 3 && notesList.length <= 6) {
@@ -129,7 +137,11 @@ export function Notes({
 				className
 			)}
 		>
-			{notesList.length == 0 ? (
+			{isLoading ? (
+				<p className="text-sm text-muted-foreground">
+					Loading notes...
+				</p>
+			) : notesList.length == 0 ? (
 				<>
 					<div className="flex justify-center isolate">
 						{icons.length === 3 ? (
@@ -174,11 +186,8 @@ export function Notes({
 				<div
 					className={`grid gap-4 ${gridColumnsClass} justify-center justify-items-center isolate`}
 				>
-					{/* <div className="flex justify-center flex-col items-center isolate"> */}
 					{notesList.map((noteItem, index) => (
 						<div key={index} className="mb-2 w-full max-w-[300px]">
-							{' '}
-							{/* Added key and styling for notes */}
 							<Dialog>
 								<DialogTrigger asChild>
 									<Button
@@ -192,7 +201,6 @@ export function Notes({
 									<DialogHeader>
 										<DialogTitle hidden>Note</DialogTitle>
 									</DialogHeader>
-									{/* Ensure vertical scrolling without horizontal overflow */}
 									<div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200 overflow-x-hidden max-h-[300px]">
 										<DialogDescription className="text-black dark:text-white font-semibold text-md whitespace-pre-wrap break-words">
 											{noteItem}
@@ -211,7 +219,6 @@ export function Notes({
 							</Dialog>
 						</div>
 					))}
-					{/* </div> */}
 				</div>
 			)}
 			<MorphingPopover
@@ -238,6 +245,7 @@ export function Notes({
 							onSubmit={(e) => {
 								e.preventDefault();
 								handleSubmit(note);
+								closeMenu();
 							}}
 						>
 							<motion.span
@@ -254,6 +262,7 @@ export function Notes({
 								className="h-full w-full resize-none rounded-md bg-transparent px-4 py-3 text-sm outline-none"
 								autoFocus
 								onChange={(e) => setNote(e.target.value)}
+								value={note}
 							/>
 							<div
 								key="close"
@@ -274,11 +283,9 @@ export function Notes({
 									className="relative ml-1 flex h-8 shrink-0 scale-100 appearance-none items-center justify-center rounded-lg border border-zinc-950/10 bg-transparent px-2 text-sm text-zinc-500 transition-colors select-none hover:bg-zinc-100 hover:text-zinc-800 focus-visible:ring-2 active:scale-[0.98] dark:border-zinc-50/10 dark:text-zinc-50 dark:hover:bg-zinc-800"
 									type="submit"
 									aria-label="Submit note"
-									onClick={() => {
-										closeMenu();
-									}}
+									disabled={isLoading}
 								>
-									Submit
+									{isLoading ? 'Submitting...' : 'Submit'}
 								</button>
 							</div>
 						</form>

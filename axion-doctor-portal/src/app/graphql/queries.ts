@@ -1,9 +1,16 @@
 import { gql } from '@apollo/client';
 
-// ESR - LOINC code: 30341-2 (Erythrocyte sedimentation rate)
-export const GET_ESR_OBSERVATIONS = gql`
-	query ObservationGraph {
-		observationGraph(code: "30341-2") {
+export const GET_ESR = gql`
+	query GetESR {
+		westergren: observationGraph(code: "30341-2") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		wintrobe: observationGraph(code: "17809-9") {
 			Observations {
 				display
 				unit
@@ -434,6 +441,172 @@ export const GET_URINALYSIS_PROFILE = gql`
 				unit
 				value
 				timestamp
+			}
+		}
+	}
+`;
+
+export const GET_LIVER_FUNCTION_PROFILE = gql`
+	query GetLiverFunctionProfile {
+		totalProtein: observationGraph(code: "2885-2") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		albumin: observationGraph(code: "1751-7") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		globulin: observationGraph(code: "2336-6") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		agRatio: observationGraph(code: "1759-0") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		bilirubin: observationGraph(code: "1975-2") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		alkalinePhosphatase: observationGraph(code: "6768-6") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		alt: observationGraph(code: "1742-6") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		ast: observationGraph(code: "1920-8") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+	}
+`;
+
+export const GET_BLOOD_PRESSURE = gql`
+	query GetBloodPressure {
+		systolic: observationGraph(code: "8480-6") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+		diastolic: observationGraph(code: "8462-4") {
+			Observations {
+				display
+				unit
+				value
+				timestamp
+			}
+		}
+	}
+`;
+
+export const GET_LABS = gql`
+	query Labs {
+		Labs {
+			labs {
+				id
+				patientID
+				display
+				timestamp
+				meta
+			}
+		}
+	}
+`;
+
+export const GET_OBSERVATIONS = gql`
+	query ObservationStack($LabID: String!) {
+		observationStack(LabID: $LabID) {
+			Observations {
+				id
+				patientID
+				labID
+				code
+				display
+				unit
+				value
+				timestamp
+				meta
+			}
+		}
+	}
+`;
+
+export const GET_MEDICATIONS = gql`
+	query Medications {
+		medications {
+			medications {
+				display
+				dosage
+				route
+				meta
+			}
+		}
+	}
+`;
+
+export const GET_ALLERGIES = gql`
+	query Allergies {
+		allergys {
+			allergyIntolerances {
+				criticality
+				severity
+				category
+				active
+				source
+				verificationStatus
+				meta
+			}
+		}
+	}
+`;
+
+export const GET_IMMUNIZATIONS = gql`
+	query Immunizations {
+		immunization {
+			immunizations {
+				display
+				dosage
+				unit
+				site
+				timestamp
+				meta
 			}
 		}
 	}

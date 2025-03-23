@@ -37,8 +37,8 @@ import { Button } from '@/components/ui/button';
 import { ChartConfig, ChartContainer } from '@/components/ui/chart';
 
 interface resultsProps {
-	date: string;
-	testResults: {
+	date?: string;
+	testResults?: {
 		parameter: string;
 		result: string;
 		normalRange: string;
@@ -74,7 +74,29 @@ const isWithinNormal = (test: LiverTestResult): boolean => {
 	return false;
 };
 
-const LiverFunctionChart: React.FC<resultsProps> = ({ date, testResults }) => {
+const LiverFunctionChart: React.FC<resultsProps> = ({
+	date = '',
+	testResults = [],
+}) => {
+	// Handle case where testResults is undefined or empty
+	if (!testResults || testResults.length === 0) {
+		return (
+			<Card className="flex flex-col shadow-none border-gray-300 dark:border-gray-700">
+				<CardHeader className="items-center pb-0">
+					<CardTitle>Liver Function Overview</CardTitle>
+					<CardDescription>
+						{date ? `Test taken ${date}` : 'No test date available'}
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="flex-1 flex flex-col items-center justify-center h-60">
+					<p className="text-muted-foreground">
+						No liver function test results available
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	// Calculate Overall Liver Health Score (Percentage of Normal Markers)
 	const totalParameters = testResults.length;
 	const normalCount = testResults.filter((test) =>
@@ -188,8 +210,7 @@ const LiverFunctionChart: React.FC<resultsProps> = ({ date, testResults }) => {
 									<div className="px-6 py-4">
 										<Table>
 											<TableCaption>
-												Liver Functionality as at
-												{date}
+												Liver Functionality as at {date}
 											</TableCaption>
 											<TableHeader>
 												<TableRow>
@@ -247,7 +268,15 @@ const LiverFunctionChart: React.FC<resultsProps> = ({ date, testResults }) => {
 														Overall Condition
 													</TableCell>
 													<TableCell className="text-right text-green-600">
-														Good.
+														{liverHealthScore >= 90
+															? 'Excellent'
+															: liverHealthScore >=
+															  75
+															? 'Good'
+															: liverHealthScore >=
+															  60
+															? 'Fair'
+															: 'Concerning'}
 													</TableCell>
 												</TableRow>
 											</TableFooter>

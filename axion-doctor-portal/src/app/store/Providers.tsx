@@ -2,7 +2,8 @@
 import { ApolloProvider } from '@apollo/client';
 import { Provider } from 'react-redux';
 // import { usePathname, useRouter } from 'next/navigation';
-import { store } from './store';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from '@/app/store/store';
 import client from '@/lib/apolloClient';
 import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 
@@ -12,7 +13,11 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
 	useTokenRefresh();
 	return (
 		<ApolloProvider client={client}>
-			<Provider store={store}>{children}</Provider>
+			<Provider store={store}>
+				<PersistGate loading={null} persistor={persistor}>
+					{children}
+				</PersistGate>
+			</Provider>
 		</ApolloProvider>
 	);
 };

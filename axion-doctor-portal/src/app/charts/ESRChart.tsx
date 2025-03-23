@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/chart';
 
 interface chartProps {
-	chartData: { date: string; wintrobe: number; westergren: number }[];
+	chartData?: { date: string; wintrobe: number; westergren: number }[];
 }
 
 const chartConfig = {
@@ -35,6 +35,23 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 const ESRChart: React.FC<chartProps> = ({ chartData }) => {
+	// Check if chartData is undefined or empty
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Erythrocyte Sedimentation Rate Chart</CardTitle>
+					<CardDescription>mm for 1st hour</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-40">
+					<p className="text-muted-foreground">
+						No ESR data available
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card>
 			<CardHeader>

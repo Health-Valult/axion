@@ -30,7 +30,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface ChartProps {
-	chartData: {
+	chartData?: {
 		month: string;
 		systolic: number;
 		diastolic: number;
@@ -74,8 +74,26 @@ const getBloodPressureStatus = (systolic: number, diastolic: number) => {
 };
 
 const BloodPressureChart: React.FC<ChartProps> = ({ chartData }) => {
+	// Handle undefined or empty chartData
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card className="shadow-none border-gray-300 dark:border-gray-700">
+				<CardHeader>
+					<CardTitle>Blood Pressure Chart (mmHg)</CardTitle>
+					<CardDescription>No data available</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-40">
+					<p className="text-muted-foreground">
+						No blood pressure data available
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	const latest = chartData[chartData.length - 1];
 	const status = getBloodPressureStatus(latest.systolic, latest.diastolic);
+
 	return (
 		<Card className="shadow-none border-gray-300 dark:border-gray-700">
 			<CardHeader>

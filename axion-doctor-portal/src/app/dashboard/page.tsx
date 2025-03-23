@@ -15,6 +15,9 @@ import { useFBGData } from '../graphql/FastingBloodSugar';
 import { useElectrolytesData } from '../graphql/Electrolytes';
 import { useCRPData } from '../graphql/CReactiveProtein';
 import { useUrinalysisData } from '../graphql/UrineAnalysis';
+import { useBloodPressureData } from '../graphql/BloodPressure';
+import { useESRData } from '../graphql/ESR';
+import { useLiverFunctionData } from '../graphql/LiverFunction';
 
 const HematologyTrendsChart = dynamic(
 	() => import('../charts/HematologyTrendChart'),
@@ -396,15 +399,8 @@ const Dashboard: React.FC = () => {
 		<div className="grid sm:grid-cols-1 md:grid-cols-2 h-full w-full overflow-y-auto gap-3 mt-2 mb-5">
 			<div className="col-span-1 grid sm:grid-cols-1 md:grid-cols-2 gap-3">
 				<div className="col-span-1 flex flex-col gap-3">
-					{/* {patient && (
-						<Summary
-							name={patient.firstName + patient.lastName}
-							age={age}
-							gender={patient.gender}
-							patientData={patient.summary}
-						/>
-					)} */}
-					<ESRChart
+					<Summary />
+					{/* <ESRChart
 						chartData={[
 							{ date: '2024-07-08', wintrobe: 6, westergren: 10 },
 							{ date: '2024-08-16', wintrobe: 8, westergren: 12 },
@@ -421,7 +417,8 @@ const Dashboard: React.FC = () => {
 							},
 							{ date: '2024-02-02', wintrobe: 7, westergren: 11 },
 						]}
-					/>
+					/> */}
+					<ESRChart chartData={useESRData().data} />
 				</div>
 
 				<div className="col-span-1 flex flex-col gap-3">
@@ -688,14 +685,7 @@ const Dashboard: React.FC = () => {
 					/> */}
 					<FastingBloodGlucoseChart chartData={useFBGData().data} />
 					<BloodPressureChart
-						chartData={[
-							{ month: 'January', systolic: 120, diastolic: 80 },
-							{ month: 'February', systolic: 125, diastolic: 82 },
-							{ month: 'March', systolic: 130, diastolic: 85 },
-							{ month: 'April', systolic: 135, diastolic: 88 },
-							{ month: 'May', systolic: 140, diastolic: 90 },
-							{ month: 'June', systolic: 145, diastolic: 95 },
-						]}
+						chartData={useBloodPressureData().data}
 					/>
 					{/* <KidneyChart
 						date="2024-12-18"
@@ -776,7 +766,7 @@ const Dashboard: React.FC = () => {
 						date={useUrinalysisData().data?.date ?? 'No Date'}
 						testResults={useUrinalysisData().data?.testResults}
 					/>
-					<LiverFunctionTest
+					{/* <LiverFunctionTest
 						date="2024-09-07"
 						testResults={[
 							{
@@ -820,6 +810,10 @@ const Dashboard: React.FC = () => {
 								normalRange: '0 - 35 U/L',
 							},
 						]}
+					/> */}
+					<LiverFunctionTest
+						date={useLiverFunctionData().data?.date}
+						testResults={useLiverFunctionData().data?.testResults}
 					/>
 				</div>
 			</div>

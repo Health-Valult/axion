@@ -380,7 +380,7 @@ const searchPatients = async (query = '') => {
 	const { sessionToken } = await getTokensFromCookies();
 	// Create a new WebSocket connection with the session token as a parameter
 	const socket = new WebSocket(
-		`wss://axiontestgateway.azure-api.net/patients-search?token=${sessionToken}`
+		`wss://axiontestgateway.azure-api.net/patients-search?token=Bearer ${sessionToken}`
 	);
 
 	// Create a promise that resolves when the WebSocket connection is open

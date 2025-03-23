@@ -6,7 +6,6 @@ interface Physician {
 
 export interface DiagnosedAilment {
 	disease: string;
-	currentMedication: string;
 	progression: { date: string; doctor: Physician; update: string }[];
 }
 
