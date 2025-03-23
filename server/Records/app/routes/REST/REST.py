@@ -192,7 +192,7 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
             meta=meds.meta
         )
         document = medication.model_dump()
-        PrescriptionsCollection.insert_one(document=document)
+        Medicationscollection.insert_one(document=document)
         logger.warning(medication)
 
     logger.warning(prescription)
