@@ -6,7 +6,8 @@ from fastapi.encoders import jsonable_encoder
 from pymongo.collection import Collection
 
 
-endpoints = {"doctor" : {
+endpoints = {
+"doctor" : {
     "_id":0,
     "FullName":1,
     "NIC":1,
@@ -28,7 +29,30 @@ endpoints = {"doctor" : {
     "Email":1,
     "Telephone":1,
     "DateOfBirth":1
-}}
+},
+
+"hospital": {
+    "_id": 0,
+    "FullName": 1,
+    "DateOfBirth": 1,
+    "Gender": 1,
+    "NIC": 1,
+    "ContactNumber": 1,
+    "Email": 1,
+    "Address": 1,
+    "City": 1,
+    "PostalCode": 1,
+    "HospitalName": 1,
+    "PhoneNumber": 1,
+    "WorkLocation": 1,
+    "Department": 1,
+    "MedicalRegistrationNumber": 1,
+    "YearsOfExperience": 1,
+    "ShiftType": 1
+}
+}
+
+
 
 def _get_profile(collection:Collection,c_uuid:UUID,endpoint:Literal["patient","doctor","hospital"]):
     currunt = collection.find_one({"UserID":c_uuid}, endpoints.get(endpoint))
