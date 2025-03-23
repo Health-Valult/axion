@@ -28,12 +28,13 @@ async def get_notifications(request:Request):
     now_ = datetime.now(tz=timezone.utc)
     cutOff = now_-timedelta(days=90)
     nofications = collection.find(
-            {"$match":{"user_id":c_uuid,"timestamp":{"$gte": now_, "$lte": cutOff}}}
+            {"user_id":c_uuid}
     )
 
     response = list(nofications)
 
     return JSONResponse(content={"notifications":response})
+
 
 
 
