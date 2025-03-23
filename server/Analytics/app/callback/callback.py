@@ -10,16 +10,33 @@ functions = {
     
 }
 
-async def callback(message:AbstractIncomingMessage) -> None:
-    msg = loads(message.body)
-    print(msg["request"]["task"])
-    runner = functions[msg["request"]["task"]]
+
+class Body(BaseModel):
+    task:str
+    body:dict
+
+
+class RedRequest(BaseModel):
+    sender:str
+    reciver:str
+    id:str
+    body:Body
+
+class RedResponse(BaseModel):
+    sender:str
+    reciver:str
+    id:str
+    body:Body
+
+
+async def callback_security(request:RedRequest) -> None:
+
+
+    runner = functions.get(request.body.task)
     if callable(runner):
         try:
-            result = await runner(msg["request"]["body"])
-
-            print(result)
-            
+            result = runner(request.body.body)
+            return result
+  
         except Exception as e:
-            print(e)
-            
+            return {}

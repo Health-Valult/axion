@@ -9,6 +9,7 @@ import uvicorn
 from app.utils.reciever import recieveMQ
 from app.shared.utils.MQ.reciver import RedReciver
 from app.shared.utils.Cache.redis import redis_AX
+from app.callback.callback import callback_security
 
 # setting up logger
 logger = logging.getLogger("uvicorn")
@@ -23,7 +24,7 @@ if not AZURE_DATABASE_URL:
 @asynccontextmanager
 async def lifespan(app:FastAPI):
 
-    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'security',))
+    app.state.consumer_task = asyncio.create_task(RedReciver("redis://cache",'analytics',callback_security))
     
     # database connection startup
     logger.info("connecting to DB 🍃...")
@@ -35,7 +36,7 @@ async def lifespan(app:FastAPI):
     
     # cache connection startup
     logger.info("connecting to cache 📚...")
-    app.state.Cache = redis_AX("redis://cache",10,service="security").connect()
+    app.state.Cache = redis_AX("redis://cache",10,service="analytics").connect()
 
     # loading refresh token
     with open('./app/data/keys/refresh_private.pem', 'r') as file:
