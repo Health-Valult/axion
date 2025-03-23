@@ -5,18 +5,18 @@ import strawberry
 
 @strawberry.type
 class Prescriber:
-    display: Optional[str]
-    id:Optional[str]
+    display: Optional[str] = None
+    id:Optional[str] = None
 
 @strawberry.type
 class Medication:
-    patientID: Optional[str]
-    code: Optional[str]
-    display: Optional[str]
-    dosage: Optional[str]
-    route: Optional[str]
-    prescriber: Optional[str]
-    meta: Optional[Json_type]  # type: ignore
+    patientID: Optional[str] = None
+    code: Optional[str] = None
+    display: Optional[str] = None
+    dosage: Optional[str] = None
+    route: Optional[str] = None
+    prescriber: Optional[str] = None
+    meta: Optional[Json_type] = None  # type: ignore
 
 
 @strawberry.type

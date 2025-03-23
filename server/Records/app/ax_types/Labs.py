@@ -6,11 +6,12 @@ import strawberry
 
 @strawberry.type
 class Lab:
-    id:Optional[str]
-    patientID:Optional[str]
-    display:Optional[str]
-    timestamp:Optional[str]
-    meta:Optional[Json_type] # type: ignore
+    id:Optional[str] = None
+    patientID:Optional[str] = None
+    display:Optional[str] = None
+    code:Optional[str]  = None
+    timestamp:Optional[str] = None
+    meta:Optional[Json_type] = None # type: ignore
 
 @strawberry.type
 class LabStack:

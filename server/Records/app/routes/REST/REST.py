@@ -31,7 +31,7 @@ DBClient = pymongo.MongoClient(URL)
 Terminology_DB = DBClient.get_database("terminology_db")
 LIONC_collection = Terminology_DB.get_collection("LIONC")
 
-@route.get(path="/records/get-patient-details",dependencies=[Depends(Authenticate)])
+@route.post(path="/records/get-patient-details",dependencies=[Depends(Authenticate)])
 async def get_patient_details(request:Request,credentials:SelectPatient):
     c_uuid = request.state.meta.get("uuid")
     NIC = credentials.NIC
