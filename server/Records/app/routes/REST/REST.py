@@ -31,15 +31,6 @@ LIONC_collection = Terminology_DB.get_collection("LIONC")
 
 
 
-async def observate(patientID:str,key:str,value:str):
-    
-    logger.warning(key)
-    logger.warning(res)
-    """ obs = ObservationModel(
-        patientID=patientID,
-        value=value
-    )"""
-
 
 @route.post(path="/records/upload/{type}")
 async def upload_report(request:Request,type:str,report:BaseReportTemplate):
@@ -51,8 +42,6 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
     NIC = report.mata.patientNIC
 
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
-
-    
 
     patientID = "2cd9916f-67e2-5ea1-9971-7a488239c83f" #credentials.get("UserID")
     
@@ -210,6 +199,7 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
         doctorID=c_uuid,
         patientID=patient,
         indications=prescriptionData.indications,
+        diagnosedConditions=getattr(prescriptionData, "diagnosedCondition", None),
         timeStamp=prescriptionData.timeStamp,
         notes=prescriptionData.note
     )

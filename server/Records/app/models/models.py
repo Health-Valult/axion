@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel,Field
 from datetime import datetime
 import uuid
@@ -139,7 +139,7 @@ class Procedure(BaseModel):
 class Diagnosis(BaseModel):
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     patientID:str
-
+    diagnosedCondition:str
     doctorID:str
     name:str
     timestamp:str
@@ -152,6 +152,7 @@ class Precription(BaseModel):
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     patientID:str
     doctorID:str
+    diagnosedCondition: Optional[str] = None  # optional 
     timeStamp:datetime
     indications:str
     notes:str

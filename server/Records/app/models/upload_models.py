@@ -153,6 +153,7 @@ class Diagnosis(BaseModel):
     indications:str = "diagnosis"
     doctorName:str
     doctorID:str
+    diagnosedCondition:str
     medications:list[
         MedicationUploadModel
     ]
