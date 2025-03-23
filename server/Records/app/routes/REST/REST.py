@@ -84,9 +84,9 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
             patientID=patientID,
             labID="",
             value=value,
-            code=meta.json_schema_extra.get("loinc_code"),
-            display=meta.json_schema_extra.get("official_name"),
-            unit=meta.json_schema_extra.get("unit"),
+            code=meta.json_schema_extra.get("metadata").get("loinc_code"),
+            display=meta.json_schema_extra.get("metadata").get("official_name"),
+            unit=meta.json_schema_extra.get("metadata").get("unit"),
             timestamp=timestamp,
             meta={
                 "clinc":clinic,
