@@ -3,7 +3,7 @@ from aio_pika.abc import AbstractIncomingMessage
 from app.utils.sender import sendMQ
 from .callback_log import *
 
-MQ = sendMQ("localhost","notification")
+
 
 functions = {
     "log":log_event,

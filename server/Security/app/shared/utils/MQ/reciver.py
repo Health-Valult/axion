@@ -47,7 +47,7 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
                     task = "error",
                     body = response
                 )
-            print(request.returnChannel)
+            #print(request.returnChannel)
             redisax.scarletSender(request.returnChannel,body=body)
 
 async def RedReciver(host:str,channel:str,executer:Callable):

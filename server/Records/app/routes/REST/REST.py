@@ -9,6 +9,7 @@ import pymongo
 from starlette.requests import Request
 from app.models.upload_models import *
 from fastapi import APIRouter,Depends, WebSocketDisconnect, WebSocketException
+from fastapi.encoders import jsonable_encoder
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
@@ -62,7 +63,7 @@ async def get_prescriptions(request:Request):
     
     prescriptions_ls = list(prescriptions)
 
-    return JSONResponse(status_code=200,content=prescriptions_ls)
+    return JSONResponse(status_code=200,content=jsonable_encoder(prescriptions_ls))
 
 
 @route.get(path="/records/prescription/diagnosis",dependencies=[Depends(Authenticate)])
@@ -79,7 +80,7 @@ async def get_prescriptions(request:Request):
     
     grouped_dict = dict(group)
 
-    return JSONResponse(status_code=200,content=grouped_dict)
+    return JSONResponse(status_code=200,content=jsonable_encoder(grouped_dict))
 
 @route.get(path="/records/notes",dependencies=[Depends(Authenticate)])
 async def get_prescriptions(request:Request):
