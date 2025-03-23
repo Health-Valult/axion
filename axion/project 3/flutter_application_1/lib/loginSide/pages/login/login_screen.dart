@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/loginSide/components/button.dart'; // Your custom button.
+import 'package:flutter_application_1/loginSide/components/button.dart';
 import 'package:flutter_application_1/loginSide/components/text_fieald.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/services/connectivity_service.dart';
-import 'package:flutter_application_1/main.dart'; // Assumes isLoggedIn is defined here.
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_application_1/main.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -25,10 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  // Field-specific errors.
   String? _emailError;
   String? _passwordError;
-  // General error.
   String? _error;
 
   @override
@@ -41,7 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     final l10n = AppLocalizations.of(context)!;
 
-    // Reset previous errors.
     setState(() {
       _emailError = null;
       _passwordError = null;
@@ -50,9 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (!_loginForm.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final hasInternet = await _connectivityService.checkInternetConnection();
@@ -75,7 +70,6 @@ class _LoginScreenState extends State<LoginScreen> {
         context.go('/home');
       } else {
         final statusCode = result['statusCode'] as int?;
-        final errorText = (result['error'] ?? '').toLowerCase();
 
         setState(() {
           if (statusCode == 404) {
@@ -83,8 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
           } else if (statusCode == 401) {
             _passwordError = l10n.loginErrorIncorrectPassword;
           } else if (statusCode == 422) {
-            // Handle 422 (e.g., invalid email format or similar validation error).
-            _emailError = l10n.emailValidationInvalid; 
+            _emailError = l10n.emailValidationInvalid;
           } else {
             _error = result['error'] ?? l10n.unexpectedError;
           }
@@ -92,13 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       print('Login Screen Error: $e');
-      setState(() {
-        _error = l10n.unexpectedError;
-      });
+      setState(() => _error = l10n.unexpectedError);
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -117,14 +106,15 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 0,
       ),
       resizeToAvoidBottomInset: false,
-      body: Center(
+      body: Align(
+        alignment: const Alignment(0, -0.4), // Move content higher vertically
         child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo / image section.
               Padding(
-                padding: const EdgeInsets.only(bottom: 60.0),
+                padding: const EdgeInsets.only(bottom: 40.0),
                 child: Hero(
                   tag: 'logo',
                   child: SvgPicture.asset(
@@ -139,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _loginForm,
                 child: Column(
                   children: [
-                    // General error container.
                     if (_error != null)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
@@ -167,7 +156,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                    // Email text field.
                     Padding(
                       padding: const EdgeInsets.only(bottom: 30.0),
                       child: LoginTextFieald(
@@ -187,7 +175,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                    // Password text field.
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40.0),
                       child: LoginTextFieald(
@@ -221,9 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    // Login button using your custom LoginButton.
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 40.0),
+                      padding: const EdgeInsets.only(bottom: 20.0),
                       child: _isLoading
                           ? const CircularProgressIndicator()
                           : LoginButton(
@@ -231,27 +217,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 await _handleLogin();
                               },
                             ),
-                    ),
-                    // Biometric authentication button placeholder.
-                    SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: ElevatedButton(
-                        onPressed: _isLoading
-                            ? null
-                            : () {
-                                // TODO: Implement biometric authentication.
-                              },
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                            const Color.fromRGBO(21, 23, 28, 1),
-                          ),
-                          foregroundColor: MaterialStateProperty.all(
-                            const Color.fromRGBO(21, 23, 28, 1),
-                          ),
-                        ),
-                        child: SvgPicture.asset("assets/img/biometricAuth.svg"),
-                      ),
                     ),
                   ],
                 ),

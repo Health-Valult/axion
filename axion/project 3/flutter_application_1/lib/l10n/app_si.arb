@@ -193,5 +193,8 @@
   "logoutFailed": "පිටවීම අසාර්ථකයි",
   "otpSubmittedSuccess": "OTP සාර්ථකව ඉදිරිපත් කරන ලදි",
   "otpFieldLabel": "අංක 6ක OTP එක ඇතුළත් කරන්න",
-  "submit": "ඉදිරිපත් කරන්න"
+  "submit": "ඉදිරිපත් කරන්න",
+  "userAlreadyExists": "මෙම ගිණුම දැනටමත් පවතී.",
+  "passwordValidationMinUpper": "අක්ෂර 2 කට වඩා විශාල අක්ෂර අවශ්‍ය වේ.",
+  "passwordValidationDigits": "අංක 3 කට වඩා අවශ්‍ය වේ."
 }

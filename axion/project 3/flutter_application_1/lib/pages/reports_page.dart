@@ -69,7 +69,6 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
         }).toList();
       }
       
-      // Apply date filter if selected
       if (_selectedDate != null) {
         _filteredReports = _filteredReports.where((report) =>
           report.dateTime.year == _selectedDate!.year &&

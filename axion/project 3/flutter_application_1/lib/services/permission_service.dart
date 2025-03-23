@@ -12,7 +12,6 @@ class PermissionService {
 
     // Then request other permissions
     Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
       Permission.storage,
       Permission.notification,
     ].request();
@@ -41,12 +40,10 @@ class PermissionService {
       locationGranted = status.isGranted;
     }
 
-    bool cameraGranted = await Permission.camera.isGranted;
     bool storageGranted = await Permission.storage.isGranted;
     bool notificationGranted = await Permission.notification.isGranted;
 
     return locationGranted && 
-           cameraGranted && 
            storageGranted && 
            notificationGranted;
   }

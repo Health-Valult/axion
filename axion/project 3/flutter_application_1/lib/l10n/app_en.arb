@@ -192,5 +192,8 @@
   "logoutFailed": "Logout failed",
   "otpSubmittedSuccess": "OTP submitted successfully",
   "otpFieldLabel": "Enter 6-digit OTP",
-  "submit": "Submit"
+  "userAlreadyExists": "This account already exists.",
+  "submit": "Submit",
+  "passwordValidationMinUpper": "At least 2 uppercase letters required.",
+  "passwordValidationDigits": "At least 3 numbers required."
 }

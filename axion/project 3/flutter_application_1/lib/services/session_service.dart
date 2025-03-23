@@ -150,6 +150,25 @@ class SessionService {
   }
 
   Future<String?> getSessionToken() async {
-    return _storage.readSecure(SecureStorageService.sessionTokenKey);
+    print('\n=== Getting Session Token ===');
+    final token = await _storage.readSecure(SecureStorageService.sessionTokenKey);
+    print('Token from storage: ${token != null ? '${token.substring(0, 10)}...' : 'null'}');
+    
+    if (token == null) {
+      print('❌ No token found in storage');
+      return null;
+    }
+
+    final isValid = await isSessionValid();
+    print('Is session valid? $isValid');
+    
+    if (!isValid) {
+      print('❌ Session is expired, clearing...');
+      await clearSession();
+      return null;
+    }
+
+    print('✅ Valid token found');
+    return token;
   }
 }

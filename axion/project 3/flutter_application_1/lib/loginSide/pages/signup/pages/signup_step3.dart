@@ -101,11 +101,18 @@ class _SignupStep3State extends State<SignupStep3>
             context.go('/login');
           }
         } else {
+          final statusCode = signupResponse['statusCode'];
           final error = signupResponse['error'] ?? l10n.signupFailed;
+
           setState(() {
-            _error = error;
+            if (statusCode == 409) {
+              _error = l10n.userAlreadyExists; 
+            } else {
+              _error = error;
+            }
           });
         }
+
       } else {
         setState(() {
           _error = response['error'] ?? l10n.invalidOtp;

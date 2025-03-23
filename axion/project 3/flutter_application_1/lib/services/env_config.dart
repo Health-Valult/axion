@@ -4,9 +4,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// and configuration settings used throughout the application.
 class EnvConfig {
   // API Configuration
-  static String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? 'https://axiontestgateway.azure-api.net';
-  static String get graphqlUrl => dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/records-patients';
-  
+  static String get apiBaseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'https://axiontestgateway.azure-api.net';
+  static String get graphqlUrl =>
+      dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/records-patients';
+
   // Authentication Configuration
   static int get accessTokenDuration => int.parse(dotenv.env['ACCESS_TOKEN_DURATION'] ?? '3600');
   static int get refreshTokenDuration => int.parse(dotenv.env['REFRESH_TOKEN_DURATION'] ?? '604800');
@@ -24,7 +26,7 @@ class EnvConfig {
 /// Authentication-related endpoints
 class _AuthEndpoints {
   const _AuthEndpoints();
-  
+
   String get signupUser => '/axion/auth/signup/patient';
   String get validateEmail => '/axion/auth/validate/email';
   String get validateOTP => '/axion/auth/validate/otp';
@@ -40,7 +42,7 @@ class _AuthEndpoints {
 /// Profile-related endpoints
 class _ProfileEndpoints {
   const _ProfileEndpoints();
-  
+
   String get profile => '/axion/user/profile';
   String get update => '/axion/user/profile/update';
   String get changePassword => '/axion/user/reset-password';
@@ -51,7 +53,7 @@ class _ProfileEndpoints {
 /// Settings-related endpoints
 class _SettingsEndpoints {
   const _SettingsEndpoints();
-  
+
   String get get => '/axion/user/settings';
   String get update => '/axion/user/settings/update';
   String get notifications => '/axion/user/settings/notifications';
@@ -60,20 +62,15 @@ class _SettingsEndpoints {
 /// Notification-related endpoints
 class _NotificationEndpoints {
   const _NotificationEndpoints();
-  
-  String get get => '/axion/notifications';
-  String get markRead => '/axion/notifications/{id}/read';
-  String get markAllRead => '/axion/notifications/read-all';
-  String get deleteAll => '/axion/notifications/delete-all';
-  String get delete => '/axion/notifications/{id}';
-  String get medical => '/axion/notifications/medical';
-  String get preferences => '/axion/notifications/preferences';
+
+  // Only the GET endpoint is needed now.
+  String get get => '/notification/notifications';
 }
 
 /// Log-related endpoints
 class _LogEndpoints {
   const _LogEndpoints();
-  
+
   String get get => '/axion/logs';
   String get details => '/axion/logs/{id}';
 }
@@ -81,7 +78,7 @@ class _LogEndpoints {
 /// Link-related endpoints
 class _LinkEndpoints {
   const _LinkEndpoints();
-  
+
   String get get => '/axion/links';
   String get validate => '/axion/links/validate';
 }
@@ -89,7 +86,7 @@ class _LinkEndpoints {
 /// Medical-related endpoints
 class _MedicalEndpoints {
   const _MedicalEndpoints();
-  
+
   // All medical endpoints use GraphQL
   String get endpoint => '/graphql';
 }

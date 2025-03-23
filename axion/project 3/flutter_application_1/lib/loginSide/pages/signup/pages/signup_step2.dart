@@ -274,14 +274,14 @@ class _SignupStep2State extends State<SignupStep2>
                   if (value.length < 8) {
                     return l10n.passwordValidationLength;
                   }
-                  if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                    return l10n.passwordValidationUpper;
+                  if (RegExp(r'[A-Z]').allMatches(value).length < 2) {
+                    return l10n.passwordValidationMinUpper; // new key: "At least 2 uppercase letters required."
                   }
                   if (!RegExp(r'[a-z]').hasMatch(value)) {
                     return l10n.passwordValidationLower;
                   }
-                  if (!RegExp(r'[0-9]').hasMatch(value)) {
-                    return l10n.passwordValidationNumber;
+                  if (RegExp(r'\d').allMatches(value).length < 3) {
+                    return l10n.passwordValidationDigits; // new key: "At least 3 numbers required."
                   }
                   if (!RegExp(r'[!@#\$&*~]').hasMatch(value)) {
                     return l10n.passwordValidationSpecial;

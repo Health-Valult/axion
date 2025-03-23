@@ -1,7 +1,7 @@
 // lib/pages/report_detail_page.dart
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:intl/intl.dart'; // For date formatting
+import 'package:intl/intl.dart'; 
 import '../models/base_report.dart';
 import '../services/graphql_queries.dart';
 
@@ -117,7 +117,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     }
   }
 
-  /// Header displays the report name and, on separate lines, the issued date and issued laboratory.
+
   Widget _buildHeader(BuildContext context) {
     final observations = widget.report.observations;
     String issuedDate = "";
@@ -138,7 +138,6 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Report name centered
         Text(
           widget.report.title.toUpperCase(),
           style: Theme.of(context)
@@ -148,7 +147,6 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
-        // Issued Date and Laboratory as plain text, left-aligned and wrapping as needed
         if (issuedDate.isNotEmpty)
           Align(
             alignment: Alignment.centerLeft,
@@ -169,7 +167,7 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     );
   }
 
-  /// Wraps patient info, observations table, and comments inside a Card.
+
   Widget _buildReportCard(BuildContext context) {
     final meta = widget.report.meta ?? {};
     return Card(

@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:async';
-import 'package:flutter_application_1/services/api_config.dart';
+import 'package:flutter_application_1/services/env_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/models/notification.dart';
 import 'package:flutter_application_1/models/log.dart';
-import 'package:flutter_application_1/models/link.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_application_1/services/env_config.dart';
 import 'package:flutter_application_1/services/session_service.dart';
 import 'package:flutter_application_1/services/secure_storage_service.dart';
 
@@ -16,30 +14,38 @@ class ApiService {
 
   // Helper method to get headers with auth token
   Future<Map<String, String>> _getHeaders() async {
+    print('\n=== Getting Request Headers ===');
     final sessionService = SessionService();
     final token = await sessionService.getSessionToken();
+
+    print('Session Token: ${token != null ? '${token.substring(0, 10)}...' : 'null'}');
     
-    if (token == null) {
-      return {
-        'Content-Type': 'application/json',
-      };
-    }
-    
-    return {
+    final headers = {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
     };
+
+    if (token != null) {
+      print('✅ Adding Authorization header');
+      headers['Authorization'] = 'Bearer $token';
+    } else {
+      print('❌ No session token available');
+    }
+
+    print('Final Headers:');
+    print(const JsonEncoder.withIndent('  ').convert(headers));
+    print('=== End Request Headers ===\n');
+
+    return headers;
   }
 
   // Helper method to handle API response
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
     try {
       final data = jsonDecode(response.body);
-      
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {
           'success': true,
-          'data': data,
+          ...data,
         };
       } else {
         final error = data['message'] ?? data['error'] ?? 'An error occurred';
@@ -59,7 +65,8 @@ class ApiService {
   }
 
   // Helper method to make API calls with retry
-  Future<Map<String, dynamic>> _makeApiCall(Future<http.Response> Function() apiCall) async {
+  Future<Map<String, dynamic>> _makeApiCall(
+      Future<http.Response> Function() apiCall) async {
     try {
       final response = await apiCall().timeout(
         const Duration(seconds: 30),
@@ -67,7 +74,7 @@ class ApiService {
           throw TimeoutException('Request timed out');
         },
       );
-      
+
       return _handleResponse(response);
     } catch (e) {
       return {
@@ -77,8 +84,12 @@ class ApiService {
     }
   }
 
-  // Auth methods with improved validation
-  Future<Map<String, dynamic>> signupUser(Map<String, dynamic> userData) async {
+  // ----------------------------
+  // Authentication Methods
+  // ----------------------------
+
+  Future<Map<String, dynamic>> signupUser(
+      Map<String, dynamic> userData) async {
     final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.signupUser);
     print('\n=== Signup Request ===');
     print('Request URL: $url');
@@ -97,7 +108,9 @@ class ApiService {
     ];
 
     for (final field in requiredFields) {
-      if (!userData.containsKey(field) || userData[field] == null || userData[field].toString().trim().isEmpty) {
+      if (!userData.containsKey(field) ||
+          userData[field] == null ||
+          userData[field].toString().trim().isEmpty) {
         print('❌ Validation Error: $field is required');
         return {
           'success': false,
@@ -117,31 +130,31 @@ class ApiService {
 
       print('\n=== Signup Response ===');
       print('Status Code: ${response.statusCode}');
-      
+
       final responseData = jsonDecode(response.body);
       print('Response Data:');
       print(const JsonEncoder.withIndent('  ').convert(responseData));
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        print('✅ Signup Successful');
         return {
           'success': true,
           'data': responseData,
         };
       } else {
-        print('❌ Signup Failed');
-        final error = responseData['message'] ?? responseData['error'] ?? 'Signup failed';
-        print('Error: $error');
+        final error =
+            responseData['message'] ?? responseData['error'] ?? 'Signup failed';
         return {
           'success': false,
           'error': error,
+          'statusCode': response.statusCode,
         };
       }
     } on http.ClientException catch (e) {
       print('❌ Network Error: ${e.toString()}');
       return {
         'success': false,
-        'error': 'Network error occurred. Please check your internet connection.',
+        'error':
+            'Network error occurred. Please check your internet connection.',
       };
     } on FormatException catch (e) {
       print('❌ Response Format Error: ${e.toString()}');
@@ -160,57 +173,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> validateEmail(String email) async {
-    if (email.isEmpty) {
-      return {
-        'success': false,
-        'error': 'Email is required',
-      };
-    }
-
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
-      return {
-        'success': false,
-        'error': 'Invalid email format',
-      };
-    }
-
-    try {
-      final result = await _makeApiCall(() => http.post(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.validateEmail),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email}),
-      ));
-
-      if (result['success'] == false && result['error'].toString().contains('Network error')) {
-        return {
-          'success': false,
-          'error': 'Unable to validate email. Please check your internet connection.',
-        };
-      }
-
-      if (result['success'] == false) {
-        return {
-          'success': false,
-          'error': result['error'] ?? 'Email is already registered',
-        };
-      }
-
-      return {
-        'success': true,
-        'data': result['data'],
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'error': 'Network error occurred. Please try again.',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> sendOTP(String recipient, {required String otpType}) async {
+  Future<Map<String, dynamic>> sendOTP(String recipient,
+      {required String otpType}) async {
     print('\n=== Send OTP Request ===');
-    
+
     if (recipient.isEmpty) {
       print('❌ Send OTP Validation Error: Recipient is empty');
       return {
@@ -230,12 +196,12 @@ class ApiService {
         'data': recipient,
       };
 
-      print('Request URL: ${ApiConfig.baseUrl}${ApiConfig.sendOTP}');
+      print('Request URL: ${EnvConfig.apiBaseUrl}${EnvConfig.auth.sendOTP}');
       print('Request Body:');
       print(const JsonEncoder.withIndent('  ').convert(requestBody));
 
       final response = await http.post(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.sendOTP),
+        Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.sendOTP),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
@@ -246,7 +212,7 @@ class ApiService {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('✅ OTP sent successfully');
-        
+
         // Store the requestId in secure storage
         final userData = await _storage.readSecure(SecureStorageService.userDataKey);
         final Map<String, dynamic> updatedUserData = userData != null 
@@ -296,13 +262,13 @@ class ApiService {
 
     try {
       print('\n=== Verify OTP Request ===');
-      print('URL: ${ApiConfig.baseUrl}${ApiConfig.verifyOTP}');
+      print('URL: ${EnvConfig.apiBaseUrl}${EnvConfig.auth.verifyOTP}');
       
       // Get the stored request ID
       final userData = await _storage.readSecure(SecureStorageService.userDataKey);
       final Map<String, dynamic>? userDataMap = userData != null 
-        ? json.decode(userData) as Map<String, dynamic>
-        : null;
+          ? json.decode(userData) as Map<String, dynamic>
+          : null;
       final String? requestId = userDataMap?['last_otp_request_id'];
       
       print('Stored Request ID: ${requestId ?? 'Not found'}');
@@ -316,7 +282,7 @@ class ApiService {
       print(const JsonEncoder.withIndent('  ').convert(requestBody));
 
       final response = await _makeApiCall(() => http.post(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.verifyOTP),
+        Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.verifyOTP),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       ));
@@ -343,7 +309,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
     print('\n=== Login Request ===');
-    final url = Uri.parse(ApiConfig.baseUrl + ApiConfig.loginUser);
+    final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.loginUser);
     print('URL: $url');
     print('Request Data:');
     print(const JsonEncoder.withIndent('  ').convert({
@@ -363,7 +329,7 @@ class ApiService {
 
       print('\n=== Login Response ===');
       print('Status Code: ${response.statusCode}');
-      
+
       final data = await _handleResponse(response);
       print('Response Data:');
       final sanitizedData = Map<String, dynamic>.from(data);
@@ -371,7 +337,7 @@ class ApiService {
         sanitizedData['data']['token'] = '********'; // Mask token for logging
       }
       print(const JsonEncoder.withIndent('  ').convert(sanitizedData));
-      
+
       if (data['success'] && data.containsKey('data') && data['data'].containsKey('token')) {
         print('✅ Login Successful');
         final sessionService = SessionService();
@@ -428,17 +394,16 @@ class ApiService {
       await _makeApiCall(() async {
         final headers = await _getHeaders();
         final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.logout);
-        
         return http.post(
           url,
           headers: headers,
         );
       });
-      
+
       // Always clear session data
       final sessionService = SessionService();
       await sessionService.clearSession();
-      
+
       return {
         'success': true,
         'message': 'Logged out successfully',
@@ -447,7 +412,7 @@ class ApiService {
       // Clear session even if request fails
       final sessionService = SessionService();
       await sessionService.clearSession();
-      
+
       return {
         'success': false,
         'error': e.toString(),
@@ -457,40 +422,53 @@ class ApiService {
 
   Future<void> resetPassword(String email) async {
     final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.resetPassword),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.resetPassword),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
     await _handleResponse(response);
   }
 
-  // Profile methods
+  // ----------------------------
+  // Profile Methods
+  // ----------------------------
+
   Future<User> getUserProfile() async {
-    final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.userProfile),
-      headers: await _getHeaders(),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return User.fromJson(data['data']);
+    print('\n=== Getting User Profile ===');
+    final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.profile.profile);
+    print('Request URL: $url');
+    
+    final headers = await _getHeaders();
+    print('Request Headers: ${const JsonEncoder.withIndent('  ').convert(headers)}');
+    
+    try {
+      final response = await http.get(url, headers: headers);
+      
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get profile: ${response.statusCode}');
+      }
+
+      // Parse the response body directly since it contains the user data
+      final data = jsonDecode(response.body);
+      print('Parsed Response: ${const JsonEncoder.withIndent('  ').convert(data)}');
+      
+      // Create user directly from response data
+      return User.fromJson(data);
+    } catch (e) {
+      print('Error in getUserProfile: $e');
+      throw Exception('Error fetching user profile: $e');
+    } finally {
+      print('=== End Getting User Profile ===\n');
     }
-    throw Exception('Failed to get user profile');
   }
 
-  Future<User> updateProfile(Map<String, dynamic> profileData) async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.updateProfile),
-      headers: await _getHeaders(),
-      body: jsonEncode(profileData),
-    );
-    final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return User.fromJson(data['data']);
-    }
-    throw Exception('Failed to update profile');
-  }
+  // ----------------------------
+  // Settings Methods
+  // ----------------------------
 
-  // Settings methods - Only keep critical account operations
   Future<void> changePassword(String currentPassword, String newPassword) async {
     // Validate passwords
     if (currentPassword.isEmpty || newPassword.isEmpty) {
@@ -519,13 +497,13 @@ class ApiService {
     print('\n=== Change Password Debug ===');
     print('Base URL: ${EnvConfig.apiBaseUrl}');
     print('Reset Password Path: ${EnvConfig.auth.resetPassword}');
-    
+
     // Remove any trailing slashes from base URL
     final baseUrl = EnvConfig.apiBaseUrl.endsWith('/')
         ? EnvConfig.apiBaseUrl.substring(0, EnvConfig.apiBaseUrl.length - 1)
         : EnvConfig.apiBaseUrl;
-    
-    final url = Uri.parse('$baseUrl${EnvConfig.auth.resetPassword}'); 
+
+    final url = Uri.parse('$baseUrl${EnvConfig.auth.resetPassword}');
     final headers = await _getHeaders();
     final requestBody = {
       'Old': currentPassword,
@@ -549,7 +527,7 @@ class ApiService {
       print('Response Body: ${response.body}');
 
       final data = await _handleResponse(response);
-      
+
       if (!data['success']) {
         throw Exception(data['error'] ?? 'Failed to change password');
       }
@@ -564,7 +542,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> deleteAccount(String email, String password) async {
     print('\n=== Delete Account Request ===');
-    
+
     // Validate input
     if (email.isEmpty || password.isEmpty) {
       return {
@@ -588,7 +566,7 @@ class ApiService {
         'Password': password,
         'Email': email,
       };
-      
+
       print('Request URL: $url');
       print('Headers: ${headers.toString()}');
       print('Request Body: ${jsonEncode(requestBody)}');
@@ -603,13 +581,13 @@ class ApiService {
       print('Response Body: ${response.body}');
 
       final result = await _handleResponse(response);
-      
+
       if (result['success']) {
         // Clear session on successful deletion
         final sessionService = SessionService();
         await sessionService.clearSession();
       }
-      
+
       return result;
     } catch (e) {
       print('Error: $e');
@@ -622,63 +600,34 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> verifyAndDeleteAccount(String email, String password) async {
-    return deleteAccount(email, password);
-  }
+  // ----------------------------
+  // Notifications Methods (Modified)
+  // ----------------------------
 
-  // Notifications methods
+  // Only GET notifications functionality is available.
   Future<List<AppNotification>> getNotifications() async {
     final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getNotifications),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get),
       headers: await _getHeaders(),
     );
     final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
+    if (data.containsKey('notifications')) {
       return List<AppNotification>.from(
-        data['data'].map((json) => AppNotification.fromJson(json))
+        (data['notifications'] as List).map((json) => AppNotification.fromJson(json))
       );
     }
     return [];
   }
 
-  Future<void> markNotificationRead(String id) async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.markNotificationRead.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
+  // ----------------------------
+  // Log Methods
+  // ----------------------------
 
-  Future<void> markAllNotificationsRead() async {
-    final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.markAllNotificationsRead),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
-
-  Future<void> deleteAllNotifications() async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteAllNotifications),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
-
-  Future<void> deleteNotification(String id) async {
-    final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteNotification.replaceAll('{id}', id)),
-      headers: await _getHeaders(),
-    );
-    await _handleResponse(response);
-  }
-
-  // Log methods
   Future<List<Log>> getLogs() async {
     final result = await _makeApiCall(() async {
       final headers = await _getHeaders();
       return http.get(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogs),
+        Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.logs.get),
         headers: headers,
       );
     });
@@ -694,7 +643,7 @@ class ApiService {
     final result = await _makeApiCall(() async {
       final headers = await _getHeaders();
       return http.get(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLogDetails.replaceAll('{id}', id)),
+        Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.logs.details.replaceAll('{id}', id)),
         headers: headers,
       );
     });
@@ -705,52 +654,25 @@ class ApiService {
     throw Exception(result['error']);
   }
 
-  // Link methods
-  Future<List<Link>> getLinks() async {
-    final result = await _makeApiCall(() async {
-      final headers = await _getHeaders();
-      return http.get(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.getLinks),
-        headers: headers,
-      );
-    });
+  // ----------------------------
+  // Medical Notifications Methods
+  // ----------------------------
 
-    if (result['success']) {
-      final List<dynamic> links = result['data'];
-      return links.map((link) => Link.fromJson(link)).toList();
-    }
-    throw Exception(result['error']);
-  }
-
-  Future<bool> validateLink(String url) async {
-    final result = await _makeApiCall(() async {
-      final headers = await _getHeaders();
-      return http.post(
-        Uri.parse(ApiConfig.baseUrl + ApiConfig.validateLink),
-        headers: headers,
-        body: jsonEncode({'url': url}),
-      );
-    });
-
-    return result['success'];
-  }
-
-  // Medical Notifications methods
   Future<List<Map<String, dynamic>>> getMedicalNotifications() async {
     final response = await http.get(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.getMedicalNotifications),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get),
       headers: await _getHeaders(),
     );
     final data = await _handleResponse(response);
-    if (data.containsKey('data')) {
-      return List<Map<String, dynamic>>.from(data['data']);
+    if (data.containsKey('notifications')) {
+      return List<Map<String, dynamic>>.from(data['notifications']);
     }
     return [];
   }
 
   Future<Map<String, dynamic>> addMedicalNotification(Map<String, dynamic> notification) async {
     final response = await http.post(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.addMedicalNotification),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get),
       headers: await _getHeaders(),
       body: jsonEncode(notification),
     );
@@ -759,7 +681,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> updateMedicalNotification(String id, Map<String, dynamic> notification) async {
     final response = await http.put(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.updateMedicalNotification.replaceAll('{id}', id)),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get + '/$id'),
       headers: await _getHeaders(),
       body: jsonEncode(notification),
     );
@@ -768,13 +690,16 @@ class ApiService {
 
   Future<void> deleteMedicalNotification(String id) async {
     final response = await http.delete(
-      Uri.parse(ApiConfig.baseUrl + ApiConfig.deleteMedicalNotification.replaceAll('{id}', id)),
+      Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get + '/$id'),
       headers: await _getHeaders(),
     );
     await _handleResponse(response);
   }
 
-  // Connect with OTP method
+  // ----------------------------
+  // Connect with OTP Method
+  // ----------------------------
+
   Future<Map<String, dynamic>> connectWithOTP({required String otp}) async {
     print('\n=== OTP Connect Request ===');
 
@@ -804,9 +729,7 @@ class ApiService {
     print(const JsonEncoder.withIndent('  ').convert(requestData));
 
     try {
-      // Use the same headers pattern as your other API calls
       final headers = await _getHeaders();
-
       final result = await _makeApiCall(() => http.post(
         url,
         headers: headers,
@@ -834,5 +757,4 @@ class ApiService {
       print('=====================\n');
     }
   }
-
 }

@@ -193,5 +193,9 @@
   "logoutFailed": "வெளியேற இயலவில்லை",
   "otpSubmittedSuccess": "OTP வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது",
   "otpFieldLabel": "6 இலக்க OTP ஐ உள்ளிடவும்",
-  "submit": "சமர்ப்பிக்கவும்"
+  "submit": "சமர்ப்பிக்கவும்",
+  "userAlreadyExists": "இந்த கணக்கு ஏற்கனவே உள்ளது.",
+  "passwordValidationMinUpper": "குறைந்தது 2 பெரிய எழுத்துகள் தேவை.",
+  "passwordValidationDigits": "குறைந்தது 3 எண்கள் தேவை."
+
 }
