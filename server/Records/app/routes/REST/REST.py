@@ -30,7 +30,7 @@ Terminology_DB = DBClient.get_database("terminology_db")
 LIONC_collection = Terminology_DB.get_collection("LIONC")
 
 
-@route.get()
+
 
 @route.post(path="/records/upload/{type}")
 async def upload_report(request:Request,type:str,report:BaseReportTemplate):
