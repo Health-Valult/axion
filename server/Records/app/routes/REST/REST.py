@@ -4,12 +4,11 @@ import json
 import logging
 import random
 from typing import Annotated, Union
-import uuid
 from fastapi.responses import JSONResponse
 import pymongo
 from starlette.requests import Request
 from app.models.upload_models import *
-from fastapi import APIRouter,FastAPI,Depends, WebSocketDisconnect, WebSocketException
+from fastapi import APIRouter,Depends, WebSocketDisconnect, WebSocketException
 from pymongo.collection import Collection
 from app.shared.middleware.authentication import Authenticate, Authenticate_WS
 from fastapi.websockets import WebSocket
