@@ -39,7 +39,7 @@ async def get_patient_details(request:Request,credentials:SelectPatient):
     NIC = credentials.NIC
     PatientsCollection:Collection = request.app.state.PatientsCollection
 
-    response = PatientsCollection.find({"NIC":NIC},{"_id":1,"NIC":1,"FirstName":1,"LastName":1,"Telephone":1,"Email":1})
+    response = PatientsCollection.find_one({"NIC":NIC},{"_id":1,"NIC":1,"FirstName":1,"LastName":1,"Telephone":1,"Email":1})
     if not response:
         return JSONResponse(status_code=401,content={"details":"patient not found"})
     
