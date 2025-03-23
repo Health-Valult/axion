@@ -75,14 +75,14 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
                 "instructions":instructions
             }
     )
-    
+    labsID = labs.id
     LabsCollection.insert_one(labs.model_dump())
 
     for name, meta in reportFiealds.model_fields.items():
         value = getattr(reportFiealds,name)
         observation = ObservationModel(
             patientID=patientID,
-            labID="",
+            labID=labsID,
             value=value,
             code=meta.json_schema_extra.get("metadata").get("loinc_code"),
             display=meta.json_schema_extra.get("metadata").get("official_name"),
@@ -98,7 +98,7 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
         
         ObservationCollection.insert_one(observation.model_dump())
 
-
+    return JSONResponse(status_code=200,content={"Details":"report upload sucessful"})
 
 
 
