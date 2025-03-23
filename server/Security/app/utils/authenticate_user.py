@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from pymongo.collection import Collection
 from app.models.models import Userlg
 from app.utils.gen_tokens import generateTokens
-from app.shared.utils.Cache.redis import redis_AX
+from app.shared.utils.Cache.redis import Body, redis_AX
 from typing import Literal
 import uuid
 from geopy.distance import geodesic
@@ -33,6 +33,9 @@ with open('./app/data/keys/private.pem', 'r') as file:
 
 with open('./app/data/keys/refresh_private.pem', 'r') as file:
         refresh_private_key = file.read()
+
+
+        
 
 def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient","doctor","hospital"], Red:redis_AX = None,state = None):
     user = collection.find_one({"Email":cred.Email},{"_id":0,"prevLogin":1,"Password":1,"UserID":1,"Email":1})
@@ -77,8 +80,16 @@ def authenticate(collection:Collection, cred:Userlg, endpoint:Literal["patient",
             "subject":"New login attempt",
             "body":f"new login at {location}"
             }
-
-            #response = state.sender_task.send_and_await("notification","send-email",body=body)
+            body = Body(
+                task="send-email",
+                body={
+                "email":email,
+                "subject":"New login attempt",
+                "body":f"new login at {location}"
+            })
+    
+            Red.scarletSender("notification",body=body)
+            
 
     locationDataPacket = {
         "Latitude":lat,
