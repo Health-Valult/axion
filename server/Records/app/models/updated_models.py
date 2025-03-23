@@ -1,7 +1,4 @@
-from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
-from datetime import datetime
-from app.models.models import*
 
 
 class CBCReportTemplate(BaseModel):
@@ -97,66 +94,3 @@ class TFTReportTemplate(BaseModel):
     tsh: str = Field(..., metadata={"official_name": "Thyroid Stimulating Hormone", "loinc_code": "3016-3"})
     t3: str = Field(..., metadata={"official_name": "Triiodothyronine (T3)", "loinc_code": "3054-0"})
     t4: str = Field(..., metadata={"official_name": "Thyroxine (T4)", "loinc_code": "3026-2"})
-
-
-class BaseMetaTemplate(BaseModel):
-  patientNIC: str
-  date: str
-  time: str
-  practitioner: str
-  clinic: str
-  recorder: str
-  instructions:str
-
-
-
-
-
-class BaseReportTemplate(BaseModel):
-    mata:BaseMetaTemplate
-    results: Union[
-        CBCReportTemplate,
-        UFRTemplate,
-        LFTReportTemplate,
-        CRPReportTemplate,
-        FBSReportTemplate,
-        SerumCreatinineReportTemplate,
-        SerumElectrolytesReportTemplate,
-        LipidProfileReportTemplate,
-        HbA1cReportTemplate,
-        ESRReportTemplate,
-        TFTReportTemplate]
-    
-class Indications(Enum):
-    SYMPTOMS = "symptoms"
-    SIGNS = "signs"
-
-class MedicationUploadModel(BaseModel):
-    display:str
-    frequency:str
-    mealTiming:str
-    dosage: str
-    route: str
-    prescriber: str
-    meta:dict
-
-class SymptomsAndSigns(BaseModel):
-    timeStamp:datetime
-    indications:Indications
-    doctorName:str
-    medications:list[
-        MedicationUploadModel
-    ]
-    note:str
-class Diagnosis(BaseModel):
-    timeStamp:datetime
-    indications:str = "diagnosis"
-    doctorName:str
-    doctorID:str
-    medications:list[
-        MedicationUploadModel
-    ]
-    note:str
-
-
-
