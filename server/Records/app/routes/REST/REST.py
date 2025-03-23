@@ -172,6 +172,7 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
         "https://rxnav.nlm.nih.gov/REST/approximateTerm.json",
         params={"term": "paracetamol", "maxEntries": 1}
         )
+        data = data.json()
         candidates = data['approximateGroup']['candidate']
         code = candidates[0].get("rxcui")
         medication = Medication(
