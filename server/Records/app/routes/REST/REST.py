@@ -200,16 +200,6 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
 
 
 
-
-
-
-
-
-
-
-
-
-
 @route.websocket("/records/search",)
 async def websocket_endpoint(websocket: WebSocket):
     

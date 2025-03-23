@@ -37,10 +37,16 @@ async def reader(channel: redis.client.PubSub,executer:Callable):
             request = RedRequest.model_validate_json(data)
             
             response = await executer(request)
-            body = Body(
-                task = "verifiedToken",
-                body = response
-            )
+            if response:
+                body = Body(
+                    task = "verifiedToken",
+                    body = response
+                )
+            else:
+                body = Body(
+                    task = "error",
+                    body = response
+                )
             print(request.returnChannel)
             redisax.scarletSender(request.returnChannel,body=body)
 
