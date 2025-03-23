@@ -1,7 +1,7 @@
 from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
-import datetime
-
+from datetime import datetime
+from models import*
 
 
 class CBCReportTemplate(BaseModel) :
@@ -136,71 +136,36 @@ class BaseReportTemplate(BaseModel):
         HbA1cReportTemplate,
         ESRReportTemplate,
         TFTReportTemplate]
+    
+class Indications(Enum):
+    SYMPTOMS = "symptoms"
+    SIGNS = "signs"
 
-
+class MedicationUploadModel(BaseModel):
+    display:str
+    frequency:str
+    mealTiming:str
+    dosage: str
+    route: str
+    prescriber: str
+    meta:dict
 
 class SymptomsAndSigns(BaseModel):
-    timeStamp:datetime.datetime
-    indications:Literal["symptoms","signs"]
-    #medications:list[]
+    timeStamp:datetime
+    indications:Indications
+    doctorName:str
+    medications:list[
+        MedicationUploadModel
+    ]
+
+class Diagnosis(BaseModel):
+    timeStamp:datetime
+    indications:str = "diagnosis"
+    doctorName:str
+    medications:list[
+        MedicationUploadModel
+    ]
 
 
 
 
-"""{
-  "prescribedDate": "2025-03-22T09:45:00.000Z",
-  "indications": ["diagnosis"],
-  "diagnosedCondition": "Type 2 Diabetes Mellitus",
-  "medicines": [
-    {
-      "display": "Metformin",
-      "code": "med005",
-      "frequency": "BID",
-      "mealTiming": "PC",
-      "meta": {
-        "start": "2025-03-22",
-        "end": None
-      }
-    },
-    {
-      "name": "Glimepiride",
-      "code": "med006",
-      "frequency": "OD",
-      "mealTiming": "AC",
-      "treatmentDuration": {
-        "start": "2025-03-22",
-        "end": None
-      }
-    }
-  ],
-  "doctorName": "Dr. Steven James"
-}
-
-
-{
-  "prescribedDate": "2025-03-22T10:00:00.000Z",
-  "indications": ["symptoms", "signs"],
-  "medicines": [
-    {
-      "name": "Paracetamol",
-      "key": "med001",
-      "frequency": "QID",
-      "mealTiming": "PC",
-      "treatmentDuration": {
-        "start": "2025-03-22",
-        "end": "2025-03-29"
-      }
-    },
-    {
-      "name": "Ibuprofen",
-      "key": "med002",
-      "frequency": "TID",
-      "mealTiming": "CC",
-      "treatmentDuration": {
-        "start": "2025-03-22",
-        "end": "2025-03-25"
-      }
-    }
-  ],
-  "doctorName": "Dr. Steven James"
-}"""

@@ -149,8 +149,8 @@ async def verify_doctor_request(request:Request,cred:OTP):
 
 
 @route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
-async def add_prescriptions():
-    pass
+async def add_prescriptions(prescription:Union[SymptomsAndSigns,Diagnosis]):
+    logger.warning(prescription.medications)
 
 
 
