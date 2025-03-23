@@ -88,7 +88,6 @@ const ReportPage: React.FC = () => {
                                     labs {
                                         id
                                         patientID
-                                        code
                                         display
                                         timestamp
                                         meta

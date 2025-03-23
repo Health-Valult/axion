@@ -25,6 +25,14 @@ export default function DashboardLayout() {
     );
 }
 
+interface Notification {
+    _id: string;
+    message: string;
+    timestamp: {
+        $date: string;
+    };
+}
+
 interface Medication {
     patientID: string;
     code: string;
@@ -78,11 +86,6 @@ const Dashboard = () => {
     });
     const [medications, setMedications] = useState<Medication[]>([]);
     const [reports, setReports] = useState<Report[]>([]);
-    const notifications = [
-        { id: 1, message: "Your appointment is scheduled for tomorrow at 10 AM." },
-        { id: 2, message: "You have a new lab report available for viewing." },
-        { id: 3, message: "Reminder: Take your Amoxicillin at 8 PM." },
-    ];
     const router = useRouter();
     const isAuthenticated = useAuth();
 
@@ -90,6 +93,7 @@ const Dashboard = () => {
     const [token, setToken] = useState<string | null>(null);
     const [allergies, setAllergies] = useState<Allergy[]>([]);
     const [immunizations, setImmunizations] = useState<Immunization[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
 
     const [selectedAllergy, setSelectedAllergy] = useState<Allergy | null>(null);
     const [selectedImmunization, setSelectedImmunization] = useState<Immunization | null>(null);
@@ -119,6 +123,22 @@ const Dashboard = () => {
         // Handle WebSocket close event
         socket.onclose = () => {
             console.log('WebSocket connection closed');
+        };
+
+        const fetchNotifications = async () => {
+            try {
+                const response = await fetch("https://axiontestgateway.azure-api.net/notification/notifications", {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                const { data } = await response.json();
+                setNotifications(data); // Store notifications in state
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
         };
 
         const fetchProfileData = async () => {
@@ -327,6 +347,7 @@ const Dashboard = () => {
         };
 
         if (isAuthenticated) {
+            fetchNotifications();
             fetchProfileData();
             fetchMedications();
             fetchReports()
@@ -349,6 +370,11 @@ const Dashboard = () => {
 
     const handleCardClick = (immunization: Immunization) => {
         setSelectedImmunization(immunization);
+    };
+
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleString(); // Format to a human-readable date string
     };
 
     return (
@@ -377,17 +403,19 @@ const Dashboard = () => {
                                 </Tooltip>
                             </PopoverTrigger>
                             <PopoverContent className="w-64 dark:bg-gray-950">
-                                <h3 className="text-sm font-semibold mb-2">Notifications</h3>
                                 {notifications.length > 0 ? (
                                     <ul className="space-y-2">
                                         {notifications.map((notification) => (
-                                            <li key={notification.id} className="text-sm p-2 bg-gray-100 dark:bg-gray-950 dark:text-white rounded">
-                                                {notification.message}
+                                            <li key={notification._id} className="text-sm p-2 bg-gray-100 dark:bg-gray-950 dark:text-white rounded">
+                                                <p>{notification.message}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {formatTimestamp(notification.timestamp.$date)}
+                                                </p>
                                             </li>
                                         ))}
                                     </ul>
                                 ) : (
-                                    <p className="text-sm text-gray-500 dark:text-white">No new notifications</p>
+                                    <p className="text-sm text-gray-500 dark:text-white">No notifications</p>
                                 )}
                             </PopoverContent>
                         </Popover>
@@ -419,12 +447,15 @@ const Dashboard = () => {
                                                         sessionStorage.removeItem("refresh_token");
                                                         router.push("/auth");
                                                     } else {
-                                                        toast.error("Logout failed!");
-                                                        console.error("Logout failed:", await response.text());
+                                                        sessionStorage.removeItem("session_token");
+                                                        sessionStorage.removeItem("refresh_token");
+                                                        router.push("/auth");
                                                     }
                                                 } catch (error) {
-                                                    toast.error("Logout failed!");
-                                                    console.error("Error during logout:", error);
+                                                    sessionStorage.removeItem("session_token");
+                                                    sessionStorage.removeItem("refresh_token");
+                                                    router.push("/auth");
+                                                    console.error(error);
                                                 }
                                             }}
                                         >
@@ -459,29 +490,41 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
                 <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.myMedications}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300 text-center">{t.myMedications}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {medications.map((med, index) => (
-                            <p key={index} className="text-sm">{med.display}</p>
-                        ))}
+                        <div>
+                            {medications.length === 0 ? (
+                                <p className="text-center text-gray-500 dark:text-white">{t.no_medications_found}</p>
+                            ) : (
+                                medications.map((med, index) => (
+                                    <p key={index} className="text-sm">{med.display}</p>
+                                ))
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.medicalReports}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300 text-center">{t.medicalReports}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {reports.map((report, index) => (
-                            <p key={index} className="text-sm">{report.display}</p>
-                        ))}
+                        <div>
+                            {reports.length === 0 ? (
+                                <p className="text-center text-gray-500 dark:text-white">{t.noReportsFound}</p>
+                            ) : (
+                                reports.map((report, index) => (
+                                    <p key={index} className="text-sm">{report.display}</p>
+                                ))
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.allergies}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300 text-center">{t.allergies}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div>
@@ -525,7 +568,7 @@ const Dashboard = () => {
 
                 <Card className="dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
                     <CardHeader>
-                        <CardTitle className="text-purple-900 dark:text-orange-300">{t.immunizations}</CardTitle>
+                        <CardTitle className="text-purple-900 dark:text-orange-300 text-center">{t.immunizations}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {immunizations.length === 0 ? (
@@ -560,63 +603,64 @@ const Dashboard = () => {
                         )}
                     </CardContent>
                 </Card>
-
-                <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950 overflow-hidden">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
-                            {t.connectWithDoctor}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="bg-white dark:bg-gray-950 rounded-lg overflow-hidden">
-                        <InputOTP maxLength={6} value={value} onChange={value => setValue(value)}>
-                            <InputOTPGroup>
-                                <InputOTPSlot index={0} />
-                                <InputOTPSlot index={1} />
-                                <InputOTPSlot index={2} />
-                                <InputOTPSlot index={3} />
-                                <InputOTPSlot index={4} />
-                                <InputOTPSlot index={5} />
-                            </InputOTPGroup>
-                        </InputOTP>
-                        <div className="flex space-x-4 mt-4">
-                            <Button
-                                className="bg-purple-600 text-white py-2 px-6 rounded-lg uppercase"
-                                onClick={async () => {
-                                    try {
-                                        const response = await fetch("https://axiontestgateway.azure-api.net/records/records/verify-request", {
-                                            method: "POST",
-                                            headers: {
-                                                "Content-Type": "application/json",
-                                                "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
-                                            },
-                                            body: JSON.stringify({ otp: value }),
-                                        });
-
-                                        // Handle the response
-                                        if (response.ok) {
-                                            const responseData = await response.json();
-                                            // If successful, proceed to register the user
-                                            toast.success("Access Given successfully!");
-                                            return responseData;
-                                        } else {
-                                            // If response is not successful, show an error
-                                            const errorData = await response.json();
-                                            toast.error("Access Failed");
-                                            return errorData;
-                                        }
-                                    } catch (error) {
-                                        // Handle any errors (network issues, etc.)
-                                        console.error("Error during OTP verification:", error);
-                                        toast.error("Something went wrong. Please try again.");
-                                    }
-                                }}
-                            >
-                                Give Access
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
+            <Card className="mt-4 border-2 dark:border-gray-700 dark:bg-gray-950 items-center text-center overflow-hidden">
+                <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-purple-900 dark:text-orange-300">
+                        {t.connectWithDoctor}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="bg-white dark:bg-gray-950 rounded-lg flex flex-col justify-center items-center">
+                    {/* OTP Input */}
+                    <InputOTP maxLength={6} value={value} onChange={(value) => setValue(value)}>
+                        <InputOTPGroup className="flex justify-center mb-5">
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                    </InputOTP>
+
+                    {/* Submit Button */}
+                    <div className="flex justify-center w-full">
+                        <Button
+                            className="bg-purple-600 text-white rounded-lg uppercase"
+                            onClick={async () => {
+                                try {
+                                    const response = await fetch("https://axiontestgateway.azure-api.net/records/records/verify-request", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "Authorization": `Bearer ${sessionStorage.getItem("session_token")}`,
+                                        },
+                                        body: JSON.stringify({ otp: value }),
+                                    });
+
+                                    // Handle the response
+                                    if (response.ok) {
+                                        const responseData = await response.json();
+                                        toast.success("Access Given successfully!");
+                                        setValue(""); // Reset OTP value
+                                        return responseData;
+                                    } else {
+                                        const errorData = await response.json();
+                                        toast.error("Access Failed");
+                                        setValue(""); // Reset OTP value
+                                        return errorData;
+                                    }
+                                } catch (error) {
+                                    console.error("Error during OTP verification:", error);
+                                    toast.error("Something went wrong. Please try again.");
+                                }
+                            }}
+                        >
+                            Give Access
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 };

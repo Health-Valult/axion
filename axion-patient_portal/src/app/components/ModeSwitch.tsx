@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDarkMode } from "@/app/components/DarkModeContext";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
