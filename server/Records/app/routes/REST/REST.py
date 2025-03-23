@@ -151,7 +151,9 @@ async def verify_doctor_request(request:Request,cred:OTP):
 @route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
 async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSigns,Diagnosis]):
     c_uuid = request.state.meta.get("uuid")
-    patientscollection:Collection = request.app.state.PrescriptionsCollection
+
+    PrescriptionsCollection:Collection = request.app.state.PrescriptionsCollection
+    Medicationscollection:Collection = request.app.state.MedicationsCollection
 
     cache:redis_AX = request.app.state.Cache
     try:
@@ -166,6 +168,8 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
         timeStamp=prescriptionData.timeStamp
     )
     precriptionID = prescription.id
+    document = prescription.model_dump()
+    PrescriptionsCollection.insert_one(document=document)
 
     for meds in prescriptionData.medications:
         data = requests.get(
@@ -187,6 +191,8 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
             route=meds.route,
             meta=meds.meta
         )
+        document = medication.model_dump()
+        PrescriptionsCollection.insert_one(document=document)
         logger.warning(medication)
 
     logger.warning(prescription)
