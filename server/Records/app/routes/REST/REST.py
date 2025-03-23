@@ -184,7 +184,8 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
             frequency=meds.frequency,
             mealTiming=meds.mealTiming,
             dosage=meds.dosage,
-            route=meds.route
+            route=meds.route,
+            meta=meds.meta
         )
         logger.warning(medication)
 
