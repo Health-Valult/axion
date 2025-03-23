@@ -196,7 +196,7 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
         logger.warning(medication)
 
     logger.warning(prescription)
-    return JSONResponse(status_code=200,content={"Details":"patient not available"})
+    return JSONResponse(status_code=200,content={"Details":"prescription added"})
 
 
 
