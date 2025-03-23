@@ -30,6 +30,29 @@ DBClient = pymongo.MongoClient(URL)
 Terminology_DB = DBClient.get_database("terminology_db")
 LIONC_collection = Terminology_DB.get_collection("LIONC")
 
+@route.get(path="/records/get-patient-details",dependencies=[Depends(Authenticate)])
+async def get_patient_details(request:Request,credentials:SelectPatient):
+    c_uuid = request.state.meta.get("uuid")
+    NIC = credentials.NIC
+    PatientsCollection:Collection = request.app.state.PatientsCollection
+
+    response = PatientsCollection.find({"NIC":NIC},{"_id":1,"NIC":1,"FirstName":1,"LastName":1,"Telephone":1,"Email":1})
+    if not response:
+        return JSONResponse(status_code=401,content={"details":"patient not found"})
+    
+    return JSONResponse(status_code=200,content=response)
+
+@route.get(path="/records/doctor/recent-patients",dependencies=[Depends(Authenticate)])
+async def get_recent_patients(request:Request):
+    c_uuid = request.state.meta.get("uuid")
+    DoctorsCollection:Collection = request.app.state.DoctorsCollection
+    PatientsCollection:Collection = request.app.state.PatientsCollection
+
+    patients = DoctorsCollection.find_one({"UserID":c_uuid},{"patients":1})
+    data = [list(d.values())[0] for d in list(patients)]
+    response = PatientsCollection.find({"UserID":{"$or":data[:6]}},{"_id":1,"NIC":1,"FirstName":1,"LastName":1})
+
+    return JSONResponse(status_code=200,content=response)
 
 @route.get(path="/records/prescription/symptoms-signs",dependencies=[Depends(Authenticate)])
 async def get_prescriptions(request:Request):
