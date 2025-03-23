@@ -32,7 +32,7 @@ def staff_login(request:Request,cred:Userlg):
     state:FastAPI = request.app
     collection:Collection = state.state.HospitalCollection
     cache = state.state.Cache
-    return authenticate(collection=collection,cred=cred,endpoint="hospital",state=state)
+    return authenticate(collection=collection,cred=cred,endpoint="hospital",Red=cache,state=state)
 
 
 
