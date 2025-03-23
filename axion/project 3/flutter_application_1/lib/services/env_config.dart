@@ -35,8 +35,8 @@ class _AuthEndpoints {
   String get loginUser => '/axion/auth/login/patient';
   String get refreshToken => '/axion/auth/refresh';
   String get logout => '/axion/auth/logout';
-  String get resetPassword => '/user/reset-password';
-  String get connectOTP => '/axion/otp/connect';
+  String get resetPassword => '/axion/user/reset-password';
+  String get connectOTP => '/records/records/verify-request';
 }
 
 /// Profile-related endpoints

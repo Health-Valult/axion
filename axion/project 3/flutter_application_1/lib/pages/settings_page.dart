@@ -31,16 +31,6 @@ Future<void> saveLocale(Locale locale) async {
   await prefs.setString('locale', locale.languageCode);
 }
 
-Future<void> saveNotificationPreferences(Map<String, bool> preferences) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('notification_preferences', json.encode(preferences));
-}
-
-Future<void> savePrivacySettings(Map<String, bool> settings) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('privacy_settings', json.encode(settings));
-}
-
 /// ==========================
 /// SettingsPage
 /// ==========================
@@ -55,9 +45,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _isDarkMode = true;
   late String _selectedLanguage;
-  bool _isLoading = true;
-  Map<String, bool> _notificationPreferences = {};
-  Map<String, bool> _privacySettings = {};
+  bool _isLoading = false; // Removed loading of notifications and privacy
 
   final Map<String, Locale> _languageMap = {
     'English': const Locale('en'),
@@ -73,75 +61,27 @@ class _SettingsPageState extends State<SettingsPage> {
       (lang) => _languageMap[lang] == MyApp.localeNotifier.value,
       orElse: () => 'English',
     );
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Load notification preferences
-      final notificationPrefsString = prefs.getString('notification_preferences');
-      if (notificationPrefsString != null) {
-        _notificationPreferences = Map<String, bool>.from(
-          json.decode(notificationPrefsString)
-        );
-      } else {
-        // Default preferences
-        _notificationPreferences = {
-          'push_notifications': true,
-          'email_notifications': true,
-          'medical_alerts': true,
-        };
-      }
-
-      // Load privacy settings
-      final privacySettingsString = prefs.getString('privacy_settings');
-      if (privacySettingsString != null) {
-        _privacySettings = Map<String, bool>.from(
-          json.decode(privacySettingsString)
-        );
-      } else {
-        // Default settings
-        _privacySettings = {
-          'share_profile': false,
-          'show_activity': true,
-          'allow_recommendations': true,
-        };
-      }
-    } catch (e) {
-      // If there's an error, use default values
-      _notificationPreferences = {
-        'push_notifications': true,
-        'email_notifications': true,
-        'medical_alerts': true,
-      };
-      _privacySettings = {
-        'share_profile': false,
-        'show_activity': true,
-        'allow_recommendations': true,
-      };
-    }
-
-    setState(() => _isLoading = false);
+    // No additional settings to load, so _isLoading remains false.
   }
 
   @override
   Widget build(BuildContext context) {
     final appLocalizations = AppLocalizations.of(context)!;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDarkMode ? const Color.fromRGBO(13, 14, 18, 1) : const Color.fromRGBO(241, 241, 241, 1);
+    final cardColor = isDarkMode
+        ? const Color.fromRGBO(13, 14, 18, 1)
+        : const Color.fromRGBO(241, 241, 241, 1);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(appLocalizations.settings),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-            ))
+          ? Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -149,10 +89,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildDarkModeCard(appLocalizations, cardColor),
                   const SizedBox(height: 8),
                   _buildLanguageCard(appLocalizations, cardColor),
-                  const SizedBox(height: 8),
-                  _buildNotificationsCard(appLocalizations, cardColor),
-                  const SizedBox(height: 8),
-                  _buildPrivacyCard(appLocalizations, cardColor),
                   const SizedBox(height: 8),
                   _buildChangePasswordCard(appLocalizations, cardColor),
                   const SizedBox(height: 8),
@@ -188,66 +124,18 @@ class _SettingsPageState extends State<SettingsPage> {
             title: Text(loc.language),
           ),
           ...(_languageMap.keys.map((lang) => RadioListTile<String>(
-            activeColor: Colors.blue,
-            title: Text(lang),
-            value: lang,
-            groupValue: _selectedLanguage,
-            onChanged: (String? value) async {
-              if (value != null) {
-                setState(() => _selectedLanguage = value);
-                MyApp.localeNotifier.value = _languageMap[value]!;
-                await saveLocale(_languageMap[value]!);
-              }
-            },
-          ))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationsCard(AppLocalizations loc, Color cardColor) {
-    return Card(
-      color: cardColor,
-      child: Column(
-        children: [
-          ListTile(
-            title: Text(loc.notifications),
-          ),
-          ...(_notificationPreferences.entries.map((entry) => SwitchListTile(
-            activeColor: Colors.blue,
-            title: Text(_getNotificationTitle(entry.key, loc)),
-            value: entry.value,
-            onChanged: (bool value) async {
-              setState(() {
-                _notificationPreferences[entry.key] = value;
-              });
-              await saveNotificationPreferences(_notificationPreferences);
-            },
-          ))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrivacyCard(AppLocalizations loc, Color cardColor) {
-    return Card(
-      color: cardColor,
-      child: Column(
-        children: [
-          ListTile(
-            title: Text(loc.privacy),
-          ),
-          ...(_privacySettings.entries.map((entry) => SwitchListTile(
-            activeColor: Colors.blue,
-            title: Text(_getPrivacySettingTitle(entry.key, loc)),
-            value: entry.value,
-            onChanged: (bool value) async {
-              setState(() {
-                _privacySettings[entry.key] = value;
-              });
-              await savePrivacySettings(_privacySettings);
-            },
-          ))),
+                activeColor: Colors.blue,
+                title: Text(lang),
+                value: lang,
+                groupValue: _selectedLanguage,
+                onChanged: (String? value) async {
+                  if (value != null) {
+                    setState(() => _selectedLanguage = value);
+                    MyApp.localeNotifier.value = _languageMap[value]!;
+                    await saveLocale(_languageMap[value]!);
+                  }
+                },
+              ))),
         ],
       ),
     );
@@ -286,32 +174,6 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
-  }
-
-  String _getNotificationTitle(String key, AppLocalizations loc) {
-    switch (key) {
-      case 'push_notifications':
-        return loc.pushNotifications;
-      case 'email_notifications':
-        return loc.emailNotifications;
-      case 'medical_alerts':
-        return loc.medicalAlerts;
-      default:
-        return key;
-    }
-  }
-
-  String _getPrivacySettingTitle(String key, AppLocalizations loc) {
-    switch (key) {
-      case 'share_profile':
-        return loc.shareProfile;
-      case 'show_activity':
-        return loc.showActivity;
-      case 'allow_recommendations':
-        return loc.allowRecommendations;
-      default:
-        return key;
-    }
   }
 }
 
@@ -359,7 +221,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
 
     try {
       final result = await _apiService.deleteAccount(email, password);
-      
+
       if (!mounted) return;
 
       if (result['success']) {
@@ -367,24 +229,28 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account deleted successfully')),
         );
-        
+
         Navigator.of(context).pop(); // Close dialog
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
-        String errorMessage = 'Failed to delete account. Please try again.';
-        
+        String errorMessage =
+            'Failed to delete account. Please try again.';
+
         // Handle specific error cases
-        if (result['error']?.toLowerCase().contains('password')) {
-          errorMessage = 'Incorrect password. Please check your password and try again.';
-        } else if (result['error']?.toLowerCase().contains('not found') || 
-                  result['error']?.toLowerCase().contains('no account')) {
+        if (result['error']?.toLowerCase().contains('password') ?? false) {
+          errorMessage =
+              'Incorrect password. Please check your password and try again.';
+        } else if (result['error']?.toLowerCase().contains('not found') ?? false ||
+            result['error']?.toLowerCase().contains('no account') ?? false) {
           errorMessage = 'Account not found. Please check your email.';
-        } else if (result['error']?.toLowerCase().contains('authenticated')) {
+        } else if (result['error']?.toLowerCase().contains('authenticated') ??
+            false) {
           errorMessage = 'You must be logged in to delete your account.';
         } else if (result['error'] != null) {
           errorMessage = result['error'];
         }
-        
+
         _showErrorDialog(errorMessage);
       }
     } catch (e) {
@@ -442,7 +308,7 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    
+
     return AlertDialog(
       title: Text(loc.deleteAccount),
       content: SingleChildScrollView(
@@ -471,7 +337,9 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
                 prefixIcon: const Icon(Icons.lock_outlined),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                    _passwordVisible
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                   ),
                   onPressed: () {
                     setState(() {
@@ -585,9 +453,9 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     String label,
     TextEditingController controller,
     bool visible,
-    VoidCallback toggleVisibility,
-    {bool isNewPassword = false}
-  ) {
+    VoidCallback toggleVisibility, {
+    bool isNewPassword = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -618,7 +486,6 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   }
 
   Future<void> _attemptChangePassword() async {
-    // Validate empty fields
     if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
@@ -628,28 +495,23 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
 
     // Password validation regex
     final passwordRegex = RegExp(
-      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
-    );
+        r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
 
-    // Validate new password format
     if (!passwordRegex.hasMatch(_newPasswordController.text)) {
       _showErrorDialog(
-        'Password must be at least 8 characters long and contain:\n'
-        '- At least one uppercase letter\n'
-        '- At least one lowercase letter\n'
-        '- At least one number\n'
-        '- At least one special character (@\$!%*?&)'
-      );
+          'Password must be at least 8 characters long and contain:\n'
+          '- At least one uppercase letter\n'
+          '- At least one lowercase letter\n'
+          '- At least one number\n'
+          '- At least one special character (@\$!%*?&)');
       return;
     }
 
-    // Validate passwords match
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showErrorDialog('New passwords do not match');
       return;
     }
 
-    // Validate new password is different from current
     if (_currentPasswordController.text == _newPasswordController.text) {
       _showErrorDialog('New password must be different from current password');
       return;
@@ -658,22 +520,16 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      print('\n=== Change Password Attempt ===');
-      print('Current Password: ${_currentPasswordController.text}');
-      print('New Password: ${_newPasswordController.text}');
-      
       await _apiService.changePassword(
         _currentPasswordController.text,
         _newPasswordController.text,
       );
-      
+
       if (mounted) {
-        // Clear the form
         _currentPasswordController.clear();
         _newPasswordController.clear();
         _confirmPasswordController.clear();
-        
-        // Show success dialog
+
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -696,10 +552,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop(); // Close success dialog
-                  Navigator.of(context).pop(); // Close change password dialog
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
                 },
-                child: const Text('OK'),
+                child: Text('OK'),
               ),
             ],
           ),
@@ -707,15 +563,12 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       }
     } catch (e) {
       if (mounted) {
-        print('\n=== Change Password Error ===');
-        print('Error: $e');
         _showErrorDialog(e.toString());
       }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }
-      print('=========================\n');
     }
   }
 
@@ -738,7 +591,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
-    
+
     return AlertDialog(
       title: Text(loc.changePassword),
       content: SingleChildScrollView(

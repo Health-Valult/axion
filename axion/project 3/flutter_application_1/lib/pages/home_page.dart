@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadData();
     _loadNotifications();
-    _loadMedicalNotifications();
   }
 
   // Helper function to format date strings
@@ -69,20 +68,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _loadMedicalNotifications() async {
-    try {
-      final notifications = await _apiService.getMedicalNotifications();
-      if (mounted) {
-        MedicalNotificationsPage.getReminders(notifications);
-        setState(() {});
-      }
-    } catch (_) {}
-  }
+
 
   Future<void> _handleRefresh() async {
     await _loadData();
     await _loadNotifications();
-    await _loadMedicalNotifications();
   }
 
   Future<void> _loadData() async {
@@ -120,11 +110,11 @@ class _HomePageState extends State<HomePage> {
             .map((m) => {
                   'title': m['display'] ?? 'Unknown',
                   'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
-Route: ${m['route'] ?? 'Unknown route'}
-Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
-Code: ${m['code'] ?? 'No code'}
-Prescribed: ${_formatDate(m['meta']?['created'])}
-Source: ${m['meta']?['source'] ?? 'Unknown'}''',
+                  Route: ${m['route'] ?? 'Unknown route'}
+                  Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
+                  Code: ${m['code'] ?? 'No code'}
+                  Prescribed: ${_formatDate(m['meta']?['created'])}
+                  Source: ${m['meta']?['source'] ?? 'Unknown'}''',
                   'type': 'medication'
                 })
             .toList();
@@ -135,13 +125,13 @@ Source: ${m['meta']?['source'] ?? 'Unknown'}''',
             .map((a) => {
                   'title': a['display'] ?? 'Unknown',
                   'detail': '''Severity: ${a['severity'] ?? 'Unknown'}
-Category: ${a['category'] ?? 'Unknown'}
-Criticality: ${a['criticality'] ?? 'Unknown'}
-Status: ${a['verificationStatus'] ?? 'Unknown'}
-Source: ${a['source'] ?? 'Unknown'}
-Created: ${_formatDate(a['meta']?['created'])}
-Updated: ${_formatDate(a['meta']?['updated'])}
-System: ${a['meta']?['source'] ?? 'Unknown'}''',
+                  Category: ${a['category'] ?? 'Unknown'}
+                  Criticality: ${a['criticality'] ?? 'Unknown'}
+                  Status: ${a['verificationStatus'] ?? 'Unknown'}
+                  Source: ${a['source'] ?? 'Unknown'}
+                  Created: ${_formatDate(a['meta']?['created'])}
+                  Updated: ${_formatDate(a['meta']?['updated'])}
+                  System: ${a['meta']?['source'] ?? 'Unknown'}''',
                   'type': 'allergy'
                 })
             .toList();
@@ -152,12 +142,12 @@ System: ${a['meta']?['source'] ?? 'Unknown'}''',
             .map((i) => {
                   'title': i['display'] ?? 'Unknown',
                   'detail': '''Dosage: ${i['dosage'] ?? 'Unknown'}
-Unit: ${i['unit'] ?? 'Unknown'}
-Site: ${i['site'] ?? 'Unknown'}
-Date: ${_formatDate(i['timestamp'])}
-Code: ${i['code'] ?? 'No code'}
-Created: ${_formatDate(i['meta']?['created'])}
-Source: ${i['meta']?['source'] ?? 'Unknown'}''',
+                  Unit: ${i['unit'] ?? 'Unknown'}
+                  Site: ${i['site'] ?? 'Unknown'}
+                  Date: ${_formatDate(i['timestamp'])}
+                  Code: ${i['code'] ?? 'No code'}
+                  Created: ${_formatDate(i['meta']?['created'])}
+                  Source: ${i['meta']?['source'] ?? 'Unknown'}''',
                   'type': 'immunization'
                 })
             .toList();
@@ -318,67 +308,7 @@ Source: ${i['meta']?['source'] ?? 'Unknown'}''',
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MedicalNotificationsPage()),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.orange.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.schedule,
-                          color: Colors.orange,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                earliestReminder != null
-                                    ? '${earliestReminder["time"]} - ${earliestReminder["title"]}'
-                                    : loc.noReminders,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                loc.tapToSeeFullList,
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withOpacity(0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          Icons.chevron_right,
-                          color: Colors.orange.withOpacity(0.7),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                
                 const SizedBox(height: 16),
                 _buildSectionCapsule(
                   context: context,

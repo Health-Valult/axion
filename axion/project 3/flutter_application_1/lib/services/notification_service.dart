@@ -9,12 +9,9 @@ class NotificationService {
   static bool _authRequired = false;
   static List<Map<String, dynamic>> _notifications = [];
 
-  // Initialize notification services
   static Future<void> initialize() async {
-    // Initialize Firebase
     await Firebase.initializeApp();
     
-    // Request notification permissions
     await _firebaseMessaging.requestPermission(
       alert: true,
       badge: true,
