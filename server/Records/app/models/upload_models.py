@@ -130,6 +130,7 @@ class BaseReportTemplate(BaseModel):
 class Indications(Enum):
     SYMPTOMS = "symptoms"
     SIGNS = "signs"
+    DIAGNOSIS = "diagnosis"
 
 class MedicationUploadModel(BaseModel):
     display:str
@@ -140,15 +141,16 @@ class MedicationUploadModel(BaseModel):
     prescriber: str
     meta:dict
 
-class SymptomsAndSigns(BaseModel):
+class SymptomsSignsDiagnosis(BaseModel):
     timeStamp:datetime
     indications:Indications
     doctorName:str
+    diagnosedCondition:Optional[str] = None
     medications:list[
         MedicationUploadModel
     ]
     note:str
-class Diagnosis(BaseModel):
+class DiagnosisUploadModel(BaseModel):
     timeStamp:datetime
     indications:str = "diagnosis"
     doctorName:str

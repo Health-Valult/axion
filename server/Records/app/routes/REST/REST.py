@@ -30,7 +30,7 @@ Terminology_DB = DBClient.get_database("terminology_db")
 LIONC_collection = Terminology_DB.get_collection("LIONC")
 
 
-
+@route.get()
 
 @route.post(path="/records/upload/{type}")
 async def upload_report(request:Request,type:str,report:BaseReportTemplate):
@@ -183,7 +183,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
 
 
 @route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
-async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSigns,Diagnosis]):
+async def add_prescriptions(request:Request,prescriptionData:SymptomsSignsDiagnosis):
     c_uuid = request.state.meta.get("uuid")
 
     PrescriptionsCollection:Collection = request.app.state.PrescriptionsCollection
