@@ -24,15 +24,6 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart';
 
-const chartData = [
-	{ month: 'January', CRP: 15 },
-	{ month: 'February', CRP: 12 },
-	{ month: 'March', CRP: 25 },
-	{ month: 'April', CRP: 8 },
-	{ month: 'May', CRP: 15 },
-	{ month: 'June', CRP: 38 },
-];
-
 const chartConfig = {
 	CRP: {
 		label: 'C-Reactive Protein',
@@ -43,7 +34,32 @@ const chartConfig = {
 	},
 } satisfies ChartConfig;
 
-const LiverFunctionTest = () => {
+interface chartProps {
+	chartData?: { month: string; CRP: number }[];
+}
+
+const CRPChart: React.FC<chartProps> = ({ chartData }) => {
+	// Check if chartData is undefined or empty
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>C-Reactive Protein</CardTitle>
+					<CardDescription>January - June 2024</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-40">
+					<p className="text-muted-foreground">No data available</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	// Ensure all data points have valid CRP values
+	const validChartData = chartData.map((item) => ({
+		month: item.month || 'Unknown',
+		CRP: typeof item.CRP === 'number' && !isNaN(item.CRP) ? item.CRP : 0,
+	}));
+
 	return (
 		<Card>
 			<CardHeader>
@@ -54,7 +70,7 @@ const LiverFunctionTest = () => {
 				<ChartContainer config={chartConfig}>
 					<BarChart
 						accessibilityLayer
-						data={chartData}
+						data={validChartData}
 						layout="vertical"
 						margin={{
 							right: 16,
@@ -67,7 +83,9 @@ const LiverFunctionTest = () => {
 							tickLine={false}
 							tickMargin={10}
 							axisLine={false}
-							tickFormatter={(value) => value.slice(0, 3)}
+							tickFormatter={(value) =>
+								value ? value.slice(0, 3) : ''
+							}
 							hide
 						/>
 						<XAxis dataKey="CRP" type="number" hide />
@@ -87,6 +105,9 @@ const LiverFunctionTest = () => {
 								offset={8}
 								className="fill-[--color-label]"
 								fontSize={12}
+								formatter={(value: string) =>
+									value ? value.slice(0, 3) : ''
+								}
 							/>
 							<LabelList
 								dataKey="CRP"
@@ -108,4 +129,4 @@ const LiverFunctionTest = () => {
 	);
 };
 
-export default LiverFunctionTest;
+export default CRPChart;

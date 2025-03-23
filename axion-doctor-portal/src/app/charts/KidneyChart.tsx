@@ -84,12 +84,18 @@ const isWithinNormal = (test: UrineTestResult): boolean => {
 };
 
 const KidneyChart: React.FC<resultsProps> = ({ date, testResults }) => {
+	// Handle case where testResults is undefined
+	const safeTestResults = testResults || [];
+
 	// Calculate Overall Urine Health Score (Percentage of Normal Markers)
-	const totalParameters = testResults.length;
-	const normalCount = testResults.filter((test) =>
+	const totalParameters = safeTestResults.length;
+	const normalCount = safeTestResults.filter((test) =>
 		isWithinNormal(test)
 	).length;
-	const urineHealthScore = Math.round((normalCount / totalParameters) * 100);
+	const urineHealthScore =
+		totalParameters > 0
+			? Math.round((normalCount / totalParameters) * 100)
+			: 0;
 
 	const chartData = [
 		{
@@ -195,72 +201,78 @@ const KidneyChart: React.FC<resultsProps> = ({ date, testResults }) => {
 							<div className="overflow-y-auto">
 								<DialogDescription asChild>
 									<div className="px-6 py-4">
-										<Table>
-											<TableCaption>
-												Composition of urine as at
-												{date}
-											</TableCaption>
-											<TableHeader>
-												<TableRow>
-													<TableHead className="w-[100px]">
-														Parameter
-													</TableHead>
-													<TableHead>
-														Result
-													</TableHead>
-													<TableHead>
-														Normal
-													</TableHead>
-													<TableHead className="text-right">
-														Remarks
-													</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												{testResults.map(
-													(component) => (
-														<TableRow
-															key={
-																component.parameter
-															}
-														>
-															<TableCell className="font-medium">
-																{
+										{safeTestResults.length > 0 ? (
+											<Table>
+												<TableCaption>
+													Composition of urine as at{' '}
+													{date}
+												</TableCaption>
+												<TableHeader>
+													<TableRow>
+														<TableHead className="w-[100px]">
+															Parameter
+														</TableHead>
+														<TableHead>
+															Result
+														</TableHead>
+														<TableHead>
+															Normal
+														</TableHead>
+														<TableHead className="text-right">
+															Remarks
+														</TableHead>
+													</TableRow>
+												</TableHeader>
+												<TableBody>
+													{safeTestResults.map(
+														(component) => (
+															<TableRow
+																key={
 																	component.parameter
 																}
-															</TableCell>
-															<TableCell>
-																{
-																	component.result
-																}
-															</TableCell>
-															<TableCell>
-																{
-																	component.normal
-																}
-															</TableCell>
-															<TableCell className="text-right">
-																{isWithinNormal(
-																	component
-																)
-																	? 'Normal'
-																	: 'Abnormal'}
-															</TableCell>
-														</TableRow>
-													)
-												)}
-											</TableBody>
-											<TableFooter>
-												<TableRow>
-													<TableCell colSpan={3}>
-														Overall Condition
-													</TableCell>
-													<TableCell className="text-right text-green-600">
-														Good.
-													</TableCell>
-												</TableRow>
-											</TableFooter>
-										</Table>
+															>
+																<TableCell className="font-medium">
+																	{
+																		component.parameter
+																	}
+																</TableCell>
+																<TableCell>
+																	{
+																		component.result
+																	}
+																</TableCell>
+																<TableCell>
+																	{
+																		component.normal
+																	}
+																</TableCell>
+																<TableCell className="text-right">
+																	{isWithinNormal(
+																		component
+																	)
+																		? 'Normal'
+																		: 'Abnormal'}
+																</TableCell>
+															</TableRow>
+														)
+													)}
+												</TableBody>
+												<TableFooter>
+													<TableRow>
+														<TableCell colSpan={3}>
+															Overall Condition
+														</TableCell>
+														<TableCell className="text-right text-green-600">
+															Good.
+														</TableCell>
+													</TableRow>
+												</TableFooter>
+											</Table>
+										) : (
+											<div className="py-8 text-center text-muted-foreground">
+												No test results available
+											</div>
+										)}
 									</div>
 								</DialogDescription>
 							</div>

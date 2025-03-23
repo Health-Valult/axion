@@ -12,7 +12,7 @@ import {
 } from '@heroui/react';
 import { Chip, Avatar } from '@heroui/react';
 import { Textarea } from '@heroui/react';
-import { RadioGroup, Radio, cn, CheckboxGroup, Checkbox } from '@heroui/react';
+import { cn, CheckboxGroup, Checkbox } from '@heroui/react';
 import { Autocomplete, AutocompleteItem } from '@heroui/react';
 import { Input } from '@heroui/react';
 
@@ -20,6 +20,7 @@ import { now, getLocalTimeZone, DateValue } from '@internationalized/date';
 import ProtectedClientComponent from '../components/ProtectedClientComponent';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store/store';
+import { getTokensFromCookies } from '../utils/auth';
 
 const Prescriptions: React.FC = () => {
 	const user = useSelector((state: RootState) => state.user);
@@ -94,19 +95,64 @@ const Prescriptions: React.FC = () => {
 		}
 
 		setIsLoading(true);
+		// try {
+		// 	const response = await fetch(
+		// 		`http://localhost:3000/api/proxy10?name=${encodeURIComponent(
+		// 			query
+		// 		)}`
+		// 	);
+
+		// 	if (!response.ok) {
+		// 		throw new Error('Network response was not ok');
+		// 	}
+
+		// 	const data = await response.json();
+
+		// 	console.log(data);
+
+		// 	// Process the response data
+		// 	let medicines: Array<{
+		// 		key: string;
+		// 		label: string;
+		// 		description: string;
+		// 	}> = [];
+
+		// 	if (data && data.drugGroup && data.drugGroup.conceptGroup) {
+		// 		// Iterate through all concept groups
+		// 		data.drugGroup.conceptGroup.forEach((group: any) => {
+		// 			if (group.conceptProperties) {
+		// 				// Extract properties from each concept
+		// 				const groupMedicines = group.conceptProperties.map(
+		// 					(prop: any) => ({
+		// 						key: prop.rxcui,
+		// 						label: prop.name,
+		// 						description: prop.synonym || prop.name,
+		// 					})
+		// 				);
+
+		// 				medicines = [...medicines, ...groupMedicines];
+		// 			}
+		// 		});
+		// 	}
+
+		// 	setMedicine(medicines);
+		// } catch (error) {
+		// 	console.error('Error fetching medicine data:', error);
+		// 	setMedicine([]);
+		// } finally {
+		// 	setIsLoading(false);
+		// }
 		try {
 			const response = await fetch(
 				`http://localhost:3000/api/proxy10?name=${encodeURIComponent(
 					query
 				)}`
 			);
-
 			if (!response.ok) {
 				throw new Error('Network response was not ok');
 			}
 
 			const data = await response.json();
-
 			console.log(data);
 
 			// Process the response data
@@ -116,23 +162,32 @@ const Prescriptions: React.FC = () => {
 				description: string;
 			}> = [];
 
-			if (data && data.drugGroup && data.drugGroup.conceptGroup) {
-				// Iterate through all concept groups
-				data.drugGroup.conceptGroup.forEach((group: any) => {
-					if (group.conceptProperties) {
-						// Extract properties from each concept
-						const groupMedicines = group.conceptProperties.map(
-							(prop: any) => ({
-								key: prop.rxcui,
-								label: prop.name,
-								description: prop.synonym || prop.name,
-							})
-						);
-
-						medicines = [...medicines, ...groupMedicines];
-					}
-				});
+			// Check if data is an array (as in your example)
+			if (Array.isArray(data)) {
+				// Direct mapping from the array
+				medicines = data.map((item) => ({
+					key: item.rxcui,
+					label: item.name,
+					description: item.synonym || item.name,
+				}));
 			}
+			// Keep the existing logic as fallback
+			// else if (data && data.drugGroup && data.drugGroup.conceptGroup) {
+			//   // Original logic remains unchanged
+			//   data.drugGroup.conceptGroup.forEach((group: any) => {
+			// 	if (group.conceptProperties) {
+			// 	  const groupMedicines = group.conceptProperties.map(
+			// 		(prop: any) => ({
+			// 		  key: prop.rxcui,
+			// 		  label: prop.name,
+			// 		  description: prop.synonym || prop.name,
+			// 		})
+			// 	  );
+
+			// 	  medicines = [...medicines, ...groupMedicines];
+			// 	}
+			//   });
+			// }
 
 			setMedicine(medicines);
 		} catch (error) {
@@ -157,6 +212,30 @@ const Prescriptions: React.FC = () => {
 	useEffect(() => {
 		setDefaultDate(now(getLocalTimeZone())); // Ensures it only runs on the client
 	}, []);
+
+	// Handle indication selection with mutual exclusivity
+	const handleIndicationsChange = (value: string[]) => {
+		// If diagnosis is being selected
+		if (
+			value.includes('diagnosis') &&
+			!selectedIndications.includes('diagnosis')
+		) {
+			// Clear symptoms and signs
+			setSelectedIndications(['diagnosis']);
+		}
+		// If symptoms or signs is being selected and diagnosis was selected
+		else if (
+			!value.includes('diagnosis') &&
+			selectedIndications.includes('diagnosis')
+		) {
+			// Remove diagnosis
+			setSelectedIndications(value.filter((v) => v !== 'diagnosis'));
+		}
+		// Otherwise, just update the selection
+		else {
+			setSelectedIndications(value);
+		}
+	};
 
 	const handleMedicineSelection = (key: Key | null) => {
 		if (!key) return;
@@ -210,16 +289,16 @@ const Prescriptions: React.FC = () => {
 
 	const postPrescription = async (data: string) => {
 		try {
-			const token = localStorage.getItem('jwt');
-			if (!token) {
+			const { sessionToken } = await getTokensFromCookies();
+			if (!sessionToken) {
 				throw new Error('User is not authenticated');
 			}
-
-			const response = await fetch('https://your-api.com/prescriptions', {
+			console.log(data);
+			const response = await fetch('http://localhost:3000/api/proxy11', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`,
+					Authorization: `Bearer ${sessionToken}`,
 				},
 				body: data,
 			});
@@ -253,23 +332,18 @@ const Prescriptions: React.FC = () => {
 								new FormData(e.currentTarget)
 							);
 
-							// Format medications according to the required schema
+							// Create the appropriate request body based on indications
+							let requestBody;
+
+							// Format medications according to the model
 							const formattedMedicines = selectedMedicines.map(
 								(med) => ({
-									format: 'AxionDataX-1.0',
-									resourceType: 'medication',
-									id: crypto.randomUUID(), // Generate UUID on the client
-									patientID:
-										formData.patientID ||
-										'default-patient-id', // Get from form or use default
-									coding_system: 'RxNorm',
-									code: med.key, // RxCUI from RxNorm
 									display: med.label,
 									frequency: med.frequency,
 									mealTiming: med.mealTiming,
 									dosage: med.dosage || '1 tablet',
 									route: med.route || 'PO',
-									prescriber: 'Dr. Steven James',
+									prescriber: user?.state?.fullName || '',
 									meta: {
 										treatmentDuration: med.treatmentDuration
 											? {
@@ -283,28 +357,43 @@ const Prescriptions: React.FC = () => {
 														: null,
 											  }
 											: null,
-										diagnosis: selectedIndications.includes(
-											'diagnosis'
-										)
-											? diagnosedCondition
-											: null,
-										indications: selectedIndications,
-										prescribedDate:
-											selectedDate?.toISOString() ||
-											new Date().toISOString(),
 									},
 								})
 							);
 
+							if (selectedIndications.includes('diagnosis')) {
+								// Use the original formatting for diagnosis
+								requestBody = formattedMedicines.map((med) => ({
+									...med,
+									meta: {
+										...med.meta,
+										diagnosis: diagnosedCondition,
+										prescribedDate:
+											selectedDate?.toISOString() ||
+											new Date().toISOString(),
+									},
+								}));
+							} else {
+								// Use the SymptomsAndSigns model
+								requestBody = {
+									timeStamp:
+										selectedDate?.toISOString() ||
+										new Date().toISOString(),
+									indications:
+										selectedIndications.length > 0
+											? selectedIndications[0]
+											: 'symptoms', // Default to symptoms if none selected
+									medications: formattedMedicines,
+								};
+							}
+
 							console.log(
 								'Sending prescription data:',
-								formattedMedicines
+								requestBody
 							);
 
 							// Convert to JSON before sending to API
-							postPrescription(
-								JSON.stringify(formattedMedicines)
-							);
+							postPrescription(JSON.stringify(requestBody));
 						}}
 					>
 						<img
@@ -314,7 +403,7 @@ const Prescriptions: React.FC = () => {
 							alt="prescription"
 						/>
 
-						<div className="w-full flex flex-row gap-4">
+						<div className="w-full">
 							{defaultDate && (
 								<DatePicker
 									isReadOnly
@@ -339,20 +428,12 @@ const Prescriptions: React.FC = () => {
 									}}
 								/>
 							)}
-
-							<Input
-								label="Patient ID"
-								placeholder="Enter patient ID"
-								name="patientID"
-								variant="bordered"
-								isRequired
-							/>
 						</div>
 
 						<CheckboxGroup
 							isRequired
 							value={selectedIndications}
-							onValueChange={setSelectedIndications}
+							onValueChange={handleIndicationsChange}
 							className="mx-auto"
 							orientation="horizontal"
 							description="Select the basis of medication"
@@ -372,11 +453,19 @@ const Prescriptions: React.FC = () => {
 							</Checkbox>
 							<Checkbox
 								value="symptoms"
+								isDisabled={selectedIndications.includes(
+									'diagnosis'
+								)}
 								classNames={{
 									base: cn(
 										'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
 										'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-										'data-[selected=true]:border-primary'
+										'data-[selected=true]:border-primary',
+										selectedIndications.includes(
+											'diagnosis'
+										)
+											? 'opacity-50'
+											: ''
 									),
 								}}
 							>
@@ -384,11 +473,19 @@ const Prescriptions: React.FC = () => {
 							</Checkbox>
 							<Checkbox
 								value="signs"
+								isDisabled={selectedIndications.includes(
+									'diagnosis'
+								)}
 								classNames={{
 									base: cn(
 										'inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between',
 										'flex-row-reverse max-w-[300px] cursor-pointer rounded-lg gap-4 p-4 border-2 border-transparent',
-										'data-[selected=true]:border-primary'
+										'data-[selected=true]:border-primary',
+										selectedIndications.includes(
+											'diagnosis'
+										)
+											? 'opacity-50'
+											: ''
 									),
 								}}
 							>
@@ -412,6 +509,7 @@ const Prescriptions: React.FC = () => {
 						)}
 
 						<Textarea
+							label="Clinical Notes"
 							name="notes"
 							minRows={3}
 							className="w-full"
@@ -421,6 +519,7 @@ const Prescriptions: React.FC = () => {
 									.join(' and ')
 									.toLowerCase() || 'clinical information'
 							}`}
+							isRequired
 						/>
 
 						<div className="flex flex-wrap gap-2">

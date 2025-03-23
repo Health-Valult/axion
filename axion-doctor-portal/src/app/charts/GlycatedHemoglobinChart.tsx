@@ -34,6 +34,20 @@ const GlycatedHemoglobinChart: React.FC<chartProps> = ({ chartData }) => {
 		remaining: totalValue - hba1c, // Calculate remaining percentage
 	}));
 
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card className="flex flex-col">
+				<CardHeader className="items-center pb-0">
+					<CardTitle>HbA1c %</CardTitle>
+				</CardHeader>
+				<CardContent className="flex flex-1 items-center justify-center pt-8">
+					<div className="text-muted-foreground">
+						No HbA1c data available
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">

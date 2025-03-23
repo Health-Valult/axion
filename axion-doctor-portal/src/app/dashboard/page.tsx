@@ -8,24 +8,13 @@ import CRPChart from '../charts/CRPChart';
 import SerumElectrolytesChart from '../charts/SerumElectrolytes';
 import ESRChart from '../charts/ESRChart';
 import GlycatedHemoglobinChart from '../charts/GlycatedHemoglobinChart';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store/store';
-import {
-	GET_ESR_OBSERVATIONS,
-	GET_HEMOGLOBIN_OBSERVATIONS,
-	GET_TLC_OBSERVATIONS,
-	GET_NEUTROPHILS_OBSERVATIONS,
-	GET_LYMPHOCYTES_OBSERVATIONS,
-	GET_MONOCYTES_OBSERVATIONS,
-	GET_EOSINOPHILS_OBSERVATIONS,
-	GET_BASOPHILS_OBSERVATIONS,
-	GET_PLATELET_OBSERVATIONS,
-	GET_RBC_OBSERVATIONS,
-	GET_HBA1C_OBSERVATIONS,
-	GET_SERUM_ELECTROLYTES,
-	GET_LIPID_PROFILE,
-} from '../graphql/queries';
-import { useQuery } from '@apollo/client';
+import { useLipidProfileData } from '../graphql/LipidProfile';
+import { useHbA1cData } from '../graphql/GlycatedHemoglobin';
+import { useHematologyData } from '../graphql/HematologyData';
+import { useFBGData } from '../graphql/FastingBloodSugar';
+import { useElectrolytesData } from '../graphql/Electrolytes';
+import { useCRPData } from '../graphql/CReactiveProtein';
+import { useUrinalysisData } from '../graphql/UrineAnalysis';
 
 const HematologyTrendsChart = dynamic(
 	() => import('../charts/HematologyTrendChart'),
@@ -106,14 +95,13 @@ const KidneyChart = dynamic(() => import('../charts/KidneyChart'), {
 // 		data: esrQueryData,
 // 	} = useQuery(GET_ESR_OBSERVATIONS, { variables: { patient: patientId } });
 
-// 	// Hemoglobin Query
-// 	const {
-// 		loading: hbLoading,
-// 		error: hbError,
-// 		data: hbData,
-// 	} = useQuery(GET_HEMOGLOBIN_OBSERVATIONS, {
-// 		variables: { patient: patientId },
-// 	});
+// Hemoglobin Query
+// const {
+// 	loading: hbLoading,
+// 	error: hbError,
+// 	data: hbData,
+// } = useQuery(GET_HEMOGLOBIN_OBSERVATIONS, {
+// });
 
 // 	// TLC Query
 // 	const {
@@ -404,22 +392,18 @@ const KidneyChart = dynamic(() => import('../charts/KidneyChart'), {
 // const chartData = transformData();
 
 const Dashboard: React.FC = () => {
-	const patient = useSelector((state: RootState) => state.patient.state);
-	const age = patient
-		? new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear()
-		: 0;
 	return (
 		<div className="grid sm:grid-cols-1 md:grid-cols-2 h-full w-full overflow-y-auto gap-3 mt-2 mb-5">
 			<div className="col-span-1 grid sm:grid-cols-1 md:grid-cols-2 gap-3">
 				<div className="col-span-1 flex flex-col gap-3">
-					{patient && (
+					{/* {patient && (
 						<Summary
 							name={patient.firstName + patient.lastName}
 							age={age}
 							gender={patient.gender}
 							patientData={patient.summary}
 						/>
-					)}
+					)} */}
 					<ESRChart
 						chartData={[
 							{ date: '2024-07-08', wintrobe: 6, westergren: 10 },
@@ -441,7 +425,7 @@ const Dashboard: React.FC = () => {
 				</div>
 
 				<div className="col-span-1 flex flex-col gap-3">
-					<HematologyTrendsChart
+					{/* <HematologyTrendsChart
 						parameters={[
 							{
 								name: 'Haemoglobin',
@@ -587,16 +571,20 @@ const Dashboard: React.FC = () => {
 								],
 							},
 						]}
+					/> */}
+					<HematologyTrendsChart
+						parameters={useHematologyData().parameters}
 					/>
-					<GlycatedHemoglobinChart
+					{/* <GlycatedHemoglobinChart
 						chartData={[
 							{
 								month: 'January',
 								hba1c: 6.5,
 							},
 						]}
-					/>
-					<SerumElectrolytesChart
+					/> */}
+					<GlycatedHemoglobinChart chartData={useHbA1cData().data} />
+					{/* <SerumElectrolytesChart
 						date="2024-07-08"
 						chartData={[
 							{
@@ -615,12 +603,26 @@ const Dashboard: React.FC = () => {
 								fill: 'var(--color-potassium)',
 							},
 						]}
+					/> */}
+					<SerumElectrolytesChart
+						date={useElectrolytesData().date ?? 'No Date'}
+						chartData={useElectrolytesData().data}
 					/>
-					<CRPChart />
+					{/* <CRPChart chartData={
+						[
+							{ month: 'January', CRP: 15 },
+							{ month: 'February', CRP: 12 },
+							{ month: 'March', CRP: 18 },
+							{ month: 'April', CRP: 70 },
+							{ month: 'May', CRP: 19 },
+							{ month: 'June', CRP: 16 },
+						]
+					} /> */}
+					<CRPChart chartData={useCRPData().data} />
 				</div>
 			</div>
 			<div className="col-span-1 grid gap-2">
-				<LipidProfileChart
+				{/* <LipidProfileChart
 					chartData={[
 						{
 							month: 'January',
@@ -671,9 +673,10 @@ const Dashboard: React.FC = () => {
 							TG_HDL: 148 / 56,
 						},
 					]}
-				/>
+				/> */}
+				<LipidProfileChart chartData={useLipidProfileData().data} />
 				<div className="grid sm:grid-cols-1 md:grid-cols-2 h-full w-full overflow-y-auto gap-3">
-					<FastingBloodGlucoseChart
+					{/* <FastingBloodGlucoseChart
 						chartData={[
 							{ month: 'January', FBG: 95 },
 							{ month: 'February', FBG: 110 },
@@ -682,7 +685,8 @@ const Dashboard: React.FC = () => {
 							{ month: 'May', FBG: 145 },
 							{ month: 'June', FBG: 105 },
 						]}
-					/>
+					/> */}
+					<FastingBloodGlucoseChart chartData={useFBGData().data} />
 					<BloodPressureChart
 						chartData={[
 							{ month: 'January', systolic: 120, diastolic: 80 },
@@ -693,7 +697,7 @@ const Dashboard: React.FC = () => {
 							{ month: 'June', systolic: 145, diastolic: 95 },
 						]}
 					/>
-					<KidneyChart
+					{/* <KidneyChart
 						date="2024-12-18"
 						testResults={[
 							{
@@ -767,6 +771,10 @@ const Dashboard: React.FC = () => {
 								normal: 'Absent',
 							},
 						]}
+					/> */}
+					<KidneyChart
+						date={useUrinalysisData().data?.date ?? 'No Date'}
+						testResults={useUrinalysisData().data?.testResults}
 					/>
 					<LiverFunctionTest
 						date="2024-09-07"

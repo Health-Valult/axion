@@ -24,9 +24,6 @@ export function ClientSideNavTracker({
 		const isSignUpPage =
 			pathname === '/signup' || pathname?.includes('/signup');
 
-		console.log('Current pathname:', pathname);
-		console.log('Is login page (client check):', isLoginPage);
-
 		// Update sidebar visibility based on current path
 		setShowSidebar(!isLoginPage && !isSignUpPage);
 	}, [pathname]); // This effect runs whenever the pathname changes

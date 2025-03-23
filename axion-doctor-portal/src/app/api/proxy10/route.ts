@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
 		);
 	}
 
+	// const apiUrl = `https://rxnav.nlm.nih.gov/REST/approximateTerm.json?term=${encodeURIComponent(
+	// 	query
+	// )}&maxEntries=10`;
+
 	const apiUrl = `https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(
 		query
 	)}`;

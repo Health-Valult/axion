@@ -4,7 +4,7 @@ import { getTokensFromCookies } from '@/app/utils/auth'; // Adjust import path a
 
 // Create the HTTP link
 const httpLink = createHttpLink({
-	uri: 'http:/api/graphql',
+	uri: 'http://localhost:3000/api/graphql', // Adjust URL as needed
 });
 
 // Create the auth link to add the Authorization header
@@ -36,11 +36,9 @@ const client = new ApolloClient({
 	cache: new InMemoryCache(),
 	defaultOptions: {
 		watchQuery: {
-			fetchPolicy: 'no-cache',
 			errorPolicy: 'all',
 		},
 		query: {
-			fetchPolicy: 'no-cache',
 			errorPolicy: 'all',
 		},
 	},

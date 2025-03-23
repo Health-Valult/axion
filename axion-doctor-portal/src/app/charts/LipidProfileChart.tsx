@@ -161,6 +161,25 @@ const getCholesterolRisk = (
 };
 
 const LipidProfileChart: React.FC<chartProps> = ({ chartData }) => {
+	// Check if chartData exists and has at least one entry
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card className="shadow-none border-gray-300 dark:border-gray-700">
+				<CardHeader>
+					<CardTitle>Cholesterol Chart (mg/dL)</CardTitle>
+					<CardDescription>No data available</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="flex items-center justify-center h-64">
+						<p className="text-muted-foreground">
+							No cholesterol data to display
+						</p>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	const latest = chartData[chartData.length - 1];
 	const status = getCholesterolRisk(
 		latest.totalCholesterol,
@@ -168,8 +187,8 @@ const LipidProfileChart: React.FC<chartProps> = ({ chartData }) => {
 		latest.HDL,
 		latest.LDL,
 		latest.VLDL,
-		latest.LDL_HDL, // Added LDL_HDL
-		latest.TC_HDL, // Added TC_HDL
+		latest.LDL_HDL,
+		latest.TC_HDL,
 		latest.nonHDL
 	);
 	return (

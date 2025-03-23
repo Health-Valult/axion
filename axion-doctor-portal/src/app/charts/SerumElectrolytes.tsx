@@ -41,6 +41,21 @@ interface SERprops {
 }
 
 const SerumElectrolytesChart: React.FC<SERprops> = ({ date, chartData }) => {
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card className="flex flex-col">
+				<CardHeader className="items-center pb-0">
+					<CardTitle>Serum Electrolytes Chart</CardTitle>
+					<CardDescription>No data available</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-64">
+					<p className="text-muted-foreground">
+						No electrolyte data to display
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">

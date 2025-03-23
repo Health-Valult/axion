@@ -116,6 +116,23 @@ interface trendProps {
 }
 
 const HematologyChart: React.FC<trendProps> = ({ parameters }) => {
+	// Check if parameters is undefined or empty
+	if (!parameters || parameters.length === 0) {
+		return (
+			<Card className="shadow-none max-h-96 border-gray-300 dark:border-gray-700">
+				<CardHeader>
+					<CardTitle>Hematology Trend Charts</CardTitle>
+					<CardDescription>
+						No hematology data available
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-64">
+					<p className="text-muted-foreground">No data to display</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	const [open, setOpen] = React.useState(false);
 	const [selectedComponent, setSelectedComponent] =
 		React.useState<BloodComponent | null>(null);
@@ -209,6 +226,23 @@ const Chart: React.FC<chartProps> = ({
 	reportData,
 	normalRange,
 }) => {
+	// Check if reportData is undefined or empty
+	if (!reportData || reportData.length === 0) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>{measurementUnit}</CardTitle>
+					<CardDescription>No data available</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-64">
+					<p className="text-muted-foreground">
+						No trend data to display
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	const chartData = reportData.map((data) => ({
 		month: data.month,
 		actual: data.value,

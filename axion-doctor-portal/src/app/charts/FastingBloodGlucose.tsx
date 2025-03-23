@@ -33,6 +33,21 @@ interface chartProps {
 }
 
 const FastingBloodGlucoseChart: React.FC<chartProps> = ({ chartData }) => {
+	if (!chartData || chartData.length === 0) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Fasting Blood Glucose</CardTitle>
+					<CardDescription>No data available</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-64">
+					<p className="text-muted-foreground">
+						No FBG data to display
+					</p>
+				</CardContent>
+			</Card>
+		);
+	}
 	const latestFBG = chartData.at(-1)?.FBG;
 
 	let glucoseStatus = '';
