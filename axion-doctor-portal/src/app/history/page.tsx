@@ -86,10 +86,10 @@ const History: React.FC = () => {
 							<AccordionItem
 								key={note.id}
 								aria-label={`Accordion ${note.id}`}
-								title={`${note.indications} by ${note.doctor}`}
+								title={`${note.indications} by ${note.doctorName}`}
 							>
 								<DoctorsNote
-									name={note.doctorID}
+									name={note.doctorName}
 									dateTime={formatDateTime(note.timeStamp)}
 									indication={note.indications}
 									content={note.notes || ''}

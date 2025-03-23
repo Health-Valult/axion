@@ -22,6 +22,8 @@ import {
 } from '@nextui-org/react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store/store';
 
 export const AxionLogo = ({
 	width,
@@ -207,7 +209,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 	];
 	const [open, setOpen] = useState(false);
 	const router = useRouter();
-
+	const user = useSelector((state: RootState) => state.user);
 	async function handleLogout() {
 		try {
 			await fetch('/api/auth/logout', {
@@ -279,7 +281,7 @@ const SideBar: React.FC<Component> = ({ children }) => {
 										Signed in as
 									</p>
 									<p className="font-semibold">
-										Dr. Steven James
+										{user.state?.fullName} : User
 									</p>
 								</DropdownItem>
 								<DropdownItem
