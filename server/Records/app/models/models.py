@@ -156,3 +156,10 @@ class Precription(BaseModel):
     timeStamp:datetime
     indications:str
     notes:str
+
+class Notes(BaseModel):
+    format:str = Field("AxionDataX-1.0",frozen=True) # type: ignore
+    resourceType:str = Field("precription",frozen=True)
+    id:str = Field(default_factory=lambda:str(uuid.uuid4()))
+    doctorID:str
+    note:str

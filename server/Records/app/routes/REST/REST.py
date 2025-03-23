@@ -15,6 +15,7 @@ from fastapi.websockets import WebSocket
 from app.shared.utils.Cache.redis import Body, redis_AX
 from app.models.models import *
 import requests
+from collections import defaultdict
 
 def generate_otp(length=6):
     return ''.join([str(random.randint(0, 9)) for _ in range(length)])
@@ -29,6 +30,58 @@ DBClient = pymongo.MongoClient(URL)
 Terminology_DB = DBClient.get_database("terminology_db")
 LIONC_collection = Terminology_DB.get_collection("LIONC")
 
+
+@route.get(path="/records/prescription/symptoms-signs",dependencies=[Depends(Authenticate)])
+async def get_prescriptions(request:Request):
+    c_uuid = request.state.meta.get("uuid")
+    PrescriptionsCollection:Collection = request.app.state.PrescriptionsCollection
+    prescriptions = PrescriptionsCollection.find({"doctorID":c_uuid,"indications":{"$in": ["symptoms", "diagnosis"]}},{"_id":0})
+    
+    prescriptions_ls = list(prescriptions)
+
+    return JSONResponse(status_code=200,content=prescriptions_ls)
+
+
+@route.get(path="/records/prescription/diagnosis",dependencies=[Depends(Authenticate)])
+async def get_prescriptions(request:Request):
+    c_uuid = request.state.meta.get("uuid")
+    PrescriptionsCollection:Collection = request.app.state.PrescriptionsCollection
+    prescriptions = PrescriptionsCollection.find({"doctorID":c_uuid,"indications":"diagnosis"},{"_id":0})
+    
+    group = defaultdict(list)
+
+    for i in prescriptions:
+        key = i["diagnosedCondition"]
+        group[key].append(i)
+    
+    grouped_dict = dict(group)
+
+    return JSONResponse(status_code=200,content=grouped_dict)
+
+@route.get(path="/records/notes",dependencies=[Depends(Authenticate)])
+async def get_prescriptions(request:Request):
+    c_uuid = request.state.meta.get("uuid")
+    NotesCollection:Collection = request.app.state.NotesCollection
+
+    notes = NotesCollection.find({"doctorID":c_uuid},{"_id":0})
+
+    note_ls = list(notes)
+
+    return JSONResponse(status_code=200,content=note_ls)
+
+
+@route.post(path="/records/notes",dependencies=[Depends(Authenticate)])
+async def get_prescriptions(request:Request,note:str):
+    c_uuid = request.state.meta.get("uuid")
+    NotesCollection:Collection = request.app.state.NotesCollection
+    note_ = Notes(
+        doctorID=c_uuid,
+        note=note
+    )
+    
+    NotesCollection.insert_one(note_.model_dump())
+    
+    return JSONResponse(status_code=200,content={"details":"note saved sucessfully"})
 
 
 
@@ -142,7 +195,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
     cache:redis_AX = request.app.state.Cache
     c_otp = cred.otp
     c_uuid = request.state.meta.get("uuid")
-    
+    collection:Collection = request.app.state.DoctorsCollection
    
     name = f"otp::verify:records::request::{c_uuid}"
     otp_payload = cache.get_item(name=name)
@@ -163,7 +216,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
     
     # TODO future extensive record viewing
 
-    """
+
     new_patients = {
         "UserID":c_uuid
     }
@@ -172,7 +225,7 @@ async def verify_doctor_request(request:Request,cred:OTP):
         {"UserID":requester},
           {"$addToSet": {"patients": {"$each": [new_patients]}}}
     )
-    """
+
 
     payload = {"patient":c_uuid}
     name = f"verified::doc::{requester}"

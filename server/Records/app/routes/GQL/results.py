@@ -56,7 +56,6 @@ labsResult={
     "_id":0,
     "id":1,
     "patientID": 1,
-    "code": 1,
     "display": 1,
     "timestamp":1,
     "meta": 1

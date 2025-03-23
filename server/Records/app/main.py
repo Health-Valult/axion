@@ -43,6 +43,7 @@ async def lifespan(app:FastAPI):
     app.state.ProceduresCollection = Database.get_collection("procedures")
     app.state.LabsCollection = Database.get_collection("labs")
     app.state.PrescriptionsCollection = Database.get_collection("prescriptions")
+    app.state.NotesCollection = Database.get_collection("notes")
 
     app.state.PatientsCollection = ptclient.get_collection("patients")
     app.state.DoctorsCollection = ptclient.get_collection("doctors")
