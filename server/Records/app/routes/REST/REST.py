@@ -18,6 +18,8 @@ from app.models.models import *
 import requests
 from collections import defaultdict
 
+from app.routes.GQL.Doctor import get_patient
+
 def generate_otp(length=6):
     return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
@@ -120,7 +122,7 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
 
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
 
-    patientID = "2cd9916f-67e2-5ea1-9971-7a488239c83f" #credentials.get("UserID")
+    patientID = credentials.get("UserID")
     
     clinic = report.mata.clinic
     practitioner = report.mata.practitioner
@@ -268,7 +270,7 @@ async def add_prescriptions(request:Request,prescriptionData:SymptomsSignsDiagno
 
     cache:redis_AX = request.app.state.Cache
     try:
-        patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+        patient = get_patient(uuid=c_uuid,CACHE=cache)
         
     except Exception as e:
         return JSONResponse(status_code=403,content={"Details":"patient not available"})
