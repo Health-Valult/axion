@@ -1,7 +1,7 @@
 from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 from datetime import datetime
-from models import*
+from app.models.models import*
 
 
 class CBCReportTemplate(BaseModel) :
