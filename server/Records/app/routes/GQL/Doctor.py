@@ -22,7 +22,7 @@ def get_patient(uuid:str,CACHE:redis_AX):
     patient = CACHE.get_item(name=name)
     if not patient:
         raise Exception("patient not found")
-    return patient
+    return patient.get(b"patient").decode()
 
 @strawberry.type
 class Query:
