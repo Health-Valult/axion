@@ -140,7 +140,7 @@ class Procedure(BaseModel):
 class Diagnosis(BaseModel):
     id:str = Field(default_factory=lambda:str(uuid.uuid4()))
     patientID:str
-    
+
     doctorID:str
     name:str
     timestamp:str
@@ -155,4 +155,4 @@ class Precription(BaseModel):
     doctorID:str
     timeStamp:datetime
     indications:str
-
+    notes:str

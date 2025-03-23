@@ -165,7 +165,8 @@ async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSi
         doctorID=c_uuid,
         patientID=patient,
         indications=prescriptionData.indications,
-        timeStamp=prescriptionData.timeStamp
+        timeStamp=prescriptionData.timeStamp,
+        notes=prescriptionData.note
     )
     precriptionID = prescription.id
     document = prescription.model_dump()
