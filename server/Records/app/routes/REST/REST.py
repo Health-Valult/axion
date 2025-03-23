@@ -43,17 +43,61 @@ async def observate(patientID:str,key:str,value:str):
 
 @route.post(path="/records/upload/{type}")
 async def upload_report(request:Request,type:str,report:BaseReportTemplate):
+
     collection:Collection = request.app.state.PatientsCollection
+    LabsCollection:Collection = request.app.state.LabsCollection
+    ObservationCollection:Collection = request.app.state.ObservationCollection
+
     NIC = report.mata.patientNIC
+
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
-    patientID = credentials.get("UserID")
+
     
+
+    patientID = "2cd9916f-67e2-5ea1-9971-7a488239c83f" #credentials.get("UserID")
+    
+    clinic = report.mata.clinic
+    practitioner = report.mata.practitioner
+    recorder = report.mata.recorder
+    instructions = report.mata.instructions
+    datetime_str = f"{report.mata.date} {report.mata.time}"
+    timestamp = datetime.strptime(datetime_str, "%Y-%m-%d %H:%M")
     reportFiealds = report.results
+
+    labs = LabTestModel(
+        patientID=patientID,
+        display=type,
+        timestamp=timestamp,
+        meta={
+                "clinc":clinic,
+                "practitioner":practitioner,
+                "recorder":recorder,
+                "instructions":instructions
+            }
+    )
     
-    for val, value in reportFiealds.model_fields.items():
-        logger.error(val)
-        logger.warning(value)
-        logger.info(getattr(reportFiealds,val))
+    LabsCollection.insert_one(labs.model_dump())
+
+    for name, meta in reportFiealds.model_fields.items():
+        value = getattr(reportFiealds,name)
+        observation = ObservationModel(
+            patientID=patientID,
+            labID="",
+            value=value,
+            code=meta.get("loinc_code"),
+            display=meta.get("official_name"),
+            unit=meta.get("unit"),
+            timestamp=timestamp,
+            meta={
+                "clinc":clinic,
+                "practitioner":practitioner,
+                "recorder":recorder,
+                "instructions":instructions
+            }
+        )
+        
+        ObservationCollection.insert_one(observation.model_dump())
+
 
 
 

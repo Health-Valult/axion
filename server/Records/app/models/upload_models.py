@@ -2,9 +2,9 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field
 from datetime import datetime
 from app.models.models import*
+from app.models.updated_models import *
 
-
-class CBCReportTemplate(BaseModel):
+"""class CBCReportTemplate(BaseModel):
     hemoglobin: str = Field(..., metadata={"official_name": "Hemoglobin", "loinc_code": "718-7"})
     totalLeukocyteCount: str = Field(..., metadata={"official_name": "Leukocytes", "loinc_code": "6690-2"})
     neutrophils: str = Field(..., metadata={"official_name": "Neutrophils", "loinc_code": "770-8"})
@@ -98,7 +98,7 @@ class TFTReportTemplate(BaseModel):
     t3: str = Field(..., metadata={"official_name": "Triiodothyronine (T3)", "loinc_code": "3054-0"})
     t4: str = Field(..., metadata={"official_name": "Thyroxine (T4)", "loinc_code": "3026-2"})
 
-
+"""
 class BaseMetaTemplate(BaseModel):
   patientNIC: str
   date: str
