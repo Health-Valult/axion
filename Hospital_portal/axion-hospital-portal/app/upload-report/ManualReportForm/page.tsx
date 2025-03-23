@@ -62,15 +62,14 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   const router = useRouter();
   const [selectedReport, setSelectedReport] = useState("");
   const [reportData, setReportData] = useState<CommonReportData>({
-    date: "",
-    time: "",
+    patientNIC: "",
+    date: new Date().toISOString().split("T")[0],
+    time: new Date().toTimeString().split(" ")[0].slice(0, 5),
     practitioner: "",
     clinic: "",
     recorder: "",
-    instructions:"",
-    attachPdf: false,
-    pdfFile: null,
-  });
+    instructions: "",
+  } as CommonReportData); // Type assertion to match the expected type
 
   const [dynamicReportData, setDynamicReportData] = useState<any>({});
 
@@ -123,11 +122,6 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
 
     if (!reportData.practitioner || !reportData.clinic || !reportData.recorder) {
       toast({ variant: "destructive", title: "Error", description: "Please fill in all required fields" });
-      return;
-    }
-
-    if (reportData.attachPdf && !reportData.pdfFile) {
-      toast({ variant: "destructive", title: "Error", description: "Please upload a PDF file or disable the PDF attachment option" });
       return;
     }
 

@@ -14,9 +14,13 @@ const Login = () => {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [location, setLocation] = useState<string | null>(null);
-  const navigate = useRouter();
+  const [location, setLocation] = useState<{ Latitude: number; Longitude: number } | null>(null);
+  const [ipAddress, setIpAddress] = useState("Unknown");
+  const [androidId, setAndroidId] = useState("Unknown");
+  const [step, setStep] = useState(1);
   const { toast } = useToast();
+  // At the top of your component:
+  const navigate = useRouter();
 
   // Function to validate email
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -29,37 +33,32 @@ const Login = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await response.json();
-            if (data.display_name) {
-              setLocation(data.display_name);
-            } else {
-              setLocation(`Lat: ${latitude}, Lon: ${longitude}`);
-            }
-          } catch (error) {
-            console.error("Error fetching location:", error);
-            setLocation(`Lat: ${latitude}, Lon: ${longitude}`);
-          }
+          setLocation({
+            Latitude: position.coords.latitude,
+            Longitude: position.coords.longitude,
+          });
         },
         (error) => {
           console.error("Geolocation error:", error);
-          setLocation("Location access denied");
+          setLocation(null);
         }
       );
-    } else {
-      setLocation("Geolocation not supported");
     }
   }, []);
-
+  
+  // Get User's IP Address
+  useEffect(() => {
+    fetch("https://api64.ipify.org?format=json")
+      .then((res) => res.json())
+      .then((data) => setIpAddress(data.ip))
+      .catch((err) => console.error("Error fetching IP address:", err));
+  }, []);
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     let isValid = true;
-
+  
     // Validate Email
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address.");
@@ -67,7 +66,7 @@ const Login = () => {
     } else {
       setEmailError("");
     }
-
+  
     // Validate Password
     if (!validatePassword(password)) {
       setPasswordError("Password must be at least 8 characters long.");
@@ -75,28 +74,57 @@ const Login = () => {
     } else {
       setPasswordError("");
     }
-
+  
     if (!isValid) return;
-
+  
     setIsLoading(true);
-
+  
     try {
-      const response = await fetch("/axion/auth/login/staff", {
+      const response = await fetch("http://localhost:3000/api/Login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ Email: email, Password: password, Location: location })
+        body: JSON.stringify({           
+          Email: email,
+          Password: password,
+          Location: location,
+          IpAddress: ipAddress,
+          AndroidId: androidId,
+        })
       });
-
       const data = await response.json();
-
+      console.log("Request Body:", JSON.stringify({           
+        Email: email,
+        Password: password,
+        Location: location,
+        IpAddress: ipAddress,
+        AndroidId: androidId,
+      }));
+      
+  
       if (response.ok) {
         toast({
           title: "Login successful",
-          description: `You have been logged in successfully from ${location}.`,
+          description: `You have been logged in successfully from ${ipAddress}.`,
         });
-        navigate.push("/search_patient");
+        
+        // Check if data and tokens exist before storing
+        if (data && data.session_token && data.refresh_token) {
+          // Store both tokens consistently
+          sessionStorage.setItem("session_token", data.session_token);
+          sessionStorage.setItem("refresh_token", data.refresh_token);
+                    
+          // Navigate to dashboard
+          navigate.push("/search_patient");
+        } else {
+          console.error("Missing token data in response:", data);
+          toast({
+            variant: "destructive",
+            title: "Login failed",
+            description: "Authentication error: Invalid token data received.",
+          });
+        }
       } else {
         toast({
           variant: "destructive",
@@ -105,6 +133,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -114,7 +143,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white text-blackdark:bg-black dark:text-white">
       <div className="w-full max-w-md space-y-6">
@@ -128,8 +157,8 @@ const Login = () => {
 
         <Card className="bg-white text-black dark:bg-black dark:text-white dark:border-white">
           <CardHeader>
-            <CardTitle className="justify-center">Login</CardTitle>
-            <CardDescription>Enter your credentials to sign in to your account</CardDescription>
+            <CardTitle className="justify-center">{step === 1 ? "Login" : "Enter OTP"}</CardTitle>
+            <CardDescription>{step === 1 ? "Enter your credentials to sign in" : "A 6-digit OTP has been sent to your email"}</CardDescription>
           </CardHeader>
 
           <form onSubmit={handleLogin}>
@@ -158,7 +187,7 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="text-sm font-medium text-muted-foreground">Password</label>
-                  <Link href="/Login/Forget_Password" className="text-xs text-primary hover:underline">
+                  <Link href="/Login/reset-password" className="text-xs text-primary hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -185,7 +214,7 @@ const Login = () => {
               <div className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
                 <MapPin className="mr-2 h-5 w-5 text-primary" />
                 {location ? (
-                  <p>Logging in from: {location}</p>
+                  <p>Logging in from: {location.Latitude}, {location.Longitude}</p>
                 ) : (
                   <p>Fetching location...</p>
                 )}
@@ -194,7 +223,7 @@ const Login = () => {
 
             <CardFooter className="flex flex-col space-y-4">
               <button type="submit" className="btn-primary" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
+                {isLoading ? "Logging In..." : "Login"}
                 {!isLoading && <Lock className="ml-2 h-4 w-4" />}
               </button>
               <p className="text-center text-sm text-muted-foreground">

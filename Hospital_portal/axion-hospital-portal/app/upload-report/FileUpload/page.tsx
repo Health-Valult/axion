@@ -6,11 +6,8 @@ import { FileUp, ArrowLeft } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 
-interface FileUploadFormProps {
-  patientId: string;
-}
-
-export default function FileUploadForm({ patientId }: FileUploadFormProps) {
+export default function FileUploadForm() {
+  
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

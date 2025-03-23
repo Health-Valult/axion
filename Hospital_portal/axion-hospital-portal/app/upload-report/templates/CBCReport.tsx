@@ -24,6 +24,23 @@ interface CBCFormFieldsProps {
 }
 
 const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
+    // Ensure all cbcData properties have at least empty string values
+    const safeData: CBCFormData = {
+      hemoglobin: cbcData?.hemoglobin || "",
+      totalLeukocyteCount: cbcData?.totalLeukocyteCount || "",
+      neutrophils: cbcData?.neutrophils || "",
+      lymphocytes: cbcData?.lymphocytes || "",
+      eosinophils: cbcData?.eosinophils || "",
+      monocytes: cbcData?.monocytes || "",
+      basophils: cbcData?.basophils || "",
+      plateletCount: cbcData?.plateletCount || "",
+      totalRBCCount: cbcData?.totalRBCCount || "",
+      hematocrit: cbcData?.hematocrit || "",
+      meanCorpuscularVolume: cbcData?.meanCorpuscularVolume || "",
+      meanCellHemoglobin: cbcData?.meanCellHemoglobin || "",
+      meanCellHemoglobinConcentration: cbcData?.meanCellHemoglobinConcentration || "",
+    };
+
   return (
     <div className="space-y-4">
 
@@ -35,7 +52,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="hemoglobin"
-            value={cbcData.hemoglobin}
+            value={safeData.hemoglobin}
             onChange={onChange}
             placeholder="14.0"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -50,7 +67,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="totalLeukocyteCount"
-            value={cbcData.totalLeukocyteCount}
+            value={safeData.totalLeukocyteCount}
             onChange={onChange}
             placeholder="7.5"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -67,7 +84,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="neutrophils"
-            value={cbcData.neutrophils}
+            value={safeData.neutrophils}
             onChange={onChange}
             placeholder="60"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -82,7 +99,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="lymphocytes"
-            value={cbcData.lymphocytes}
+            value={safeData.lymphocytes}
             onChange={onChange}
             placeholder="30"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -97,7 +114,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="eosinophils"
-            value={cbcData.eosinophils}
+            value={safeData.eosinophils}
             onChange={onChange}
             placeholder="3"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -114,7 +131,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="monocytes"
-            value={cbcData.monocytes}
+            value={safeData.monocytes}
             onChange={onChange}
             placeholder="6"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -129,7 +146,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="basophils"
-            value={cbcData.basophils}
+            value={safeData.basophils}
             onChange={onChange}
             placeholder="1"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -146,7 +163,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="plateletCount"
-            value={cbcData.plateletCount}
+            value={safeData.plateletCount}
             onChange={onChange}
             placeholder="250"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -161,7 +178,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="totalRBCCount"
-            value={cbcData.totalRBCCount}
+            value={safeData.totalRBCCount}
             onChange={onChange}
             placeholder="5.0"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -178,7 +195,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="hematocrit"
-            value={cbcData.hematocrit}
+            value={safeData.hematocrit}
             onChange={onChange}
             placeholder="42"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -193,7 +210,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="meanCorpuscularVolume"
-            value={cbcData.meanCorpuscularVolume}
+            value={safeData.meanCorpuscularVolume}
             onChange={onChange}
             placeholder="90"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -210,7 +227,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="meanCellHemoglobin"
-            value={cbcData.meanCellHemoglobin}
+            value={safeData.meanCellHemoglobin}
             onChange={onChange}
             placeholder="30"
             className="search-input bg-white text-black dark:bg-black dark:text-white"
@@ -225,7 +242,7 @@ const CBCFormFields: React.FC<CBCFormFieldsProps> = ({ cbcData, onChange }) => {
           <input
             type="text"
             name="meanCellHemoglobinConcentration"
-            value={cbcData.meanCellHemoglobinConcentration}
+            value={safeData.meanCellHemoglobinConcentration}
             onChange={onChange}
             placeholder="34"
             className="search-input bg-white text-black dark:bg-black dark:text-white"

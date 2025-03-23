@@ -4,35 +4,113 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 const EditProfile = () => {
   const [formData, setFormData] = useState<any>(null);
   const navigate = useRouter();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    // if (typeof window !== 'undefined' && typeof window.sessionStorage !== 'undefined') {
-    //   // Now it's safe to use sessionStorage
-    //   sessionStorage.setItem('key', 'value');
+  // Update the useEffect to fetch data:
+useEffect(() => {
+  const fetchUserProfile = async () => {
+    // Try to get from sessionStorage first
+    const savedData = sessionStorage.getItem("profileData");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+      return;
+    }
     
-    // // Retrieve the current profile data
-    // const savedData = sessionStorage.getItem("profileData");
-    // if (savedData) {
-    //   setFormData(JSON.parse(savedData));
-    // }}
-  }, []);
+    // If not in sessionStorage, fetch from API
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "You must log in to access this page.",
+      });
+      navigate.push("/Login");
+      return;
+    }
+    
+    try {
+      const response = await fetch("/api/user-profile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          //"Authorization": `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile data");
+      }
+      
+      const data = await response.json();
+      setFormData(data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load profile data.",
+      });
+      navigate.push("/profile");
+    }
+  };
+  
+  fetchUserProfile();
+}, []);
+
+// Add API call to handleSubmit:
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    toast({
+      variant: "destructive",
+      title: "Unauthorized",
+      description: "You must log in to update your profile.",
+    });
+    navigate.push("/Login");
+    return;
+  }
+  
+  try {
+    const response = await fetch("/api/update-profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to update profile");
+    }
+    
+    // Update sessionStorage
+    sessionStorage.setItem("profileData", JSON.stringify(formData));
+    
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been updated successfully.",
+    });
+    
+    navigate.push("/profile");
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to update profile.",
+    });
+  }
+};
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev: any) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Save updated data to localStorage
-    //localStorage.setItem("profileData", JSON.stringify(formData));
-
-    navigate.push("/profile"); // Redirect to the Profile page
   };
 
   return (

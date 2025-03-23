@@ -3,22 +3,26 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@nextui-org/react";
-import { Hospital, Upload, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
+import { Hospital, ShieldCheck, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 const Register = () => {  
+  const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const router = useRouter();
+  const navigate = useRouter();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [tempID, setTempId] = useState("");
+  const [uuid, setUuid] = useState(""); // Store unique ID for OTP verification
 
   const [formData, setFormData] = useState({
     // General Information
     fullName: "",
-    dateOfBirth: 0,
+    dateOfBirth: new Date().toISOString().split("T")[0],
     gender: "",
     nationalId: "",
     contactNumber: "",
@@ -41,6 +45,8 @@ const Register = () => {
     confirmPassword: "",
   });
 
+
+
   // Function to validate email
   const validateEmail = (email:any) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -51,24 +57,28 @@ const Register = () => {
 
   //const validateDateOfBirth = (dob: string): boolean => /^[0-3][0-9]-[0-1][0-9]-\d{4}$/.test(dob);
 
-
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-
+  
     // Check if the field is yearsOfExperience and convert to integer
-    if (name === "yearsOfExperience" || name === "dateOfBirth") { // 
+    if (name === "yearsOfExperience") {
       setFormData((prev) => ({
         ...prev,
         [name]: value ? parseInt(value, 10) : 0, // Default to 0 if the value is empty
+      }));
+    } else if (name === "dateOfBirth") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value, // Directly set the value as it is in the format YYYY-MM-DD
       }));
     } else {
       // For other fields, keep the value as a string
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -122,6 +132,70 @@ const Register = () => {
   const prevStep = () => {
     setStep((prev) => prev - 1);
     window.scrollTo(0, 0);
+  };
+
+  // Function to send OTP
+  const sendOtp = async () => {
+    //const emailToUse = formData.email;
+
+    if (!formData.email) {
+      toast({ title: "Error", description: "No email found in profile!", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const uuidGenerated = crypto.randomUUID(); // Generate unique ID
+      setUuid(uuidGenerated);
+      setTempId(uuidGenerated);
+
+      const response = await fetch("http://localhost:3000/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempID: uuidGenerated, type: "email", data:formData.email }),
+      });
+
+      //const data = await response.json();
+
+      if (response.ok) {
+        toast({ title: "OTP Sent", description: `A 6-digit OTP has been sent to ${email}.` });
+        setStep(4); // Move to OTP verification step
+      } else {
+        toast({ title: "Error", description: "Failed to send OTP. Try again later.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast({ title: "Error", description: "Something OTP went wrong!", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const verifyOtp = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempID: tempID, otp: otp  }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+  
+        toast({ title: "OTP Verified", description: "Your account has been verified." });
+        navigate.push("/search_patient"); // Redirect to dashboard
+        
+      } else {
+        toast({ title: "Invalid OTP", description: "Please enter the correct OTP{uuid}.", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast({ title: "Error", description: "OTP verification failed!", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -188,13 +262,11 @@ const Register = () => {
       });
       return;
     }
-
-    setIsLoading(true);
-
-
-
-    try {
-      const body= {
+  
+      // Log the form data before sending
+      //console.log("Submitting data:", formData);
+    
+      const body = {
         FullName: formData.fullName,
         NIC: formData.nationalId,
         Gender: formData.gender,
@@ -212,49 +284,48 @@ const Register = () => {
         WorkLocation: formData.workLocation,
         ShiftType: formData.shiftType,
         Password: formData.password,
-      }
-      console.log(body);
-      const response = await fetch("/api/Register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-
-      });
-
-
-      const data = await response.json();
-      
-      if (!response.ok) {
+      };
+    
+      console.log("Request body:", JSON.stringify(body)); // Log the request body
+    
+      try {
+        const response = await fetch("http://localhost:3000/api/Register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+    
+        const data = await response.json();
+        console.log("Server response:", data); // Log the response
+    
+        if (!response.ok) {
+          toast({
+            title: "Error",
+            description: data.message || "Something went wrong during registration.",
+            variant: "destructive",
+          });
+          return;
+        }
+    
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created successfully.",
+        });
+    
+        sendOtp(); // Proceed to OTP verification
+    
+      } catch (error) {
+        console.error("Error during registration:", error);
         toast({
           title: "Error",
-          description: data.message || "Something went wrong during registration.",
+          description: "Registration failed. Please try again.",
           variant: "destructive",
         });
-        return;
       }
-
-      // Show success toast
-      toast({
-        title: "Registration Successful",
-        description: "Your account has been created successfully.",
-      });
-
-      // Redirect to profile page
-      router.push('/profile');
-      
-    } catch (error) {
-      console.error("Error during registration:", error);
-      toast({
-        title: "Error",
-        description: "Registration failed. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
+    
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12 bg-white text-black dark:bg-black dark:text-white">
@@ -298,12 +369,13 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <label htmlFor="dateOfBirth">Date of Birth *</label>
-                    <input
+                    <Input
+                      type = "date"
                       id="dateOfBirth"
                       name="dateOfBirth"
                       placeholder="Enter your DOB"
                       value={formData.dateOfBirth}
-                      onChange={handleChange}
+                      onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
                       required
                     />
                   </div>
@@ -335,7 +407,7 @@ const Register = () => {
 
                   <div className="space-y-2">
                     <label htmlFor="phoneNumber">Phone Number *</label>
-                    <input
+                    <Input
                       id="phoneNumber"
                       name="phoneNumber"
                       placeholder="Contact number"
@@ -541,44 +613,42 @@ const Register = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-
-            <CardFooter className="flex flex-col space-y-4">
-              <div className="flex justify-between w-full">
-                {step > 1 && (
-                  <button 
-                    type="button" 
-                    className="flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-                    onClick={prevStep}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                  </button>
-                )}
-
-                {step < 3 ? (
-                  <button 
-                    type="button"
-                    className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors ml-auto"
-                    onClick={nextStep}
-                  >
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors ml-auto"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Submitting..." : "Submit Registration"} <LockIcon className="ml-2 h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
-    </div>
-  );
-};
+             {/* Step 4: OTP Verification */}
+             {step === 4 && (
+               <div className="space-y-4">
+                 <label>Enter OTP *</label>
+                 <Input id="otp" name="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+               </div>
+             )}
+           </CardContent>
+           </form>
+ 
+           <CardFooter className="flex flex-col space-y-4">
+             <div className="flex justify-between w-full">
+               {step > 1 && step < 4 && (
+                 <button type="button" className="btn-primary" onClick={prevStep}>
+                   <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                 </button>
+               )}
+               {step < 3 ? (
+                 <button type="button" className="btn-primary" onClick={nextStep}>
+                   Next <ArrowRight className="ml-2 h-4 w-4" />
+                 </button>
+               ) : step === 3 ? (
+                 <button type="button" className="btn-primary" onClick={handleSubmit} disabled={isLoading}>
+                   {isLoading ? "Sending OTP..." : "Send OTP"} <LockIcon className="ml-2 h-4 w-4" />
+                 </button>
+               ) : (
+                 <button type="button" className="btn-primary" onClick={verifyOtp} disabled={isLoading}>
+                   {isLoading ? "Verifying..." : "Verify OTP"} <ShieldCheck className="ml-2 h-4 w-4" />
+                 </button>
+               )}
+             </div>
+           </CardFooter>
+         </Card>
+       </div>
+     </div>
+   );
+ };
 
 export default Register;

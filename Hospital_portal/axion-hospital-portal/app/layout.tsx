@@ -1,15 +1,17 @@
 "use client"
 
 import React, { useState } from "react";
-import type { Metadata } from "next";
+import { usePathname } from "next/navigation";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Sidebar, SidebarBody, SidebarLink } from "../components/ui/sidebar";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { LogOutIcon } from "lucide-react";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import "../app/globals.css";
 
+const hideSidebarRoutes = ["/Register", "/Login"];
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -186,7 +188,7 @@ export const AxionLogo = ({
 export const Logo = () => {
 	return (
 		<Link
-			href="/"
+			href="/search_patient"
 			className="font-normal flex space-x-2 items-center text-lg text-black py-1 relative z-20"
 		>
 			<AxionLogo width={22} height={22} />
@@ -204,7 +206,7 @@ export const Logo = () => {
 export const LogoIcon = () => {
 	return (
 		<Link
-			href="/"
+			href="/search_patient"
 			className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
 		>
 			<AxionLogo width={32} height={32} />
@@ -217,7 +219,7 @@ export default function RootLayout({
   }: Readonly<{
 	children: React.ReactNode;
   }>) {
-	
+	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
   
 	return (
@@ -226,6 +228,7 @@ export default function RootLayout({
 		  className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 		>
 		<div className="flex h-screen"> {/*This is the parent flex container */}
+		{!hideSidebarRoutes.includes(pathname) && (
 			<Sidebar open={open} setOpen={setOpen}>
 			<SidebarBody className="justify-between gap-10">
 				<div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
@@ -241,22 +244,18 @@ export default function RootLayout({
 				<div>
 				<SidebarLink
 					link={{
-					label: "Manu Arora",
+					label: "Logout",
 					href: "#",
 					icon: (
-						<Image
-						src="https://assets.aceternity.com/manu.png"
-						className="h-7 w-7 flex-shrink-0 rounded-full"
-						width={50}
-						height={50}
-						alt="Avatar"
-						/>
+						<div className="inline-block p-3 rounded-full bg-primary/10 mb-2">
+							<LogOutIcon className="h-4 w-4 text-primary" />
+						</div>
 					),
 					}}
 				/>
 				</div>
 			</SidebarBody>
-			</Sidebar>
+			</Sidebar>)}
 			
 			<div className="flex-1 overflow-y-auto p-4 bg-white text-black dark:bg-black dark:text-white"> {/* This is the main content area */}
 			{children}

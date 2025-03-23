@@ -1,5 +1,4 @@
 export const CBCReportTemplate = {
-    
     hemoglobin: "",
     totalLeukocyteCount: "",
     neutrophils: "",
