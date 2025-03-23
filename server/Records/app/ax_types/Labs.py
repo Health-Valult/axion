@@ -8,7 +8,6 @@ import strawberry
 class Lab:
     id:Optional[str]
     patientID:Optional[str]
-    code:Optional[str]
     display:Optional[str]
     timestamp:Optional[str]
     meta:Optional[Json_type] # type: ignore
