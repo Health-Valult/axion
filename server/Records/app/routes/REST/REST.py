@@ -149,13 +149,46 @@ async def verify_doctor_request(request:Request,cred:OTP):
 
 
 @route.post(path="/records/add-prescription",dependencies=[Depends(Authenticate)])
-async def add_prescriptions(prescription:Union[SymptomsAndSigns,Diagnosis]):
-    logger.warning(prescription.medications)
+async def add_prescriptions(request:Request,prescriptionData:Union[SymptomsAndSigns,Diagnosis]):
+    c_uuid = request.state.meta.get("uuid")
+    patientscollection:Collection = request.app.state.PrescriptionsCollection
 
+    cache:redis_AX = request.app.state.Cache
+    try:
+        patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+        
+    except Exception as e:
+        return JSONResponse(status_code=403,content={"Details":"patient not available"})
+    prescription = Precription(
+        doctorID=c_uuid,
+        patientID=patient,
+        indications=prescriptionData.indications,
+        timeStamp=prescriptionData.timeStamp
+    )
+    precriptionID = prescription.id
 
+    for meds in prescriptionData.medications:
+        data = requests.get(
+        "https://rxnav.nlm.nih.gov/REST/approximateTerm.json",
+        params={"term": "paracetamol", "maxEntries": 1}
+        )
+        candidates = data['approximateGroup']['candidate']
+        code = candidates[0].get("rxcui")
+        medication = Medication(
+            prescriptionID=precriptionID,
+            patientID=patient,
+            prescriber=c_uuid,
+            code=code,
+            display=meds.display,
+            frequency=meds.frequency,
+            mealTiming=meds.mealTiming,
+            dosage=meds.dosage,
+            route=meds.route
+        )
+        logger.warning(medication)
 
-
-
+    logger.warning(prescription)
+    return JSONResponse(status_code=200,content={"Details":"patient not available"})
 
 
 
