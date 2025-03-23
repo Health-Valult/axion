@@ -68,13 +68,13 @@ app = FastAPI(title="record",lifespan=lifespan)
 # aGts37rYk@fVrFJ
        
 patient_schema = strawberry.Schema(PatientQuery)
-patient_gql_router = GraphQLRouter(patient_schema,)#dependencies=[Depends(Authenticate)])
+patient_gql_router = GraphQLRouter(patient_schema,dependencies=[Depends(Authenticate)])
 
 
         
 
 doctor_schema = strawberry.Schema(d_query)
-doctor_gql_router = GraphQLRouter(doctor_schema,)#dependencies=[Depends(Authenticate)])
+doctor_gql_router = GraphQLRouter(doctor_schema,dependencies=[Depends(Authenticate)])
 
 app.include_router(patient_gql_router, prefix="/graphql/patient")
 app.include_router(doctor_gql_router, prefix="/graphql/doctor")
