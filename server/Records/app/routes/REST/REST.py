@@ -48,10 +48,12 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
     credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
     patientID = credentials.get("UserID")
     
+    reportFiealds = report.results
     
-    for val, value in report.results.model_fields.items():
+    for val, value in reportFiealds.model_fields.items():
         logger.error(val)
         logger.warning(value)
+        logger.info(getattr(reportFiealds,val))
 
 
 
