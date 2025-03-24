@@ -9,9 +9,11 @@ MAILJET_FROM_EMAIL = "healthvault.co@gmail.com"
 
 mailjet_client = MailjetClient(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3.1')
 logger = logging.getLogger("uvicorn")
+client = "Sir / Madam"
+
 async def send_email(email_content:dict):
     logger.warning("email triggered")
-    htmlContent = _gen_email(msg=email_content.get("body"),client="Father Touchboys")
+    htmlContent = _gen_email(msg=email_content.get("body"),client=client)
 
     try:
         data = {
@@ -24,7 +26,7 @@ async def send_email(email_content:dict):
                     "To": [
                         {
                             "Email": email_content.get("email"),
-                            "Name": "Sir / Madam"
+                            "Name": client
                         }
                     ],
                     "Subject": email_content.get("subject"),

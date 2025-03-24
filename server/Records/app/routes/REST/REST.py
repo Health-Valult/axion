@@ -123,10 +123,10 @@ async def upload_report(request:Request,type:str,report:BaseReportTemplate):
 
     NIC = report.mata.patientNIC
 
-    credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1})
+    credentials = collection.find_one({"NIC":NIC},{"_id":0,"UserID":1,"Email":1})
 
     patientID = credentials.get("UserID")
-    
+    Email = credentials.get("Email")
     clinic = report.mata.clinic
     practitioner = report.mata.practitioner
     recorder = report.mata.recorder
