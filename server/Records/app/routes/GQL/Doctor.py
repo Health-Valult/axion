@@ -35,7 +35,7 @@ class Query:
 
             cache:redis_AX = request.app.state.Cache
             try:
-                patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+                patient = get_patient(uuid=Doctor,CACHE=cache)
                 
             except Exception as e:
                 return GraphQLError("patient could not be found")
@@ -55,7 +55,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
 
@@ -75,7 +75,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  
@@ -95,7 +95,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  
@@ -115,7 +115,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  
@@ -135,7 +135,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  
@@ -155,7 +155,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  
@@ -177,7 +177,7 @@ class Query:
 
         cache:redis_AX = request.app.state.Cache
         try:
-            patient ="2cd9916f-67e2-5ea1-9971-7a488239c83f" #get_patient(uuid=Doctor,CACHE=cache)
+            patient = get_patient(uuid=Doctor,CACHE=cache)
         except Exception as e:
             return GraphQLError("patient could not be found")
  

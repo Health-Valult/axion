@@ -5,8 +5,6 @@ import os
 from fastapi import FastAPI
 from pymongo import MongoClient
 import uvicorn
-
-from app.utils.reciever import recieveMQ
 from app.shared.utils.MQ.reciver import RedReciver
 from app.shared.utils.Cache.redis import redis_AX
 from app.callback.callback import callback_security
