@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "447058226846",
+    "project_id": "axion-medical",
+    "storage_bucket": "axion-medical.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447058226846:android:402361ddb379eff27e558f",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJWSvVIqnnX1Eu2lqmxTb-lMxFDSunwEE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

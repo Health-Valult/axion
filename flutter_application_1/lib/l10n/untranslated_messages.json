@@ -1,0 +1,12 @@
+{
+  "ta": [
+    "settings",
+    "language",
+    "deleteMessage",
+    "homeTitle",
+    "notifications",
+    "medicalNotifications",
+    "reports",
+    "noReports"
+  ]
+}
