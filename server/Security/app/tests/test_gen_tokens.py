@@ -8,14 +8,11 @@ from authlib.jose import jwt
 
 class TestGenerateTokens(unittest.TestCase):
     def setUp(self):
-        # Get the absolute path to the keys
-        base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-        
-        # Use the actual private key from the application with absolute paths
-        with open(os.path.join(base_dir, 'data/keys/private.pem'), 'r') as file:
+        # Use the actual private key from the application
+        with open('./app/data/keys/private.pem', 'r') as file:
             self.private_key = file.read()
             
-        with open(os.path.join(base_dir, 'data/keys/refresh_private.pem'), 'r') as file:
+        with open('./app/data/keys/refresh_private.pem', 'r') as file:
             self.refresh_private_key = file.read()
         
         # Test payload
