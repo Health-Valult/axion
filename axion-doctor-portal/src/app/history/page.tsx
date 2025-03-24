@@ -81,23 +81,34 @@ const History: React.FC = () => {
 		<ProtectedClientComponent>
 			<div className="p-4 bg-white dark:bg-black rounded-l-sm overflow-y-auto flex flex-col justify-between h-full">
 				<div className="flex-grow">
-					<Accordion variant="splitted">
-						{paginatedNotes.map((note: any) => (
-							<AccordionItem
-								key={note.id}
-								aria-label={`Accordion ${note.id}`}
-								title={`${note.indications} by ${note.doctorName}`}
-							>
-								<DoctorsNote
-									name={note.doctorName}
-									dateTime={formatDateTime(note.timeStamp)}
-									indication={note.indications}
-									content={note.notes || ''}
-									treatment={[]}
-								/>
-							</AccordionItem>
-						))}
-					</Accordion>
+					<h3 className="dark:text-white text-black">
+						Prescription History
+					</h3>
+					{paginatedNotes.length > 0 ? (
+						<Accordion variant="splitted">
+							{paginatedNotes.map((note: any) => (
+								<AccordionItem
+									key={note.id}
+									aria-label={`Accordion ${note.id}`}
+									title={`${note.indications} by ${note.doctorName}`}
+								>
+									<DoctorsNote
+										name={note.doctorName}
+										dateTime={formatDateTime(
+											note.timeStamp
+										)}
+										indication={note.indications}
+										content={note.notes || ''}
+										treatment={[]}
+									/>
+								</AccordionItem>
+							))}
+						</Accordion>
+					) : (
+						<div className="text-center my-auto dark:text-white text-black">
+							No notes found.
+						</div>
+					)}
 				</div>
 
 				{/* Pagination at the bottom */}

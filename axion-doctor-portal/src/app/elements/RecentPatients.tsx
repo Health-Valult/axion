@@ -6,45 +6,27 @@ import { motion } from 'framer-motion';
 const recentPatients = [
 	{
 		name: 'John Doe',
-		conditionSummary:
-			'Diagnosed with Type 2 Diabetes, managing with Metformin.',
-		checkupSummary:
-			'Routine checkup, stable blood sugar levels, advised dietary adjustments.',
+		nic: '123456789V',
 	},
 	{
 		name: 'Jane Smith',
-		conditionSummary:
-			'Hypertension and mild hyperlipidemia, controlled with medication.',
-		checkupSummary:
-			'Blood pressure slightly elevated, increased Lisinopril dosage.',
+		nic: '987654321V',
 	},
 	{
 		name: 'Robert Johnson',
-		conditionSummary:
-			'Recovering from coronary angioplasty, on Clopidogrel.',
-		checkupSummary:
-			'No complications observed, advised regular exercise and healthy diet.',
+		nic: '456789123V',
 	},
 	{
 		name: 'Emily Davis',
-		conditionSummary:
-			'Migraine episodes, currently managed with lifestyle modifications.',
-		checkupSummary:
-			'Reduced migraine frequency, prescribed preventive medication.',
+		nic: '654321987V',
 	},
 	{
 		name: 'Michael Lee',
-		conditionSummary:
-			'Chronic kidney disease, stage 3, on Losartan therapy.',
-		checkupSummary:
-			'Renal function stable, continued monitoring recommended.',
+		nic: '789123456V',
 	},
 	{
 		name: 'John Park',
-		conditionSummary:
-			'Chronic kidney disease, stage 3, on Losartan therapy.',
-		checkupSummary:
-			'Renal function stable, continued monitoring recommended.',
+		nic: '321987654V',
 	},
 ];
 
@@ -73,11 +55,7 @@ const RecentPatients = () => {
 							<Card
 								variant="neubrutalism"
 								title={patient.name}
-								description={
-									patient.conditionSummary +
-									' ' +
-									patient.checkupSummary
-								}
+								description={patient.nic}
 								className="rounded-lg shadow-md bg-white dark:bg-black dark:text-white dark:border-gray-600"
 							></Card>
 						</motion.div>

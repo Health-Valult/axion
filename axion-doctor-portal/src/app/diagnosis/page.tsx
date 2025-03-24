@@ -76,13 +76,7 @@ const Diagnosis: React.FC = () => {
 						: 'Unknown Date',
 					update: diagnosis.notes || 'No details available',
 					doctor: {
-						name: `Dr. ${
-							diagnosis.doctorID
-								? diagnosis.doctorID.substring(0, 6)
-								: 'Unknown'
-						}`,
-						designation: diagnosis.doctorSpecialty || 'Specialist',
-						email: diagnosis.doctorEmail || 'contact@medical.org',
+						name: `${diagnosis.doctorName}`,
 					},
 				}));
 

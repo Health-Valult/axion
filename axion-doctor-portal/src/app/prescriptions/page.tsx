@@ -96,53 +96,7 @@ const Prescriptions: React.FC = () => {
 		}
 
 		setIsLoading(true);
-		// try {
-		// 	const response = await fetch(
-		// 		`http://localhost:3000/api/proxy10?name=${encodeURIComponent(
-		// 			query
-		// 		)}`
-		// 	);
 
-		// 	if (!response.ok) {
-		// 		throw new Error('Network response was not ok');
-		// 	}
-
-		// 	const data = await response.json();
-
-		// 	console.log(data);
-
-		// 	// Process the response data
-		// 	let medicines: Array<{
-		// 		key: string;
-		// 		label: string;
-		// 		description: string;
-		// 	}> = [];
-
-		// 	if (data && data.drugGroup && data.drugGroup.conceptGroup) {
-		// 		// Iterate through all concept groups
-		// 		data.drugGroup.conceptGroup.forEach((group: any) => {
-		// 			if (group.conceptProperties) {
-		// 				// Extract properties from each concept
-		// 				const groupMedicines = group.conceptProperties.map(
-		// 					(prop: any) => ({
-		// 						key: prop.rxcui,
-		// 						label: prop.name,
-		// 						description: prop.synonym || prop.name,
-		// 					})
-		// 				);
-
-		// 				medicines = [...medicines, ...groupMedicines];
-		// 			}
-		// 		});
-		// 	}
-
-		// 	setMedicine(medicines);
-		// } catch (error) {
-		// 	console.error('Error fetching medicine data:', error);
-		// 	setMedicine([]);
-		// } finally {
-		// 	setIsLoading(false);
-		// }
 		try {
 			const response = await fetch(
 				`http://localhost:3000/api/proxy10?name=${encodeURIComponent(

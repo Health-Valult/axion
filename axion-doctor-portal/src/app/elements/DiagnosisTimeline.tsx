@@ -2,8 +2,6 @@ import React from 'react';
 
 interface Doctor {
 	name: string;
-	designation: string;
-	email: string;
 }
 
 interface ProgressionItem {

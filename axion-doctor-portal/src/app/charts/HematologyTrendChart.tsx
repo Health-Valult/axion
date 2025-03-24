@@ -116,23 +116,6 @@ interface trendProps {
 }
 
 const HematologyChart: React.FC<trendProps> = ({ parameters }) => {
-	// Check if parameters is undefined or empty
-	if (!parameters || parameters.length === 0) {
-		return (
-			<Card className="shadow-none max-h-96 border-gray-300 dark:border-gray-700">
-				<CardHeader>
-					<CardTitle>Hematology Trend Charts</CardTitle>
-					<CardDescription>
-						No hematology data available
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="flex items-center justify-center h-64">
-					<p className="text-muted-foreground">No data to display</p>
-				</CardContent>
-			</Card>
-		);
-	}
-
 	const [open, setOpen] = React.useState(false);
 	const [selectedComponent, setSelectedComponent] =
 		React.useState<BloodComponent | null>(null);
@@ -150,6 +133,23 @@ const HematologyChart: React.FC<trendProps> = ({ parameters }) => {
 		);
 		setOpen(true);
 	};
+	// Check if parameters is undefined or empty
+	if (!parameters || parameters.length === 0) {
+		return (
+			<Card className="shadow-none max-h-96 border-gray-300 dark:border-gray-700">
+				<CardHeader>
+					<CardTitle>Hematology Trend Charts</CardTitle>
+					<CardDescription>
+						No hematology data available
+					</CardDescription>
+				</CardHeader>
+				<CardContent className="flex items-center justify-center h-64">
+					<p className="text-muted-foreground">No data to display</p>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card className="shadow-none max-h-96 overflow-y-auto border-gray-300 dark:border-gray-700 scrollbar-thin scrollbar-thumb-gray-350 scrollbar-track-gray-200">
 			<CardHeader>
@@ -226,6 +226,12 @@ const Chart: React.FC<chartProps> = ({
 	reportData,
 	normalRange,
 }) => {
+	const chartData = reportData.map((data) => ({
+		month: data.month,
+		actual: data.value,
+		normalMin: normalRange.min,
+		normalMax: normalRange.max,
+	}));
 	// Check if reportData is undefined or empty
 	if (!reportData || reportData.length === 0) {
 		return (
@@ -242,13 +248,6 @@ const Chart: React.FC<chartProps> = ({
 			</Card>
 		);
 	}
-
-	const chartData = reportData.map((data) => ({
-		month: data.month,
-		actual: data.value,
-		normalMin: normalRange.min,
-		normalMax: normalRange.max,
-	}));
 
 	return (
 		<Card>
