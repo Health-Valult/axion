@@ -14,6 +14,11 @@ interface TFTFormFieldsProps {
 }
 
 const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
+  const safeData: TFTFormData = {
+    tsh: tftData?.tsh || "",
+    t3: tftData?.t3 || "",
+    t4: tftData?.t4 || "",
+  };
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -24,7 +29,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
           <input
             type="text"
             name="tsh"
-            value={tftData.tsh}
+            value={safeData.tsh}
             onChange={onChange}
             placeholder="2.0"
             className="search-input"
@@ -39,7 +44,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
           <input
             type="text"
             name="t3"
-            value={tftData.t3}
+            value={safeData.t3}
             onChange={onChange}
             placeholder="100"
             className="search-input"
@@ -56,7 +61,7 @@ const TFTFormFields: React.FC<TFTFormFieldsProps> = ({ tftData, onChange }) => {
           <input
             type="text"
             name="t4"
-            value={tftData.t4}
+            value={safeData.t4}
             onChange={onChange}
             placeholder="7.0"
             className="search-input"

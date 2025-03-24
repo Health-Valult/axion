@@ -1,123 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Patient } from "@/app/types/patient";
 import SearchForm from "@/app/components/SearchForm";
-import PatientDetails from "@/app/components/patient-details";
-import MedicalHistory from "@/app/components/MedicalHistory";
-import LabReports from "@/app/components/LabReports";
 import { useRouter } from "next/navigation";
-import { ToastProvider, ToastViewport } from "@/components/ui/toast";
 
-const SearchPatient = () => {
+// Constants for URLs (move these to env vars in production)
+// const WEBSOCKET_URL = "wss://axiontestgateway.azure-api.net/patients-search"; // 🔸 WebSocket URL (Commented)
+const PATIENT_DETAILS_URL = "https://axiontestgateway.azure-api.net/records/records/get-patient-details";
+
+const SearchPatient: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [patient, setPatient] = useState<Patient | null>(null);
+
   const { toast } = useToast();
   const router = useRouter();
 
-  // Mock patient data
-  const mockPatientData: Patient[] = [
-    {
-      id: "p123456",
-      nationalId: "1234567890",
-      name: "Jane Smith",
-      age: 29,
-      gender: "Female",
-      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
-      lastVisit: "30 April 2024",
-      registrationDate: "24 April 2022.",
-      birthdate: "08.04.1996.",
-      email: "smithJane123@gmail.com",
-      phone: "+94 77 490 3301",
-      location: "Colombo, Srilanka",
-      medicalHistory: {
-        bloodGroup: "A+",
-        condition: "Healthy",
-        allergies: ["Penicillin", "Pollen"]
-      },
-      labReports: [
-        {
-          id: "lab001",
-          name: "Complete Blood Count",
-          date: "15 Apr 2024",
-          type: "Hematology"
-        },
-        {
-          id: "lab002",
-          name: "Lipid Profile",
-          date: "30 Mar 2024",
-          type: "Biochemistry"
-        },
-        {
-          id: "lab003",
-          name: "Thyroid Function Test",
-          date: "10 Feb 2024",
-          type: "Endocrinology"
-        }
-      ]
-    },
-    {
-      id: "p123457",
-      nationalId: "1234567891",
-      name: "Hema Zue",
-      age: 20,
-      gender: "Female",
-      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
-      lastVisit: "10 Jan 2025",
-      registrationDate: "04 January 2025.",
-      birthdate: "08.04.2004.",
-      email: "hemazue2004@gmail.com",
-      phone: "+94 76 494 8021",
-      location: "Anuradhapura, Srilanka",
-      medicalHistory: {
-        bloodGroup: "B-",
-        condition: "Heart Patient",
-        allergies: ["Sulfa drugs"]
-      },
-      labReports: [
-        {
-          id: "lab004",
-          name: "Echocardiogram",
-          date: "05 Jan 2025",
-          type: "Cardiology"
-        }
-      ]
-    },
-    {
-      id: "p123458",
-      nationalId: "1234567892",
-      name: "Katherin John",
-      age: 60,
-      gender: "Female",
-      imageUrl: "https://www.w3schools.com/howto/img_avatar.png",
-      lastVisit: "21 February 2025",
-      registrationDate: "04 January 2025.",
-      birthdate: "10.09.1965.",
-      email: "katherin609@gmail.com",
-      phone: "+94 77 856 2698",
-      location: "Colombo, Srilanka",
-      medicalHistory: {
-        bloodGroup: "O+",
-        condition: "Diabetic",
-        allergies: []
-      },
-      labReports: [
-        {
-          id: "lab005",
-          name: "Blood Glucose",
-          date: "21 Feb 2025",
-          type: "Diabetology"
-        }
-      ]
-    },
-  ];
+  const getSessionToken = (): string | null => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("session_token");
+    }
+    return null;
+  };
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-
-    console.log("Searching for:", searchQuery);
 
     if (!searchQuery.trim()) {
       toast({
@@ -130,62 +39,203 @@ const SearchPatient = () => {
 
     setIsSearching(true);
 
-    setTimeout(() => {
-      const foundPatient = mockPatientData.find((p) => p.nationalId === searchQuery);
-      console.log("Patient found:", foundPatient);
+    try {
+      const session_token = getSessionToken();
 
-      if (foundPatient) {
-        setPatient(foundPatient);
-        toast({
-          title: "Success",
-          description: `Found records for ${foundPatient.name}`,
-        });
-      } else {
-        setPatient(null);
+      if (!session_token) {
         toast({
           variant: "destructive",
-          title: "Not Found",
-          description: "No patient found with that National ID",
+          title: "Authentication Error",
+          description: "You are not logged in. Please log in to search for patients.",
+        });
+        return;
+      }
+
+      try {
+        // 🔸 WebSocket-related code commented out
+        // const patientProfile = await searchPatientByNIC(searchQuery, session_token);
+        const patientProfile = { NIC: searchQuery }; // Temporary mock for testing without WebSocket
+
+        if (patientProfile) {
+          const patientDetails = await fetchPatientDetails(patientProfile.NIC, session_token);
+
+          if (patientDetails) {
+            setPatient(patientDetails);
+            toast({
+              title: "Success",
+              description: `Found records for ${patientDetails.name}`,
+            });
+          } else {
+            handlePatientNotFound();
+          }
+        } else {
+          handlePatientNotFound();
+        }
+      } catch (error) {
+        console.error("WebSocket or API error:", error);
+        toast({
+          variant: "destructive",
+          title: "Connection Timeout",
+          description: "Server is not responding. Please try again later.",
         });
       }
+    } catch (error) {
+      console.error("Error searching for patient:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while searching for the patient",
+      });
+    } finally {
       setIsSearching(false);
-    }, 800);
+    }
   };
 
-  const handleUploadReport = () => {
+  // 🔸 Full WebSocket function commented out
+  /*
+  const searchPatientByNIC = async (nic: string, session_token: string): Promise<any | null> => {
+    const socketUrl = `${WEBSOCKET_URL}?token=Bearer ${session_token}`;
+    const socket = new WebSocket(socketUrl);
+
+    return new Promise<any | null>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        socket.close();
+        reject(new Error("WebSocket response timeout"));
+      }, 15000);
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ packet: nic }));
+      };
+
+      socket.onmessage = (event: MessageEvent<string>) => {
+        clearTimeout(timeoutId);
+        try {
+          const data = JSON.parse(event.data);
+          socket.close();
+
+          const patients = data.packet;
+
+          if (Array.isArray(patients) && patients.length > 0) {
+            resolve(patients[0]);
+          } else {
+            resolve(null);
+          }
+        } catch (err) {
+          socket.close();
+          reject(err);
+        }
+      };
+
+      socket.onerror = (error) => {
+        clearTimeout(timeoutId);
+        socket.close();
+        reject(error);
+      };
+    });
+  };
+  */
+
+  const fetchPatientDetails = async (nic: string, session_token: string): Promise<Patient | null> => {
+    try {
+      const response = await fetch(PATIENT_DETAILS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${session_token}`,
+        },
+        body: JSON.stringify({ NIC: nic }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch patient data");
+      }
+
+      const data = await response.json();
+
+      return transformApiResponseToPatient(data);
+    } catch (error) {
+      console.error("Error fetching patient details:", error);
+      return null;
+    }
+  };
+
+  const transformApiResponseToPatient = (apiResponse: any): Patient => {
+    return {
+      nationalId: apiResponse.NIC || "",
+      name: `${apiResponse.FirstName} ${apiResponse.LastName || ""}`,
+    };
+  };
+
+  const handlePatientNotFound = (): void => {
+    setPatient(null);
+    toast({
+      variant: "destructive",
+      title: "Not Found",
+      description: "No patient found with that National ID",
+    });
+  };
+
+  const handleUploadReport = (): void => {
+    if (!patient) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please search and select a patient before uploading",
+      });
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("currentPatient", JSON.stringify(patient));
+    }
+
     toast({
       title: "Navigation",
       description: "Redirecting to upload page...",
     });
+
     router.push("/upload-report/ReportUploadMethod");
   };
 
   return (
     <div className="min-h-screen p-6 md:p-12 space-y-8 max-w-7xl mx-auto bg-white text-black dark:bg-black dark:text-white">
       <header className="text-center space-y-2 fade-in">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground dark:text-white">
-          Search Patient
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground dark:text-white">Search Patient</h1>
         <p className="text-muted-foreground text-lg dark:text-white">
           Search for patients using their National ID
         </p>
       </header>
 
-        <SearchForm 
-          searchQuery={searchQuery}
-          isSearching={isSearching}
-          onSearchQueryChange={setSearchQuery}
-          onSubmit={handleSearch}
-        />
-      
-        {patient && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in bg-white text-black dark:bg-black dark:text-white">
-            <PatientDetails patient={patient} />
-            <MedicalHistory patient={patient} />
-            <LabReports patient={patient} onUploadReport={handleUploadReport} />
-          </div>
-        )}
+      <SearchForm
+        searchQuery={searchQuery}
+        isSearching={isSearching}
+        onSearchQueryChange={(value: string) => setSearchQuery(value)}
+        onSubmit={handleSearch}
+      />
 
+      {patient && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in bg-white text-black dark:bg-black dark:text-white">
+          <div className="col-span-1 bg-slate-100 dark:bg-slate-800 p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4">Patient Details</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">National ID</p>
+                <p className="font-medium">{patient.nationalId}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                <p className="font-medium">{patient.name}</p>
+              </div>
+              <button
+                onClick={handleUploadReport}
+                className="w-full mt-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Upload Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

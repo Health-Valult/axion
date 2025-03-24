@@ -12,6 +12,10 @@ interface SearumCFormFieldsProps {
 }
 
 const SearumCFormFields: React.FC<SearumCFormFieldsProps> = ({ scData, onChange }) => {
+  const safeData: SearumCFormData = {
+    serumCreatinine: scData?.serumCreatinine || "",
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -22,7 +26,7 @@ const SearumCFormFields: React.FC<SearumCFormFieldsProps> = ({ scData, onChange 
           <input
             type="text"
             name="serumCreatinine"
-            value={scData.serumCreatinine}
+            value={safeData.serumCreatinine}
             onChange={onChange}
             placeholder="1.0"
             className="search-input"

@@ -11,9 +11,8 @@ export interface CommonReportData {
   practitioner: string;
   clinic: string;
   recorder: string;
-  attachPdf: boolean;
   instructions:string;
-  pdfFile: File | null;
+  
 }
 
 interface CommonReportFieldsProps {

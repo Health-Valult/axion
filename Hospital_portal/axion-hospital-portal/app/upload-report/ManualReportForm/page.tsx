@@ -62,7 +62,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   const router = useRouter();
   const [selectedReport, setSelectedReport] = useState("");
   const [reportData, setReportData] = useState<CommonReportData>({
-    patientNIC: "",
+    patientNIC:  patient?.nationalId || "",
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().split(" ")[0].slice(0, 5),
     practitioner: "",
@@ -78,8 +78,9 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
       ...prev,
       date: new Date().toISOString().split("T")[0],
       time: new Date().toTimeString().split(" ")[0].slice(0, 5),
+      patientNIC: patient?.nationalId || ""
     }));
-  }, []);
+  }, [patient]);
 
   // Update report fields based on selectedReport
   useEffect(() => {
@@ -112,6 +113,27 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
     }
   };
 
+  const prepareDataForBackend = () => {
+    // Create the BaseMetaTemplate structure
+    const metaData = {
+      patientNIC: reportData.patientNIC,
+      date: reportData.date,
+      time: reportData.time,
+      practitioner: reportData.practitioner,
+      clinic: reportData.clinic,
+      recorder: reportData.recorder,
+      instructions: reportData.instructions
+    };
+
+    // Create the full payload according to BaseReportTemplate
+    const payload = {
+      meta: metaData,
+      results: dynamicReportData,
+      reportType: selectedReport
+    };
+
+    return payload;
+  };  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 

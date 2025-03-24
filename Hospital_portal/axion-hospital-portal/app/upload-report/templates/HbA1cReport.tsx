@@ -13,6 +13,9 @@ interface HbA1cFormFieldsProps {
 }
 
 const HbA1cFormFields: React.FC<HbA1cFormFieldsProps> = ({ hbA1cData, onChange }) => {
+  const safeData: HbA1cFormData = {
+    hba1c: hbA1cData?.hba1c || "",
+    estimatedAvgGlucose: hbA1cData?.estimatedAvgGlucose || "",};
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -23,7 +26,7 @@ const HbA1cFormFields: React.FC<HbA1cFormFieldsProps> = ({ hbA1cData, onChange }
           <input
             type="text"
             name="hba1c"
-            value={hbA1cData.hba1c}
+            value={safeData.hba1c}
             onChange={onChange}
             placeholder="5.5"
             className="search-input"
@@ -38,7 +41,7 @@ const HbA1cFormFields: React.FC<HbA1cFormFieldsProps> = ({ hbA1cData, onChange }
           <input
             type="text"
             name="estimatedAvgGlucose"
-            value={hbA1cData.estimatedAvgGlucose}
+            value={safeData.estimatedAvgGlucose}
             onChange={onChange}
             placeholder="110"
             className="search-input"

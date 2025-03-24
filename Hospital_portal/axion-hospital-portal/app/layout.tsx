@@ -8,7 +8,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { LogOutIcon } from "lucide-react";
 import { Toaster } from "sonner";
-import Image from "next/image";
 import "../app/globals.css";
 
 const hideSidebarRoutes = ["/Register", "/Login"];
@@ -245,7 +244,7 @@ export default function RootLayout({
 				<SidebarLink
 					link={{
 					label: "Logout",
-					href: "#",
+					href: "/Login",
 					icon: (
 						<div className="inline-block p-3 rounded-full bg-primary/10 mb-2">
 							<LogOutIcon className="h-4 w-4 text-primary" />

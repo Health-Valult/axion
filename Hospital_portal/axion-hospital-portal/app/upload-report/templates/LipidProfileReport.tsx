@@ -20,6 +20,17 @@ interface LipidProfileFormFieldsProps {
 }
 
 const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidprofileData, onChange }) => {
+  const safeData: LipidProfileFormData = {
+    totalCholesterol:  lipidprofileData?.totalCholesterol || "",
+    triglycerides:  lipidprofileData?.triglycerides || "",
+    hdl:  lipidprofileData?.hdl || "",
+    ldl:  lipidprofileData?.ldl || "",
+    vldl:  lipidprofileData?.vldl || "",
+    ldlToHdlRatio:  lipidprofileData?.ldlToHdlRatio || "",
+    totalCholesterolToHdlRatio:  lipidprofileData?.nonHdlCholesterol || "",
+    tgToHdlRatio:  lipidprofileData?.tgToHdlRatio || "",
+    nonHdlCholesterol:  lipidprofileData?.nonHdlCholesterol || "",
+  };
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -30,7 +41,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="totalCholesterol"
-            value={lipidprofileData.totalCholesterol}
+            value={safeData.totalCholesterol}
             onChange={onChange}
             placeholder="180"
             className="search-input"
@@ -45,7 +56,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="triglycerides"
-            value={lipidprofileData.triglycerides}
+            value={safeData.triglycerides}
             onChange={onChange}
             placeholder="150"
             className="search-input"
@@ -62,7 +73,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="hdl"
-            value={lipidprofileData.hdl}
+            value={safeData.hdl}
             onChange={onChange}
             placeholder="50"
             className="search-input"
@@ -77,7 +88,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="ldl"
-            value={lipidprofileData.ldl}
+            value={safeData.ldl}
             onChange={onChange}
             placeholder="100"
             className="search-input"
@@ -92,7 +103,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="vldl"
-            value={lipidprofileData.vldl}
+            value={safeData.vldl}
             onChange={onChange}
             placeholder="30"
             className="search-input"
@@ -109,7 +120,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="ldlToHdlRatio"
-            value={lipidprofileData.ldlToHdlRatio}
+            value={safeData.ldlToHdlRatio}
             onChange={onChange}
             placeholder="2.0"
             className="search-input"
@@ -124,7 +135,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="totalCholesterolToHdlRatio"
-            value={lipidprofileData.totalCholesterolToHdlRatio}
+            value={safeData.totalCholesterolToHdlRatio}
             onChange={onChange}
             placeholder="4.5"
             className="search-input"
@@ -141,7 +152,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="tgToHdlRatio"
-            value={lipidprofileData.tgToHdlRatio}
+            value={safeData.tgToHdlRatio}
             onChange={onChange}
             placeholder="3.0"
             className="search-input"
@@ -156,7 +167,7 @@ const LipidProfileFormFields: React.FC<LipidProfileFormFieldsProps> = ({ lipidpr
           <input
             type="text"
             name="nonHdlCholesterol"
-            value={lipidprofileData.nonHdlCholesterol}
+            value={safeData.nonHdlCholesterol}
             onChange={onChange}
             placeholder="130"
             className="search-input"

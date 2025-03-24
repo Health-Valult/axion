@@ -12,6 +12,9 @@ interface CPRFormFieldsProps {
 }
 
 const CPRFormFields: React.FC<CPRFormFieldsProps> = ({ cprData, onChange }) => {
+    const safeData: CPRFormData = {
+      crpLevel: cprData?.crpLevel || "",
+    }
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -23,7 +26,7 @@ const CPRFormFields: React.FC<CPRFormFieldsProps> = ({ cprData, onChange }) => {
             type="text"
             name="crpLevel"
             className="search-input"
-            value={cprData.crpLevel}
+            value={safeData.crpLevel}
             onChange={onChange}
             placeholder="5.0"
             required

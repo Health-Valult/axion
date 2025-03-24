@@ -12,6 +12,9 @@ interface ESRFormFieldsProps {
 }
 
 const ESRFormFields: React.FC<ESRFormFieldsProps> = ({ esrData, onChange }) => {
+  const safeData: ESRFormData = {
+    esr: esrData?.esr || "",
+  };
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -22,7 +25,7 @@ const ESRFormFields: React.FC<ESRFormFieldsProps> = ({ esrData, onChange }) => {
           <input
             type="text"
             name="esr"
-            value={esrData.esr}
+            value={safeData.esr}
             onChange={onChange}
             placeholder="10"
             className="search-input"

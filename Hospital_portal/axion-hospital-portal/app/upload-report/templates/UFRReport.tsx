@@ -26,6 +26,24 @@ interface UFRFormFieldsProps {
 }
 
 const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
+  const safeData: UFRFormData = {
+    quantity: ufrData?.quantity || "",
+    color: ufrData?.color || "",
+    transparency: ufrData?.transparency || "",
+    specificGravity: ufrData?.specificGravity || "",
+    pH: ufrData?.pH || "",
+    protein: ufrData?.protein || "",
+    sugar: ufrData?.sugar || "",
+    ketones: ufrData?.ketones || "",
+    bilirubin: ufrData?.bilirubin || "",
+    rbc: ufrData?.rbc || "",
+    pusCells: ufrData?.pusCells || "",
+    epithelialCells: ufrData?.epithelialCells || "",
+    casts: ufrData?.casts || "",
+    crystals: ufrData?.crystals || "",
+    bacteria: ufrData?.bacteria || "",
+  };
+  
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -36,7 +54,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="quantity"
-            value={ufrData.quantity}
+            value={safeData.quantity}
             onChange={onChange}
             placeholder="50 ml"
             className="search-input"
@@ -51,7 +69,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="color"
-            value={ufrData.color}
+            value={safeData.color}
             onChange={onChange}
             placeholder="Yellow"
             className="search-input"
@@ -68,7 +86,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="transparency"
-            value={ufrData.transparency}
+            value={safeData.transparency}
             onChange={onChange}
             placeholder="Clear"
             className="search-input"
@@ -83,7 +101,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="specificGravity"
-            value={ufrData.specificGravity}
+            value={safeData.specificGravity}
             onChange={onChange}
             placeholder="1.020"
             className="search-input"
@@ -98,7 +116,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="pH"
-            value={ufrData.pH}
+            value={safeData.pH}
             onChange={onChange}
             placeholder="6.0"
             className="search-input"
@@ -115,7 +133,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="protein"
-            value={ufrData.protein}
+            value={safeData.protein}
             onChange={onChange}
             placeholder="Negative"
             className="search-input"
@@ -130,7 +148,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="sugar"
-            value={ufrData.sugar}
+            value={safeData.sugar}
             onChange={onChange}
             placeholder="Negative"
             className="search-input"
@@ -147,7 +165,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="ketones"
-            value={ufrData.ketones}
+            value={safeData.ketones}
             onChange={onChange}
             placeholder="Negative"
             className="search-input"
@@ -162,7 +180,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="bilirubin"
-            value={ufrData.bilirubin}
+            value={safeData.bilirubin}
             onChange={onChange}
             placeholder="Negative"
             className="search-input"
@@ -179,7 +197,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="rbc"
-            value={ufrData.rbc}
+            value={safeData.rbc}
             onChange={onChange}
             placeholder="0-2"
             className="search-input"
@@ -194,7 +212,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="pusCells"
-            value={ufrData.pusCells}
+            value={safeData.pusCells}
             onChange={onChange}
             placeholder="0-5"
             className="search-input"
@@ -211,7 +229,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="epithelialCells"
-            value={ufrData.epithelialCells}
+            value={safeData.epithelialCells}
             onChange={onChange}
             placeholder="0-2"
             className="search-input"
@@ -226,7 +244,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="casts"
-            value={ufrData.casts}
+            value={safeData.casts}
             onChange={onChange}
             placeholder="None"
             className="search-input"
@@ -243,7 +261,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="crystals"
-            value={ufrData.crystals}
+            value={safeData.crystals}
             onChange={onChange}
             placeholder="None"
             className="search-input"
@@ -258,7 +276,7 @@ const UFRFormFields: React.FC<UFRFormFieldsProps> = ({ ufrData, onChange }) => {
           <input
             type="text"
             name="bacteria"
-            value={ufrData.bacteria}
+            value={safeData.bacteria}
             onChange={onChange}
             placeholder="None"
             className="search-input"

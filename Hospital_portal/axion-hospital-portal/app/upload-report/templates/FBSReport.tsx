@@ -12,6 +12,9 @@ interface FBSFormFieldsProps {
 }
 
 const FBSFormFields: React.FC<FBSFormFieldsProps> = ({ fbsData, onChange }) => {
+  const safeData: FBSFormData = {
+    fastingBloodSugar: fbsData?.fastingBloodSugar || "",
+  };
   return (
     <div className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
@@ -22,7 +25,7 @@ const FBSFormFields: React.FC<FBSFormFieldsProps> = ({ fbsData, onChange }) => {
           <input
             type="text"
             name="fastingBloodSugar"
-            value={fbsData.fastingBloodSugar}
+            value={safeData.fastingBloodSugar}
             onChange={onChange}
             placeholder="90"
             className="search-input"

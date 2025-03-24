@@ -25,7 +25,7 @@ const Register = () => {
     dateOfBirth: new Date().toISOString().split("T")[0],
     gender: "",
     nationalId: "",
-    contactNumber: "",
+    phoneNumber: "",
     email: "",
     address: "",
     city: "",
@@ -33,7 +33,7 @@ const Register = () => {
 
     // Work Informations
     hospitalName: "",
-    phoneNumber: "",
+    contactNumber: "",
     workLocation: "",
     department: "",
     medicalRegistrationNumber: "",
