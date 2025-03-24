@@ -24,7 +24,7 @@ async def send_email(email_content:dict):
                     "To": [
                         {
                             "Email": email_content.get("email"),
-                            "Name": "Father Touchboys"
+                            "Name": "Sir / Madam"
                         }
                     ],
                     "Subject": email_content.get("subject"),

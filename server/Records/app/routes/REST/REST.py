@@ -283,7 +283,7 @@ async def add_prescriptions(request:Request,prescriptionData:SymptomsSignsDiagno
         doctorName=prescriptionData.doctorName,
         patientID=patient,
         indications=prescriptionData.indications,
-        diagnosedConditions=getattr(prescriptionData, "diagnosedCondition", None),
+        diagnosedCondition=prescriptionData.diagnosedCondition,
         timeStamp=prescriptionData.timeStamp,
         notes=prescriptionData.note
     )
