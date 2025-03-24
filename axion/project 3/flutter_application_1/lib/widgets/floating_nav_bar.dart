@@ -16,7 +16,6 @@ class FloatingNavBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      // Use the same background color as the app’s scaffold
       color: theme.scaffoldBackgroundColor,
       height: 50,
       child: Row(
@@ -40,10 +39,8 @@ class FloatingNavBar extends StatelessWidget {
     final theme = Theme.of(context);
     final bool isDarkMode = theme.brightness == Brightness.dark;
 
-    // Unselected icon color: black in light mode, grey in dark mode
     final Color unselectedColor = isDarkMode ? Colors.grey : const Color.fromARGB(255, 101, 101, 101);
 
-    // Keep the same blue color for selected icons in both modes
     final Color selectedColor = Colors.blue;
 
     return GestureDetector(

@@ -12,7 +12,6 @@ import 'package:flutter_application_1/services/secure_storage_service.dart';
 class ApiService {
   final _storage = SecureStorageService();
 
-  // Helper method to get headers with auth token
   Future<Map<String, String>> _getHeaders() async {
     print('\n=== Getting Request Headers ===');
     final sessionService = SessionService();
@@ -38,7 +37,6 @@ class ApiService {
     return headers;
   }
 
-  // Helper method to handle API response
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
     try {
       final data = jsonDecode(response.body);
@@ -64,7 +62,6 @@ class ApiService {
     }
   }
 
-  // Helper method to make API calls with retry
   Future<Map<String, dynamic>> _makeApiCall(
       Future<http.Response> Function() apiCall) async {
     try {
@@ -84,9 +81,6 @@ class ApiService {
     }
   }
 
-  // ----------------------------
-  // Authentication Methods
-  // ----------------------------
 
   Future<Map<String, dynamic>> signupUser(
       Map<String, dynamic> userData) async {
@@ -96,7 +90,6 @@ class ApiService {
     print('Request Data:');
     print(const JsonEncoder.withIndent('  ').convert(userData));
 
-    // Validate required fields
     final requiredFields = [
       'FirstName',
       'LastName',
@@ -185,7 +178,6 @@ class ApiService {
       };
     }
 
-    // Generate a UUID for this OTP request
     final String requestId = const Uuid().v4();
     print('Generated UUID: $requestId');
 
@@ -213,7 +205,6 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('✅ OTP sent successfully');
 
-        // Store the requestId in secure storage
         final userData = await _storage.readSecure(SecureStorageService.userDataKey);
         final Map<String, dynamic> updatedUserData = userData != null 
           ? json.decode(userData) as Map<String, dynamic>
@@ -264,7 +255,6 @@ class ApiService {
       print('\n=== Verify OTP Request ===');
       print('URL: ${EnvConfig.apiBaseUrl}${EnvConfig.auth.verifyOTP}');
       
-      // Get the stored request ID
       final userData = await _storage.readSecure(SecureStorageService.userDataKey);
       final Map<String, dynamic>? userDataMap = userData != null 
           ? json.decode(userData) as Map<String, dynamic>
@@ -314,7 +304,7 @@ class ApiService {
     print('Request Data:');
     print(const JsonEncoder.withIndent('  ').convert({
       'email': email,
-      'password': '********', // Masked for security
+      'password': '********', 
     }));
 
     try {
@@ -334,7 +324,7 @@ class ApiService {
       print('Response Data:');
       final sanitizedData = Map<String, dynamic>.from(data);
       if (sanitizedData['data'] != null && sanitizedData['data']['token'] != null) {
-        sanitizedData['data']['token'] = '********'; // Mask token for logging
+        sanitizedData['data']['token'] = '********'; 
       }
       print(const JsonEncoder.withIndent('  ').convert(sanitizedData));
 
@@ -357,7 +347,6 @@ class ApiService {
         }
 
         print('✅ Session data stored successfully');
-        // Add a small delay to ensure storage is fully complete
         await Future.delayed(const Duration(milliseconds: 100));
         return data;
       } else {
@@ -390,7 +379,6 @@ class ApiService {
 
   Future<Map<String, dynamic>> logout() async {
     try {
-      // Make logout request
       await _makeApiCall(() async {
         final headers = await _getHeaders();
         final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.auth.logout);
@@ -400,7 +388,6 @@ class ApiService {
         );
       });
 
-      // Always clear session data
       final sessionService = SessionService();
       await sessionService.clearSession();
 
@@ -409,7 +396,6 @@ class ApiService {
         'message': 'Logged out successfully',
       };
     } catch (e) {
-      // Clear session even if request fails
       final sessionService = SessionService();
       await sessionService.clearSession();
 
@@ -429,10 +415,6 @@ class ApiService {
     await _handleResponse(response);
   }
 
-  // ----------------------------
-  // Profile Methods
-  // ----------------------------
-
   Future<User> getUserProfile() async {
     print('\n=== Getting User Profile ===');
     final url = Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.profile.profile);
@@ -451,11 +433,9 @@ class ApiService {
         throw Exception('Failed to get profile: ${response.statusCode}');
       }
 
-      // Parse the response body directly since it contains the user data
       final data = jsonDecode(response.body);
       print('Parsed Response: ${const JsonEncoder.withIndent('  ').convert(data)}');
       
-      // Create user directly from response data
       return User.fromJson(data);
     } catch (e) {
       print('Error in getUserProfile: $e');
@@ -465,17 +445,11 @@ class ApiService {
     }
   }
 
-  // ----------------------------
-  // Settings Methods
-  // ----------------------------
 
   Future<void> changePassword(String currentPassword, String newPassword) async {
-    // Validate passwords
     if (currentPassword.isEmpty || newPassword.isEmpty) {
       throw Exception('Both current and new passwords are required');
     }
-
-    // Password validation regex
     final passwordRegex = RegExp(
       r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
     );
@@ -498,7 +472,6 @@ class ApiService {
     print('Base URL: ${EnvConfig.apiBaseUrl}');
     print('Reset Password Path: ${EnvConfig.auth.resetPassword}');
 
-    // Remove any trailing slashes from base URL
     final baseUrl = EnvConfig.apiBaseUrl.endsWith('/')
         ? EnvConfig.apiBaseUrl.substring(0, EnvConfig.apiBaseUrl.length - 1)
         : EnvConfig.apiBaseUrl;
@@ -543,7 +516,6 @@ class ApiService {
   Future<Map<String, dynamic>> deleteAccount(String email, String password) async {
     print('\n=== Delete Account Request ===');
 
-    // Validate input
     if (email.isEmpty || password.isEmpty) {
       return {
         'success': false,
@@ -551,7 +523,6 @@ class ApiService {
       };
     }
 
-    // Validate email format
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) {
       return {
         'success': false,
@@ -583,7 +554,6 @@ class ApiService {
       final result = await _handleResponse(response);
 
       if (result['success']) {
-        // Clear session on successful deletion
         final sessionService = SessionService();
         await sessionService.clearSession();
       }
@@ -600,11 +570,7 @@ class ApiService {
     }
   }
 
-  // ----------------------------
-  // Notifications Methods (Modified)
-  // ----------------------------
 
-  // Only GET notifications functionality is available.
   Future<List<AppNotification>> getNotifications() async {
     final response = await http.get(
       Uri.parse(EnvConfig.apiBaseUrl + EnvConfig.notifications.get),
@@ -619,9 +585,6 @@ class ApiService {
     return [];
   }
 
-  // ----------------------------
-  // Log Methods
-  // ----------------------------
 
   Future<List<Log>> getLogs() async {
     final result = await _makeApiCall(() async {
@@ -654,9 +617,6 @@ class ApiService {
     throw Exception(result['error']);
   }
 
-  // ----------------------------
-  // Medical Notifications Methods
-  // ----------------------------
 
   Future<List<Map<String, dynamic>>> getMedicalNotifications() async {
     final response = await http.get(
@@ -696,9 +656,6 @@ class ApiService {
     await _handleResponse(response);
   }
 
-  // ----------------------------
-  // Connect with OTP Method
-  // ----------------------------
 
   Future<Map<String, dynamic>> connectWithOTP({required String otp}) async {
     print('\n=== OTP Connect Request ===');

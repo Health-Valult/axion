@@ -45,7 +45,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _isDarkMode = true;
   late String _selectedLanguage;
-  bool _isLoading = false; // Removed loading of notifications and privacy
+  bool _isLoading = false; 
 
   final Map<String, Locale> _languageMap = {
     'English': const Locale('en'),
@@ -61,7 +61,6 @@ class _SettingsPageState extends State<SettingsPage> {
       (lang) => _languageMap[lang] == MyApp.localeNotifier.value,
       orElse: () => 'English',
     );
-    // No additional settings to load, so _isLoading remains false.
   }
 
   @override
@@ -211,7 +210,6 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
       return;
     }
 
-    // Validate email format
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       _showErrorDialog('Please enter a valid email address');
       return;
@@ -225,19 +223,17 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
       if (!mounted) return;
 
       if (result['success']) {
-        // Show success message and navigate
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Account deleted successfully')),
         );
 
-        Navigator.of(context).pop(); // Close dialog
+        Navigator.of(context).pop(); 
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         String errorMessage =
             'Failed to delete account. Please try again.';
 
-        // Handle specific error cases
         if (result['error']?.toLowerCase().contains('password') ?? false) {
           errorMessage =
               'Incorrect password. Please check your password and try again.';
@@ -394,7 +390,6 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
   bool _newPasswordVisible = false;
   bool _confirmPasswordVisible = false;
 
-  // Password validation states
   bool _hasUpperCase = false;
   bool _hasLowerCase = false;
   bool _hasNumber = false;
@@ -493,7 +488,6 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       return;
     }
 
-    // Password validation regex
     final passwordRegex = RegExp(
         r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
 

@@ -82,7 +82,7 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
   void _updateDateFilter(DateTime? date) {
     setState(() {
       _selectedDate = date;
-      _filterReports(); // Re-apply filters
+      _filterReports(); 
     });
   }
 
@@ -150,7 +150,6 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
       }
 
       final reports = labsList.map((lab) {
-        // Safely extract and validate required fields
         final id = lab['id'] as String?;
         if (id == null) throw Exception('Lab missing required field: id');
 
@@ -173,8 +172,8 @@ class _ReportsPageState extends State<ReportsPage> with SingleTickerProviderStat
       if (!mounted) return;
 
       setState(() {
-        _reports = reports;
-        _filteredReports = reports;
+        _reports = reports..sort((a, b) => b.dateTime.compareTo(a.dateTime));  // Sort in descending order
+        _filteredReports = _reports;
         _isLoading = false;
         _error = null;
       });

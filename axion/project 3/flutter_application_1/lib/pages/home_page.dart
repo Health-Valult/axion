@@ -9,7 +9,7 @@ import 'package:flutter_application_1/pages/medical_notifications_page.dart';
 import 'package:flutter_application_1/services/notification_service.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter_application_1/services/env_config.dart';
-import 'package:intl/intl.dart'; // Added for date formatting
+import 'package:intl/intl.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +40,6 @@ class _HomePageState extends State<HomePage> {
     _loadNotifications();
   }
 
-  // Helper function to format date strings
   String _formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return 'Unknown';
     try {
@@ -84,7 +83,6 @@ class _HomePageState extends State<HomePage> {
     });
 
     try {
-      // Load profile first and wait for it to complete
       final profile = await _apiService.getUserProfile();
       if (!mounted) return;
       
@@ -94,7 +92,6 @@ class _HomePageState extends State<HomePage> {
 
       final client = GraphQLProvider.of(context).value;
 
-      // Use the combined query for health data
       final healthDataResult = await client.query(QueryOptions(
         document: gql(GraphQLQueries.getAllHealthData),
         fetchPolicy: FetchPolicy.noCache,
@@ -110,12 +107,12 @@ class _HomePageState extends State<HomePage> {
             .map((m) => {
                   'title': m['display'] ?? 'Unknown',
                   'detail': '''Dosage: ${m['dosage'] ?? 'No dosage'}
-                  Route: ${m['route'] ?? 'Unknown route'}
-                  Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
-                  Code: ${m['code'] ?? 'No code'}
-                  Prescribed: ${_formatDate(m['meta']?['created'])}
-                  Source: ${m['meta']?['source'] ?? 'Unknown'}''',
-                  'type': 'medication'
+Route: ${m['route'] ?? 'Unknown route'}
+Prescriber: ${m['prescriber'] ?? 'Unknown prescriber'}
+Code: ${m['code'] ?? 'No code'}
+Prescribed: ${_formatDate(m['meta']?['created'])}
+Source: ${m['meta']?['source'] ?? 'Unknown'}''',
+'type': 'medication'
                 })
             .toList();
       }
@@ -125,14 +122,14 @@ class _HomePageState extends State<HomePage> {
             .map((a) => {
                   'title': a['display'] ?? 'Unknown',
                   'detail': '''Severity: ${a['severity'] ?? 'Unknown'}
-                  Category: ${a['category'] ?? 'Unknown'}
-                  Criticality: ${a['criticality'] ?? 'Unknown'}
-                  Status: ${a['verificationStatus'] ?? 'Unknown'}
-                  Source: ${a['source'] ?? 'Unknown'}
-                  Created: ${_formatDate(a['meta']?['created'])}
-                  Updated: ${_formatDate(a['meta']?['updated'])}
-                  System: ${a['meta']?['source'] ?? 'Unknown'}''',
-                  'type': 'allergy'
+Category: ${a['category'] ?? 'Unknown'}
+Criticality: ${a['criticality'] ?? 'Unknown'}
+Status: ${a['verificationStatus'] ?? 'Unknown'}
+Source: ${a['source'] ?? 'Unknown'}
+Created: ${_formatDate(a['meta']?['created'])}
+Updated: ${_formatDate(a['meta']?['updated'])}
+System: ${a['meta']?['source'] ?? 'Unknown'}''',
+'type': 'allergy'
                 })
             .toList();
       }
@@ -142,13 +139,13 @@ class _HomePageState extends State<HomePage> {
             .map((i) => {
                   'title': i['display'] ?? 'Unknown',
                   'detail': '''Dosage: ${i['dosage'] ?? 'Unknown'}
-                  Unit: ${i['unit'] ?? 'Unknown'}
-                  Site: ${i['site'] ?? 'Unknown'}
-                  Date: ${_formatDate(i['timestamp'])}
-                  Code: ${i['code'] ?? 'No code'}
-                  Created: ${_formatDate(i['meta']?['created'])}
-                  Source: ${i['meta']?['source'] ?? 'Unknown'}''',
-                  'type': 'immunization'
+Unit: ${i['unit'] ?? 'Unknown'}
+Site: ${i['site'] ?? 'Unknown'}
+Date: ${_formatDate(i['timestamp'])}
+Code: ${i['code'] ?? 'No code'}
+Created: ${_formatDate(i['meta']?['created'])}
+Source: ${i['meta']?['source'] ?? 'Unknown'}''',
+'type': 'immunization'
                 })
             .toList();
       }

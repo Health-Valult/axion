@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/models/user.dart';
 import 'package:flutter_application_1/pages/home_page.dart';
 import 'package:flutter_application_1/pages/log_page.dart';
-import 'package:flutter_application_1/pages/notifications_page.dart';
 import 'package:flutter_application_1/pages/reports_page.dart';
 import 'package:flutter_application_1/pages/link_page.dart';
 import 'package:flutter_application_1/pages/profile_page.dart';
@@ -45,7 +44,6 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadCurrentUser() async {
     try {
-      // Try loading profile up to 3 times with increasing delays
       for (int i = 0; i < 3; i++) {
         try {
           final user = await ApiService().getUserProfile();
@@ -54,7 +52,7 @@ class _MainPageState extends State<MainPage> {
               _currentUser = user;
             });
           }
-          return; // Success, exit retry loop
+          return; 
         } catch (e) {
           if (i < 2) {
             await Future.delayed(Duration(milliseconds: (i + 1) * 500));
@@ -184,7 +182,6 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Use a Stack only for your global auth overlay
       body: Stack(
         children: [
           Positioned.fill(child: _pages[_currentIndex]),
@@ -219,7 +216,6 @@ class _MainPageState extends State<MainPage> {
             ),
         ],
       ),
-      // Put the nav bar here so it's not floating over the page
       bottomNavigationBar: FloatingNavBar(
         currentIndex: _currentIndex,
         onItemSelected: (index) {

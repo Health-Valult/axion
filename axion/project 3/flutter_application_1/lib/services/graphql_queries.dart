@@ -1,8 +1,4 @@
 class GraphQLQueries {
-  // Query to get medications for the authenticated user
-
-
-  // Combined query for medications, allergies, and immunizations
   static String getAllHealthData = '''
     query HealthData {
       medications {
@@ -46,14 +42,13 @@ class GraphQLQueries {
     }
   ''';
 
-  // Query to get lab reports
+
   static String getLabs = '''
     query Labs {
       Labs {
         labs {
           id
           patientID
-          code
           display
           timestamp
           meta
@@ -62,7 +57,7 @@ class GraphQLQueries {
     }
   ''';
 
-  // Query to get observations for a specific lab report
+ 
   static String getObservationStack = '''
     query ObservationStack(\$LabID: String!) {
       observationStack(LabID: \$LabID) {

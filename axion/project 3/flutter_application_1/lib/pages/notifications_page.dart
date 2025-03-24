@@ -91,14 +91,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   final notification = _notifications![index];
                   return ListTile(
                     title: Text(
-                      notification.title, // Adjust based on your model mapping
+                      notification.title, 
                       style: TextStyle(
                         fontWeight: notification.read ? FontWeight.normal : FontWeight.bold,
                       ),
                     ),
                     subtitle: Text(notification.type),
                     onTap: () {
-                      // Optionally handle tap events if needed.
                     },
                   );
                 },

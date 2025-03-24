@@ -11,12 +11,10 @@ class SecureStorageService {
   static const _keyPrefix = 'app_';
   static const _encryptionKeyKey = '${_keyPrefix}encryption_key';
   
-  // Encryption key management
   encrypt.Key? _encryptionKey;
   final _iv = encrypt.IV.fromLength(16);
 
   Future<void> init() async {
-    // Generate or retrieve encryption key
     String? storedKey = await _storage.read(key: _encryptionKeyKey);
     if (storedKey == null) {
       final key = encrypt.Key.fromSecureRandom(32);
@@ -56,7 +54,6 @@ class SecureStorageService {
     await _storage.deleteAll();
   }
 
-  // Session-specific storage keys
   static const sessionTokenKey = 'session_token';
   static const refreshTokenKey = 'refresh_token';
   static const sessionExpiryKey = 'session_expiry';

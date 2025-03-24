@@ -34,7 +34,6 @@ class _MedicalNotificationsPageState extends State<MedicalNotificationsPage> {
       final notifications = await _apiService.getMedicalNotifications();
       setState(() {
         _isLoading = false;
-        // Update static reminders
         MedicalNotificationsPage.getReminders(notifications);
       });
     } catch (e) {
@@ -217,7 +216,6 @@ class _EditNotificationDialogState extends State<EditNotificationDialog> {
     super.initState();
     _titleController = TextEditingController(text: widget.notification['title']);
     
-    // Parse the time string to TimeOfDay
     final timeStr = widget.notification['time'];
     final timeParts = timeStr.split(':');
     if (timeParts.length == 2) {

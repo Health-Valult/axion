@@ -11,9 +11,7 @@ class ProfilePage extends StatelessWidget {
 
   const ProfilePage({super.key, required this.user});
 
-  // Helper method to format DOB regardless of its type.
   String formatDob(dynamic dob) {
-    // If dob is an int, assume it's in YYYYMMDD format.
     if (dob is int) {
       final dobStr = dob.toString();
       if (dobStr.length == 8) {
@@ -21,9 +19,7 @@ class ProfilePage extends StatelessWidget {
       }
       return dobStr;
     }
-    // If dob is a String.
     else if (dob is String) {
-      // Check if it appears to be an ISO string (contains '-' or 'T').
       if (dob.contains('-') || dob.contains('T')) {
         try {
           final date = DateTime.parse(dob);
@@ -32,7 +28,6 @@ class ProfilePage extends StatelessWidget {
           return dob;
         }
       } else if (dob.length == 8) {
-        // Otherwise, assume it's in YYYYMMDD format.
         return '${dob.substring(6, 8)}/${dob.substring(4, 6)}/${dob.substring(0, 4)}';
       }
       return dob;

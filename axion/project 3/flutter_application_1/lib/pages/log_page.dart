@@ -7,20 +7,16 @@ import 'package:flutter_application_1/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-/// ==========================
-/// LogService
-/// ==========================
-///
-/// Simulates backend endpoints for logs.
+
 class LogService {
   static const String baseUrl = 'https://api.example.com';
 
-  // Simulated HTTP client.
+
   static final http.Client client = MockClient((http.Request request) async {
     final String url = request.url.toString();
     await Future.delayed(const Duration(milliseconds: 100));
 
-    // Simulate GET /logs endpoint.
+
     if (request.method == 'GET' && url == '$baseUrl/logs') {
       return http.Response(
         json.encode([
@@ -52,7 +48,6 @@ class LogService {
     return http.Response("Not Found", 404);
   });
 
-  /// Fetch logs from the simulated backend.
   static Future<List<Map<String, dynamic>>> getLogs() async {
     final response = await client.get(Uri.parse('$baseUrl/logs'));
     if (response.statusCode == 200) {
@@ -63,9 +58,6 @@ class LogService {
   }
 }
 
-/// ==========================
-/// LogPage
-/// ==========================
 
 class LogPage extends StatefulWidget {
   const LogPage({Key? key}) : super(key: key);

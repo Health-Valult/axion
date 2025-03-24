@@ -44,7 +44,6 @@ Future<void> saveLocale(String localeCode) async {
   await prefs.setString('locale', localeCode);
 }
 
-/// ✅ Router with locale notifier refresh
 final GoRouter _router = GoRouter(
   refreshListenable: MyApp.localeNotifier, // ✅ Key Fix
   redirect: (context, state) {
@@ -65,7 +64,6 @@ final GoRouter _router = GoRouter(
   ],
 );
 
-/// Secure storage service
 class SecureStorageService {
   final _storage = const FlutterSecureStorage();
 
@@ -175,7 +173,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-/// Combine two ValueNotifiers
 class ValueListenableBuilder2<A, B> extends StatelessWidget {
   final ValueNotifier<A> first;
   final ValueNotifier<B> second;

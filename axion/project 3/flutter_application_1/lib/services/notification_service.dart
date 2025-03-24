@@ -18,12 +18,12 @@ class NotificationService {
       sound: true,
     );
 
-    // Initialize local notifications
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
     await _localNotifications.initialize(initSettings);
 
-    // Configure notification channels for Android
+
     const androidChannel = AndroidNotificationChannel(
       'medical_notifications',
       'Medical Notifications',
@@ -31,28 +31,24 @@ class NotificationService {
       importance: Importance.high,
       enableVibration: true,
       enableLights: true,
-      ledColor: Color(0xFFFF9800), // Orange color as per memory requirements
+      ledColor: Color(0xFFFF9800),
     );
 
     await _localNotifications
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(androidChannel);
 
-    // Handle background messages
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       _handleForegroundMessage(message);
     });
 
-    // Handle notification taps
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       _handleNotificationTap(message);
     });
   }
 
-  // Background message handler
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await Firebase.initializeApp();
     _showLocalNotification(
@@ -69,7 +65,6 @@ class NotificationService {
     });
   }
 
-  // Handle foreground messages
   static void _handleForegroundMessage(RemoteMessage message) {
     _showLocalNotification(
       title: message.notification?.title ?? 'Medical Reminder',
@@ -85,13 +80,9 @@ class NotificationService {
     });
   }
 
-  // Handle notification taps
   static void _handleNotificationTap(RemoteMessage message) {
-    // Navigate to notifications page or handle specific actions
-    // This will be handled by the app's navigation system
   }
 
-  // Show local notification
   static Future<void> _showLocalNotification({
     required String title,
     required String body,
@@ -103,7 +94,7 @@ class NotificationService {
       channelDescription: 'Notifications for medical reminders and updates',
       importance: Importance.high,
       priority: Priority.high,
-      color: Color(0xFFFF9800), // Orange color as per memory requirements
+      color: Color(0xFFFF9800),
       icon: '@mipmap/ic_launcher',
     );
 
@@ -118,12 +109,11 @@ class NotificationService {
     );
   }
 
-  // Get FCM token
   static Future<String?> getFCMToken() async {
     return await _firebaseMessaging.getToken();
   }
 
-  // Trigger authentication notification
+
   static void triggerAuthNotification() {
     _authRequired = true;
     _showLocalNotification(
@@ -132,34 +122,33 @@ class NotificationService {
     );
   }
 
-  // Check if authentication is required
   static Future<bool> checkAuthNotification() async {
     return _authRequired;
   }
 
-  // Reset authentication notification
+
   static void resetAuthNotification() {
     _authRequired = false;
   }
 
-  // Add a new notification
+
   static void addNotification(Map<String, dynamic> notification) {
     _notifications.add(notification);
   }
 
-  // Get all notifications
+
   static List<Map<String, dynamic>> getNotifications() {
     return _notifications;
   }
 
-  // Mark notification as read
+
   static void markAsRead(int index) {
     if (index >= 0 && index < _notifications.length) {
       _notifications[index]['read'] = true;
     }
   }
 
-  // Clear all notifications
+
   static void clearNotifications() {
     _notifications.clear();
   }

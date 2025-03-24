@@ -1,19 +1,17 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// A centralized configuration class that provides access to all environment variables
-/// and configuration settings used throughout the application.
+
 class EnvConfig {
-  // API Configuration
   static String get apiBaseUrl =>
       dotenv.env['API_BASE_URL'] ?? 'https://axiontestgateway.azure-api.net';
   static String get graphqlUrl =>
       dotenv.env['GRAPHQL_URL'] ?? 'https://axiontestgateway.azure-api.net/records-patients';
 
-  // Authentication Configuration
+
   static int get accessTokenDuration => int.parse(dotenv.env['ACCESS_TOKEN_DURATION'] ?? '3600');
   static int get refreshTokenDuration => int.parse(dotenv.env['REFRESH_TOKEN_DURATION'] ?? '604800');
 
-  // API Endpoints
+
   static const auth = _AuthEndpoints();
   static const profile = _ProfileEndpoints();
   static const settings = _SettingsEndpoints();
@@ -23,7 +21,7 @@ class EnvConfig {
   static const medical = _MedicalEndpoints();
 }
 
-/// Authentication-related endpoints
+
 class _AuthEndpoints {
   const _AuthEndpoints();
 
@@ -39,7 +37,6 @@ class _AuthEndpoints {
   String get connectOTP => '/records/records/verify-request';
 }
 
-/// Profile-related endpoints
 class _ProfileEndpoints {
   const _ProfileEndpoints();
 
@@ -50,7 +47,6 @@ class _ProfileEndpoints {
   String get delete => '/axion/user/profile/delete';
 }
 
-/// Settings-related endpoints
 class _SettingsEndpoints {
   const _SettingsEndpoints();
 
@@ -59,15 +55,13 @@ class _SettingsEndpoints {
   String get notifications => '/axion/user/settings/notifications';
 }
 
-/// Notification-related endpoints
 class _NotificationEndpoints {
   const _NotificationEndpoints();
 
-  // Only the GET endpoint is needed now.
+
   String get get => '/notification/notifications';
 }
 
-/// Log-related endpoints
 class _LogEndpoints {
   const _LogEndpoints();
 
@@ -75,7 +69,6 @@ class _LogEndpoints {
   String get details => '/axion/logs/{id}';
 }
 
-/// Link-related endpoints
 class _LinkEndpoints {
   const _LinkEndpoints();
 
@@ -83,10 +76,8 @@ class _LinkEndpoints {
   String get validate => '/axion/links/validate';
 }
 
-/// Medical-related endpoints
 class _MedicalEndpoints {
   const _MedicalEndpoints();
 
-  // All medical endpoints use GraphQL
   String get endpoint => '/graphql';
 }

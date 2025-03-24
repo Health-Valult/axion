@@ -15,7 +15,6 @@ class SessionService {
   Timer? _refreshTimer;
   bool _isRefreshing = false;
 
-  // Session management
   Future<bool> isSessionValid() async {
     final expiryStr = await _storage.readSecure(SecureStorageService.sessionExpiryKey);
     if (expiryStr == null) return false;
@@ -31,29 +30,25 @@ class SessionService {
     required Map<String, dynamic> userData,
   }) async {
     try {
-      // First update the GraphQL client token to ensure it's ready immediately
       GraphQLConfig.token = token;
       GraphQLConfig.updateToken(token);
 
-      // Store tokens sequentially to ensure order
       await _storage.writeSecure(SecureStorageService.sessionTokenKey, token);
       await _storage.writeSecure(SecureStorageService.refreshTokenKey, refreshToken);
       await _storage.writeSecure(SecureStorageService.sessionExpiryKey, expiry.toIso8601String());
       await _storage.writeSecure(SecureStorageService.userDataKey, json.encode(userData));
-
-      // Verify token was stored correctly
       final storedToken = await _storage.readSecure(SecureStorageService.sessionTokenKey);
+
       if (storedToken != token) {
         print('❌ Token storage verification failed');
         return false;
       }
 
-      // Schedule token refresh
       _scheduleTokenRefresh(expiry);
       return true;
     } catch (e) {
       print('❌ Error storing session data: $e');
-      await clearSession(); // Clean up on error
+      await clearSession(); 
       return false;
     }
   }
@@ -83,18 +78,15 @@ class SessionService {
     }
   }
 
-  // Token refresh management
   void _scheduleTokenRefresh(DateTime expiry) {
     _refreshTimer?.cancel();
     
-    // Schedule refresh 5 minutes before expiry
     final refreshTime = expiry.subtract(const Duration(minutes: 5));
     final now = DateTime.now();
     
     if (refreshTime.isAfter(now)) {
       _refreshTimer = Timer(refreshTime.difference(now), _refreshToken);
     } else {
-      // Token is already close to expiry or expired, refresh immediately
       _refreshToken();
     }
   }
@@ -131,18 +123,14 @@ class SessionService {
           userData: data['userData'] ?? {},
         );
       } else {
-        // Refresh token is invalid or expired
         await clearSession();
       }
     } catch (e) {
-      // Handle network errors
-      print('Error refreshing token: $e');
     } finally {
       _isRefreshing = false;
     }
   }
 
-  // User data management
   Future<Map<String, dynamic>?> getUserData() async {
     final userDataStr = await _storage.readSecure(SecureStorageService.userDataKey);
     if (userDataStr == null) return null;

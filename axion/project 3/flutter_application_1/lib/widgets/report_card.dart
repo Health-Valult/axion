@@ -18,7 +18,7 @@ class ReportCard extends StatelessWidget {
     final iconColor = isDarkMode ? Colors.grey[300] : Colors.grey[700];
     final cardColor = isDarkMode ? const Color.fromRGBO(13, 14, 18, 1) : const Color.fromRGBO(241, 241, 241, 1);
 
-    // Format the date using the intl package (localized)
+
     final formattedDate = DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(report.dateTime);
 
     return Card(
