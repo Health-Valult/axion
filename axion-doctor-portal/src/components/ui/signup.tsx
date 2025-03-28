@@ -140,14 +140,17 @@ export function DoctorSignup() {
 				data: email,
 			};
 
-			const response = await fetch('http://localhost:3000/api/proxy5', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-				},
-				body: JSON.stringify(verificationData),
-			});
+			const response = await fetch(
+				'https://axiontestgateway.azure-api.net/axion/auth/send/otp',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json',
+					},
+					body: JSON.stringify(verificationData),
+				}
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json();
@@ -177,14 +180,17 @@ export function DoctorSignup() {
 				otp: otp,
 			};
 
-			const response = await fetch('http://localhost:3000/api/proxy6', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-				},
-				body: JSON.stringify(verificationData),
-			});
+			const response = await fetch(
+				'https://axiontestgateway.azure-api.net/axion/auth/verify/otp',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json',
+					},
+					body: JSON.stringify(verificationData),
+				}
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json();
@@ -232,14 +238,17 @@ export function DoctorSignup() {
 				Password: values.password,
 			};
 
-			const response = await fetch('http://localhost:3000/api/proxy2', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Accept: 'application/json',
-				},
-				body: JSON.stringify(doctorData),
-			});
+			const response = await fetch(
+				'https://axiontestgateway.azure-api.net/axion/auth/signup/doctor',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Accept: 'application/json',
+					},
+					body: JSON.stringify(doctorData),
+				}
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json();

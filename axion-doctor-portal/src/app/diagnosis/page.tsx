@@ -20,7 +20,7 @@ const Diagnosis: React.FC = () => {
 			setLoading(true);
 			try {
 				const response = await fetch(
-					'http://localhost:3000/api/proxy12',
+					'https://axiontestgateway.azure-api.net/records/records/prescription/diagnosis',
 					{
 						headers: {
 							Authorization: `Bearer ${sessionToken}`,

@@ -13,13 +13,16 @@ export async function GET(): Promise<Response> {
 	}
 
 	try {
-		const userResponse = await fetch(`http://localhost:3000/api/proxy4`, {
-			method: 'GET',
-			headers: {
-				Authorization: `Bearer ${sessionToken}`,
-			},
-			cache: 'no-store',
-		});
+		const userResponse = await fetch(
+			`https://axiontestgateway.azure-api.net/axion/user/profile`,
+			{
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${sessionToken}`,
+				},
+				cache: 'no-store',
+			}
+		);
 
 		if (!userResponse.ok) {
 			return NextResponse.json(

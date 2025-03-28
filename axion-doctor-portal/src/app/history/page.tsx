@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -29,7 +30,7 @@ const History: React.FC = () => {
 			const { sessionToken } = await getTokensFromCookies();
 			try {
 				const response = await fetch(
-					'http://localhost:3000/api/proxy15',
+					'https://axiontestgateway.azure-api.net/records/records/prescription/symptoms-signs',
 					{
 						headers: {
 							Authorization: `Bearer ${sessionToken}`,

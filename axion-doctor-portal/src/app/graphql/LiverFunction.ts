@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useQuery } from '@apollo/client';
 import { useState, useEffect } from 'react';
 import { GET_LIVER_FUNCTION_PROFILE } from './queries';

@@ -1,10 +1,10 @@
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { getTokensFromCookies } from '@/app/utils/auth'; // Adjust import path as needed
+import { getTokensFromCookies } from '@/app/utils/auth';
 
 // Create the HTTP link
 const httpLink = createHttpLink({
-	uri: 'http://localhost:3000/api/graphql', // Adjust URL as needed
+	uri: 'https://axiontestgateway.azure-api.net/records-doctor',
 });
 
 // Create the auth link to add the Authorization header

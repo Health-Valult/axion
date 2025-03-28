@@ -66,14 +66,17 @@ const EditProfileDialog: React.FC<profileProps> = ({ open, onOpenChange }) => {
 				New: data.newPassword,
 			};
 
-			const response = await fetch('http://localhost:3000/api/proxy9', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${sessionToken}`,
-				},
-				body: JSON.stringify(payload),
-			});
+			const response = await fetch(
+				'https://axiontestgateway.azure-api.net/axion/user/reset-password',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${sessionToken}`,
+					},
+					body: JSON.stringify(payload),
+				}
+			);
 
 			if (!response.ok) {
 				// Handle error responses

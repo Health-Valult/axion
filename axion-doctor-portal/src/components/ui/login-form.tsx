@@ -82,12 +82,15 @@ export default function LoginForm() {
 		};
 
 		// Submit login request using promise chains
-		fetch(`http://localhost:3000/api/proxy`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(loginData),
-			cache: 'no-store',
-		})
+		fetch(
+			`https://axiontestgateway.azure-api.net/axion/auth/login/doctor`,
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(loginData),
+				cache: 'no-store',
+			}
+		)
 			.then((response) => {
 				if (!response.ok) {
 					return response.json().then((errorData) => {
@@ -107,14 +110,17 @@ export default function LoginForm() {
 			})
 			.then((tokens) => {
 				// Fetch user data
-				return fetch(`http://localhost:3000/api/auth/user`, {
-					method: 'GET',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${tokens.session_token}`,
-					},
-					cache: 'no-store',
-				})
+				return fetch(
+					`https://axiontestgateway.azure-api.net/axion/user/profile`,
+					{
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${tokens.session_token}`,
+						},
+						cache: 'no-store',
+					}
+				)
 					.then((userDataResponse) => {
 						if (!userDataResponse.ok) {
 							console.error(

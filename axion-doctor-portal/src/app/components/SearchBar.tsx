@@ -63,7 +63,7 @@ const SearchBar = () => {
 		if (patientId) {
 			try {
 				const response = await fetch(
-					`http://localhost:3000/api/proxy8`,
+					`https://axiontestgateway.azure-api.net/records/records/select-patient`,
 					{
 						method: 'POST',
 						headers: {

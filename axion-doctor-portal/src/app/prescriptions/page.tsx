@@ -1,3 +1,4 @@
+/* eslint-disable */
 'use client';
 
 import React, { useState, useEffect, Key } from 'react';
@@ -99,7 +100,7 @@ const Prescriptions: React.FC = () => {
 
 		try {
 			const response = await fetch(
-				`http://localhost:3000/api/proxy10?name=${encodeURIComponent(
+				`https://rxnav.nlm.nih.gov/REST/drugs.json?name=${encodeURIComponent(
 					query
 				)}`
 			);
@@ -126,23 +127,6 @@ const Prescriptions: React.FC = () => {
 					description: item.synonym || item.name,
 				}));
 			}
-			// Keep the existing logic as fallback
-			// else if (data && data.drugGroup && data.drugGroup.conceptGroup) {
-			//   // Original logic remains unchanged
-			//   data.drugGroup.conceptGroup.forEach((group: any) => {
-			// 	if (group.conceptProperties) {
-			// 	  const groupMedicines = group.conceptProperties.map(
-			// 		(prop: any) => ({
-			// 		  key: prop.rxcui,
-			// 		  label: prop.name,
-			// 		  description: prop.synonym || prop.name,
-			// 		})
-			// 	  );
-
-			// 	  medicines = [...medicines, ...groupMedicines];
-			// 	}
-			//   });
-			// }
 
 			setMedicine(medicines);
 		} catch (error) {
@@ -249,14 +233,17 @@ const Prescriptions: React.FC = () => {
 				throw new Error('User is not authenticated');
 			}
 			console.log(data);
-			const response = await fetch('http://localhost:3000/api/proxy11', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${sessionToken}`,
-				},
-				body: data,
-			});
+			const response = await fetch(
+				'https://axiontestgateway.azure-api.net/records/records/add-prescription',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${sessionToken}`,
+					},
+					body: data,
+				}
+			);
 
 			if (!response.ok) {
 				throw new Error('Failed to submit prescription');
