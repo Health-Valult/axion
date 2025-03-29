@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { Bell, Moon, Globe, Lock, Shield } from 'lucide-react';
+import { Bell, Moon, Globe, Shield } from 'lucide-react';
 import Switch from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 

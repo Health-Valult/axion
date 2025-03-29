@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Input } from "@nextui-org/react"; // Changed from NextUI to match first file
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Lock as LockIcon, ShieldCheck, Mail, Key } from "lucide-react";
+import { ShieldCheck, Mail, Key } from "lucide-react";
 //import { Button } from "@/components/ui/button"; // Added Button import to match first file
 
 const ResetPassword = () => {

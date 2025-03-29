@@ -2,7 +2,7 @@
 
 
 import React from "react";
-import { Calendar, Clock, User, Hospital, FileText } from "lucide-react";
+import { Calendar, Clock, User, Hospital } from "lucide-react";
 
 export interface CommonReportData {
   patientNIC: string,
@@ -25,8 +25,7 @@ interface CommonReportFieldsProps {
 const CommonReportFields: React.FC<CommonReportFieldsProps> = ({
   reportData,
   onInputChange,
-  onCheckboxChange,
-  onFileChange
+
 }) => {
   return (
     <>

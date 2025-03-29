@@ -16,8 +16,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [location, setLocation] = useState<{ Latitude: number; Longitude: number } | null>(null);
   const [ipAddress, setIpAddress] = useState("Unknown");
-  const [androidId, setAndroidId] = useState("Unknown");
-  const [step, setStep] = useState(1);
+  const [androidId] = useState("Unknown");
+  const [step] = useState(1);
   const { toast } = useToast();
   // At the top of your component:
   const navigate = useRouter();
@@ -227,7 +227,7 @@ const Login = () => {
                 {!isLoading && <Lock className="ml-2 h-4 w-4" />}
               </button>
               <p className="text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Don`&apos`t have an account?{" "}
                 <Link href="/Register" className="text-primary hover:underline font-medium">Register</Link>
               </p>
             </CardFooter>

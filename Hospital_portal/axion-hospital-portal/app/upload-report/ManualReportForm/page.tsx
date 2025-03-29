@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { reportTemplates } from "@/app/upload-report/data/reportTemplates";
@@ -62,7 +62,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   const router = useRouter();
   const [selectedReport, setSelectedReport] = useState("");
   const [reportData, setReportData] = useState<CommonReportData>({
-    patientNIC:  patient?.nationalId || "",
+    patientNIC:  patient?.nationalId ?? "",
     date: new Date().toISOString().split("T")[0],
     time: new Date().toTimeString().split(" ")[0].slice(0, 5),
     practitioner: "",
@@ -78,7 +78,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
       ...prev,
       date: new Date().toISOString().split("T")[0],
       time: new Date().toTimeString().split(" ")[0].slice(0, 5),
-      patientNIC: patient?.nationalId || ""
+      patientNIC: patient?.nationalId ?? ""
     }));
   }, [patient]);
 
@@ -112,28 +112,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
       setReportData((prev) => ({ ...prev, pdfFile: e.target.files![0] }));
     }
   };
-
-  const prepareDataForBackend = () => {
-    // Create the BaseMetaTemplate structure
-    const metaData = {
-      patientNIC: reportData.patientNIC,
-      date: reportData.date,
-      time: reportData.time,
-      practitioner: reportData.practitioner,
-      clinic: reportData.clinic,
-      recorder: reportData.recorder,
-      instructions: reportData.instructions
-    };
-
-    // Create the full payload according to BaseReportTemplate
-    const payload = {
-      meta: metaData,
-      results: dynamicReportData,
-      reportType: selectedReport
-    };
-
-    return payload;
-  };  
+      
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -176,7 +155,7 @@ const ManualReportForm = ({ patient, onCancel }: ManualReportFormProps) => {
   if (showPreview) {
     return (
       <ReportPreview
-        patient={patient}
+        //patient={patient}
         reportType={selectedReport}
         reportData={{ ...dynamicReportData, ...reportData }}
         isSaving={isSaving}

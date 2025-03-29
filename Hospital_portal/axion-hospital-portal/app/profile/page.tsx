@@ -19,8 +19,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({ label, value }) => (
 
   export default function ProfileViewContent() {
     // 2. Specify type for token state
-    const [token, setToken] = useState<string | null>(null);
-
+    const [token, setToken] = useState<string | null>(() => sessionStorage.getItem("session_token"));
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState({
      
@@ -47,7 +46,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({ label, value }) => (
 
     useEffect(() => {
         // Get token from session storage
-        const token = sessionStorage.getItem("session_token");
+        //const token = sessionStorage.getItem("session_token");
         setToken(token);
         
         const fetchProfileData = async () => {
@@ -121,7 +120,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({ label, value }) => (
         } else {
             setLoading(false);
         }
-    }, []);
+    }, [token,toast]);
 
     const handleSubmit = () => {
         navigate.push("/search_patient");
@@ -167,7 +166,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({ label, value }) => (
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-white dark:bg-black overflow-hidden shadow-md">
+                    <Card className="bg-white dark:bg-gray-900 overflow-hidden shadow-md">
                         <CardHeader>
                             <CardTitle>Work Information</CardTitle>
                         </CardHeader>

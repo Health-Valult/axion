@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 const Register = () => {  
-  const [email, setEmail] = useState("");
+  const [email] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const navigate = useRouter();
@@ -17,7 +17,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otp, setOtp] = useState("");
   const [tempID, setTempId] = useState("");
-  const [uuid, setUuid] = useState(""); // Store unique ID for OTP verification
+  const [uuidGenerated, setUuid] = useState<string>(() => crypto.randomUUID()); // Store unique ID for OTP verification
 
   const [formData, setFormData] = useState({
     // General Information
@@ -48,10 +48,10 @@ const Register = () => {
 
 
   // Function to validate email
-  const validateEmail = (email:any) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email:string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   // Function to validate password
-  const validatePassword = (password:any) => password.length >= 8;
+  const validatePassword = (password:string) => password.length >= 8;
   // Function to validate phone number (10 digits)
   const validatePhoneNumber = (phoneNumber: string): boolean => /^[0-9]{10}$/.test(phoneNumber);
 
@@ -79,14 +79,6 @@ const Register = () => {
     }
   };
   
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const { name } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: e.target.files?.[0] || null }));
-    }
-  };
-
   const nextStep = () => {
     // Validate current step before proceeding
     if (step === 1) {
@@ -145,7 +137,7 @@ const Register = () => {
 
     setIsLoading(true);
     try {
-      const uuidGenerated = crypto.randomUUID(); // Generate unique ID
+      //const uuidGenerated = crypto.randomUUID(); // Generate unique ID
       setUuid(uuidGenerated);
       setTempId(uuidGenerated);
 
@@ -180,7 +172,7 @@ const Register = () => {
         body: JSON.stringify({ tempID: tempID, otp: otp  }),
       });
   
-      const data = await response.json();
+      //const data = await response.json();
   
       if (response.ok) {
   

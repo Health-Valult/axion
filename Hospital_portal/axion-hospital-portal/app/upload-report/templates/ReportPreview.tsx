@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Check } from "lucide-react";
-import { Patient } from "@/app/types/patient";
+//import { Patient } from "@/app/types/patient";
 import { ReportFieldUnits } from "@/app/upload-report/data/reportUnits";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 
 
 interface ReportPreviewProps {
-  patient: Patient;
+  //patient: Patient;
   reportType: string;
   reportData: Record<string, any>;
   isSaving: boolean;
@@ -18,12 +18,12 @@ interface ReportPreviewProps {
 }
 
 const ReportPreview: React.FC<ReportPreviewProps> = ({
-  patient,
+  //patient,
   reportType,
   reportData,
   isSaving,
   onBack,
-  onSave,
+  //onSave,
 }) => {
   const [token, setToken] = useState<string | null>(null);
   const navigate = useRouter();
@@ -95,7 +95,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
         try {
           const data = await response.json();
           errorMessage = data.message || `Something went wrong. Error: ${response.status}`;
-        } catch (e) {
+        } catch {
           errorMessage = `Something went wrong. Error: ${response.status}`;
         }
         
@@ -107,7 +107,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
         return;
       }
       
-      const responseData = await response.json();
+      //const responseData = await response.json();
       
       if (response.ok) {
         toast({

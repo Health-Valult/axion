@@ -1,8 +1,8 @@
 export interface Patient {
-    //id: string;
-    // imageUrl: string | null;
     nationalId: string;
     name: string;
+    //id: string;
+    // imageUrl: string | null;
     // age: number;
     // gender: string;
     // email?: string;

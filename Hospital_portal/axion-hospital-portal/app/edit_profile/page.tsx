@@ -5,69 +5,129 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Input } from "@nextui-org/react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Calendar } from "lucide-react";
 
 export default function ProfileEditContent() {
     const [profile, setProfile] = useState({
-      fullName: "",
-      email: "",
-      phoneNumber: "",
-      nic: "",
-      dob: "",
-      gender: "",
-      address: "",
-      city: "",
-      postalCode: "",
-      hospitalName: "",
-      contactNumber: "",
-      workLocation: "",
-      department: "",
-      medicalRegistrationNumber: "",
-      yearsOfExperience: "",
-      shiftType: ""
+        fullName: "",
+        email: "",
+        phoneNumber: "",
+        nic: "",
+        dob: "",
+        gender: "",
+        address: "",
+        city: "",
+        postalCode: "",
+        hospitalName: "",
+        contactNumber: "",
+        workLocation: "",
+        department: "",
+        medicalRegistrationNumber: "",
+        yearsOfExperience: "",
+        shiftType: ""
     });
-    
+
     const [token, setToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    
+
     const { toast } = useToast();
     const router = useRouter();
 
     useEffect(() => {
-        // Get token from session storage
+        const fetchProfileData = async (token: string | null) => {
+            try {
+                setLoading(true);
+                const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+    
+                if (!token) {
+                    console.error("Token is missing");
+                    toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: "Token is missing. Please log in again.",
+                    });
+                    return;
+                }
+    
+                if (response.status === 401) {
+                    toast({
+                        variant: "destructive",
+                        title: "Session Expired",
+                        description: "Please login again to continue.",
+                    });
+                    return;
+                }
+    
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || "Failed to fetch profile data");
+                }
+    
+                const data = await response.json();
+                
+                // Map API response to our state structure
+                setProfile({
+                    fullName: data.FullName || "",
+                    email: data.Email || "",
+                    phoneNumber: data.Telephone || 0,
+                    nic: data.NIC || "",
+                    dob: data.DateOfBirth || "",
+                    gender: data.Gender || "",
+                    address: data.Address || "",
+                    city: data.City || "",
+                    postalCode: data.PostalCode || "",
+                    hospitalName: data.HospitalName || "",
+                    contactNumber: data.ContactNumber || 0,
+                    workLocation: data.WorkLocation || "",
+                    department: data.Department || "",
+                    medicalRegistrationNumber: data.MedicalRegistrationNumber || "",
+                    yearsOfExperience: data.YearsOfExperience || "",
+                    shiftType: data.ShiftType || ""
+                });
+    
+                sessionStorage.setItem("profileData", JSON.stringify(data));
+            } catch (error) {
+                console.error("Error fetching profile data:", error);
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Failed to load profile data."
+                });
+            } finally {
+                setLoading(false);
+            }
+        };
+    
         const token = sessionStorage.getItem("session_token");
         setToken(token);
-        
-        // Try to get profile from sessionStorage first
+    
         const cachedProfile = sessionStorage.getItem("profileData");
         if (cachedProfile) {
             try {
                 const data = JSON.parse(cachedProfile);
-                
-                // Map cached data to our state structure
                 setProfile({
-                  fullName: data.FullName || "",
-                  email: data.Email || "",
-                  phoneNumber: data.PhoneNumber || "",
-                  nic: data.NIC || "",
-                  dob: data.DateOfBirth || "",
-                  gender: data.Gender || "",
-                  address: data.Address || "",
-                  city: data.City || "",
-                  postalCode: data.PostalCode || "",
-                  
-                  // Hospital Details
-                  hospitalName: data.HospitalName || "",
-                  contactNumber: data.ContactNumber || "",
-                  workLocation: data.WorkLocation || "",
-                  
-                  // Work Information
-                  department: data.Department || "",
-                  medicalRegistrationNumber: data.MedicalRegistrationNumber || "",
-                  yearsOfExperience: data.YearsOfExperience || "",
-                  shiftType: data.ShiftType || ""
+                    fullName: data.FullName || "",
+                    email: data.Email || "",
+                    phoneNumber: data.PhoneNumber || "",
+                    nic: data.NIC || "",
+                    dob: data.DateOfBirth || "",
+                    gender: data.Gender || "",
+                    address: data.Address || "",
+                    city: data.City || "",
+                    postalCode: data.PostalCode || "",
+                    hospitalName: data.HospitalName || "",
+                    contactNumber: data.ContactNumber || "",
+                    workLocation: data.WorkLocation || "",
+                    department: data.Department || "",
+                    medicalRegistrationNumber: data.MedicalRegistrationNumber || "",
+                    yearsOfExperience: data.YearsOfExperience || "",
+                    shiftType: data.ShiftType || ""
                 });
-                
                 setLoading(false);
             } catch (error) {
                 console.error("Error parsing cached profile data", error);
@@ -76,78 +136,14 @@ export default function ProfileEditContent() {
         } else {
             fetchProfileData(token);
         }
-    }, []);
+    }, [toast]); // Empty dependency array to run only on mount
 
-    const fetchProfileData = async (token: string | null) => {
-        try {
-            setLoading(true);
-            const response = await fetch("https://axiontestgateway.azure-api.net/axion/user/profile", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-            });
-
-            if (response.status === 401) {
-                toast({
-                    variant: "destructive",
-                    title: "Session Expired",
-                    description: "Please login again to continue.",
-                });
-                // Handle redirect to login if needed
-                return;
-            }
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || "Failed to fetch profile data");
-            }
-
-            const data = await response.json();
-            
-            // Map API response to our state structure
-            setProfile({
-              fullName: data.FullName || "",
-              email: data.Email || "",
-              phoneNumber: data.Telephone || 0,
-              nic: data.NIC || "",
-              dob: data.DateOfBirth || "",
-              gender: data.Gender || "",
-              address: data.Address || "",
-              city: data.City || "",
-              postalCode: data.PostalCode || "",
-              
-              // Hospital Details
-              hospitalName: data.HospitalName || "",
-              contactNumber: data.ContactNumber || 0,
-              workLocation: data.WorkLocation || "",
-              
-              // Work Information
-              department: data.Department || "",
-              medicalRegistrationNumber: data.MedicalRegistrationNumber || "",
-              yearsOfExperience: data.YearsOfExperience || "",
-              shiftType: data.ShiftType || ""
-            });
-            
-            // Store in sessionStorage for future use
-            sessionStorage.setItem("profileData", JSON.stringify(data));
-        } catch (error) {
-            console.error("Error fetching profile data:", error);
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to load profile data."
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
+    // Handle form data changes
     const handleChange = (e: { target: { name: any; value: any; }; }) => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: value }));
     };
+
     
     const handleSave = async () => {
         try {

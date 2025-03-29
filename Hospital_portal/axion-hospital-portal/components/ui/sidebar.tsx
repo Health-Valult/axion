@@ -71,10 +71,29 @@ export const Sidebar = ({
 };
 
 export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+  const {
+    animate,
+    initial,
+    exit,
+    transition,
+    whileHover,
+    whileTap,
+    whileFocus,
+    whileDrag,
+    drag,
+    dragConstraints,
+    dragElastic,
+    dragMomentum,
+    onDrag,
+    onDragStart,
+    onDragEnd,
+    ...restProps
+  } = props;
   return (
     <>
       <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as React.ComponentProps<"div">)} />
+      <MobileSidebar {...(restProps as unknown as React.ComponentProps<"div">)} />
+
     </>
   );
 };
