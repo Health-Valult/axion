@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../components/ui/card";
 import { Input } from "@nextui-org/react";
 import { Hospital, ShieldCheck, ArrowRight, ArrowLeft, Lock as LockIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";

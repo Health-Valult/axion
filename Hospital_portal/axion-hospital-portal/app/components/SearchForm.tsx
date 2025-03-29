@@ -1,7 +1,7 @@
 "use client"
 
 import { Search } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../../components/ui/card";
 
 interface SearchFormProps {
   searchQuery: string;

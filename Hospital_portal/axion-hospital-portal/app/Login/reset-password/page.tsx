@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "../../../components/ui/card";
 import { Input } from "@nextui-org/react"; // Changed from NextUI to match first file
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import { Card } from "@/components/ui/card";
+import { Card } from "../../components/ui/card";
 import { Bell, Moon, Globe, Shield } from 'lucide-react';
 import Switch from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
